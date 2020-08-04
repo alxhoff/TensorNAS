@@ -1,14 +1,14 @@
 from tensornas import *
-from deap import base
-from deap import creator
-from deap import tools
+from deap import base, creator, tools, algorithms
 import random
 import tensorflow as tf
-
+import keras
+import matplotlib.pyplot as plt
 import demomodels
+import multiprocessing
 
 # Training MNIST data
-(images_train, labels_train), (images_test, labels_test) = tf.keras.datasets.mnist.load_data()
+(images_train, labels_train), (images_test, labels_test) = keras.datasets.mnist.load_data()
 input_shape = images_train.shape
 images_train = images_train.reshape(images_train.shape[0], images_train.shape[1], images_train.shape[2], 1)
 images_test = images_test.reshape(images_test.shape[0], images_test.shape[1], images_test.shape[2], 1)
@@ -17,6 +17,10 @@ images_train = images_train.astype('float32')
 images_test = images_test.astype('float32')
 images_train /= 255
 images_test /= 255
+
+# Tensorflow parameters
+epochs = 1
+batch_size = 100
 
 # Demo hard-coded models
 demomodels.generate_demo_model_jsons()
@@ -45,8 +49,13 @@ def get_demo_model_generator():
 def evaluate_individual(individual):
     return individual.evaluate(images_train, labels_train, images_test, labels_test, epochs, batch_size)
 
-# Genetic operators
-#TODO
+def crossover_individuals(ind1, ind2):
+    #TODO
+    return ind1
+
+def mutate_individual(individual):
+    #TODO
+    return individual
 
 # We want to minimize param count and maximize accuracy
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
@@ -56,6 +65,9 @@ creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
 
 toolbox=base.Toolbox()
 
+# pool = multiprocessing.Pool()
+# toolbox.register("map", pool.map)
+
 toolbox.register("attr_nas_model_gen", get_demo_model_generator)
 toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
 
@@ -64,11 +76,33 @@ toolbox.register("individual_iterate", tools.initIterate, creator.Individual, to
 
 toolbox.register("population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count)
 
-pop=toolbox.population(n=3)
+# Genetic operators
+toolbox.register("evaluate", evaluate_individual)
+toolbox.register("mate", crossover_individuals)
+toolbox.register("mutate", mutate_individual)
+toolbox.register("select", tools.selTournament, tournsize=3)
 
-epochs = 1
-batch_size = 100
+def main():
+    pop=toolbox.population(n=3)
+    hof=tools.HallOfFame(1)
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", np.mean)
+    stats.register("min", np.min)
+    stats.register("max", np.max)
 
-pop[0].verbose = True
-pcount, accuracy = pop[0].evaluate(images_train, labels_train, images_test, labels_test, epochs, batch_size)
-print("First population has {} params and accuracy of {}".format(pcount, accuracy))
+    pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.2, ngen=2, stats=stats, halloffame=hof, verbose=True)
+
+    return pop, logbook, hof
+
+if __name__ == "__main__":
+    pop, log, hof = main()
+    print("Best individual is: %s\nwith fitness: %s" % (hof[0], hof[0].fitness))
+
+    gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
+    plt.plot(gen, avg, label="average")
+    plt.plot(gen, min_, label="minimum")
+    plt.plot(gen, max_, label="maximum")
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness")
+    plt.legend(loc="lower right")
+    plt.show()

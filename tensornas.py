@@ -1,7 +1,11 @@
 import tensorflow as tf
-from tensorflow import keras
+import keras
 from tensorflowlayerargs import *
 import numpy as np
+
+# Note: it appears that keras models cannot be pickled and as such the tf.keras model should not be stored but generated
+# only once. As well tf.keras should be replaced with pure keras as it should support model pickling, should we add
+# a compiled model back into the TensorNASModel class.
 
 class TensorNASModel:
 
@@ -12,20 +16,18 @@ class TensorNASModel:
     self.metrics = metrics
     self.layers = []
     self.verbose = verbose
-    self.tfmodel=None
-    self.history=None
     self.accuracy=None
     self.param_count=None
 
     # This init line is used if individual_repeat is used as the model argument is a generator function that generates
     # iterators and as such we need to get ourselves an iterator to get our layers from
-    #self.model = next(model)
+    #our_model = next(model)
 
     #If we are using individual_repeat then the model argument is already an iterator and we can just set it
-    self.model = model
+    our_model = model
 
     # Here we pull our ModelLayer objects from the iterator containing our architecture
-    for layer in self.model:
+    for layer in our_model:
       self._addlayer(layer.name, layer.args)
 
   def loadlayersfromjson(self, json):
@@ -85,10 +87,6 @@ class TensorNASModel:
       if self.verbose:
         print("Created {} layers with {} rate".format(name, rate))
 
-  def _loadtfmodel(self):
-    if not self.tfmodel:
-      self.tfmodel=self._gettfmodel()
-
   def _gettfmodel(self):
     model = keras.Sequential()
     for layer in self.layers:
@@ -98,22 +96,11 @@ class TensorNASModel:
       model.summary()
     return model
 
-  def _train(self, data, labels, epochs, batch_size):
-    if not self.tfmodel:
-      self._loadtfmodel()
-
-    self.history = self.tfmodel.fit(x=data, y=labels, epochs=epochs, batch_size=batch_size)
-
-  def _gettfmodelparamcount(self):
-    self._loadtfmodel()
-    self.param_count = int(np.sum([keras.backend.count_params(p) for p in self.tfmodel.trainable_weights])) + int(np.sum([keras.backend.count_params(p) for p in self.tfmodel.non_trainable_weights]))
-
-    return self.param_count
-
   def evaluate(self, train_data, train_labels, test_data, test_labels, epochs, batch_size):
-    self._train(train_data, train_labels, epochs, batch_size)
-    self.accuracy = self.tfmodel.evaluate(test_data, test_labels)[1] * 100
-    self._gettfmodelparamcount()
+    model = self._gettfmodel()
+    model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
+    self.param_count = int(np.sum([keras.backend.count_params(p) for p in model.trainable_weights])) + int(np.sum([keras.backend.count_params(p) for p in model.non_trainable_weights]))
+    self.accuracy = model.evaluate(test_data, test_labels)[1] * 100
 
     return self.param_count, self.accuracy
 
