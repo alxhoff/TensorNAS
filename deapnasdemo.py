@@ -49,13 +49,14 @@ def get_demo_model_generator():
 def evaluate_individual(individual):
     return individual.evaluate(images_train, labels_train, images_test, labels_test, epochs, batch_size)
 
+# Note: please take note of arguments and return forms!
 def crossover_individuals(ind1, ind2):
     #TODO
-    return ind1
+    return ind1,ind2
 
 def mutate_individual(individual):
     #TODO
-    return individual
+    return individual,
 
 # We want to minimize param count and maximize accuracy
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
@@ -97,6 +98,7 @@ def main():
 if __name__ == "__main__":
     pop, log, hof = main()
     print("Best individual is: %s\nwith fitness: %s" % (hof[0], hof[0].fitness))
+    hof[0].print()
 
     gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
     plt.plot(gen, avg, label="average")
