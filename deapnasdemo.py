@@ -23,6 +23,8 @@ demomodels.generate_demo_model_jsons()
 demo_models = demomodels.generate_demo_model_array()
 demo_model_count = 2
 
+# Functions used for EA demo
+
 # Create a NAS model individual from one of the two demo models
 # Creating an iterable that is fed into initIterate
 def get_demo_model_iterator():
@@ -38,6 +40,13 @@ def get_demo_model_generator():
     for layer in model.keys():
         target_layer = model.get(str(layer))
         yield ModelLayer(target_layer.get('name'), target_layer.get('args'))
+
+# Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
+def evaluate_individual(individual):
+    return individual.evaluate(images_train, labels_train, images_test, labels_test, epochs, batch_size)
+
+# Genetic operators
+#TODO
 
 # We want to minimize param count and maximize accuracy
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
@@ -55,11 +64,11 @@ toolbox.register("individual_iterate", tools.initIterate, creator.Individual, to
 
 toolbox.register("population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count)
 
-ind = toolbox.individual_iterate()
 pop=toolbox.population(n=3)
 
-epochs = 10
-batch_size = 1000
+epochs = 1
+batch_size = 100
 
-pop[0].train(data=images_train, labels=labels_train, epochs=epochs, batch_size=batch_size)
-print("First population has accuracy of {}".format(pop[0].evaluate))
+pop[0].verbose = True
+pcount, accuracy = pop[0].evaluate(images_train, labels_train, images_test, labels_test, epochs, batch_size)
+print("First population has {} params and accuracy of {}".format(pcount, accuracy))

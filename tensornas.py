@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflowlayerargs import *
+import numpy as np
 
 class TensorNASModel:
 
@@ -14,6 +15,7 @@ class TensorNASModel:
     self.tfmodel=None
     self.history=None
     self.accuracy=None
+    self.param_count=None
 
     # This init line is used if individual_repeat is used as the model argument is a generator function that generates
     # iterators and as such we need to get ourselves an iterator to get our layers from
@@ -24,7 +26,7 @@ class TensorNASModel:
 
     # Here we pull our ModelLayer objects from the iterator containing our architecture
     for layer in self.model:
-      self.addlayer(layer.name, layer.args)
+      self._addlayer(layer.name, layer.args)
 
   def loadlayersfromjson(self, json):
     if json:
@@ -34,7 +36,7 @@ class TensorNASModel:
         args = layer.get('args')
         self.addlayer(name, args)
 
-  def addlayer(self, name, args):
+  def _addlayer(self, name, args):
     if name == "Conv2D":
       filters = args.get(Conv2DArgs.FILTERS.name)
       kernel = args.get(Conv2DArgs.KERNEL_SIZE.name)
@@ -83,10 +85,11 @@ class TensorNASModel:
       if self.verbose:
         print("Created {} layers with {} rate".format(name, rate))
 
-  def loadtfmodel(self):
-    self.tfmodel=self.gettfmodel()
+  def _loadtfmodel(self):
+    if not self.tfmodel:
+      self.tfmodel=self._gettfmodel()
 
-  def gettfmodel(self):
+  def _gettfmodel(self):
     model = keras.Sequential()
     for layer in self.layers:
       model.add(layer.getkeraslayer())
@@ -95,19 +98,24 @@ class TensorNASModel:
       model.summary()
     return model
 
-  def train(self, data, labels, epochs, batch_size):
+  def _train(self, data, labels, epochs, batch_size):
     if not self.tfmodel:
-      self.loadtfmodel()
+      self._loadtfmodel()
 
     self.history = self.tfmodel.fit(x=data, y=labels, epochs=epochs, batch_size=batch_size)
 
-  def gettfmodelparamcount(self):
-    return self.gettfmodel().count_params()
+  def _gettfmodelparamcount(self):
+    self._loadtfmodel()
+    self.param_count = int(np.sum([keras.backend.count_params(p) for p in self.tfmodel.trainable_weights])) + int(np.sum([keras.backend.count_params(p) for p in self.tfmodel.non_trainable_weights]))
 
-  def evaluate(self, data, labels):
-    self.accuracy = self.tfmodel.evaluate(data, labels) * 100
+    return self.param_count
 
-    return self.accuracy
+  def evaluate(self, train_data, train_labels, test_data, test_labels, epochs, batch_size):
+    self._train(train_data, train_labels, epochs, batch_size)
+    self.accuracy = self.tfmodel.evaluate(test_data, test_labels)[1] * 100
+    self._gettfmodelparamcount()
+
+    return self.param_count, self.accuracy
 
 class ModelLayer:
   'Common layer properties'
