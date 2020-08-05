@@ -27,7 +27,7 @@ images_test /= 255
 
 # Tensorflow parameters
 epochs = 1
-batch_size = 100
+batch_size = 600
 
 # Demo hard-coded models
 demomodels.generate_demo_model_jsons()
@@ -137,7 +137,8 @@ if __name__ == "__main__":
     best_individual.print()
 
     gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
-    plt.subplot(1, 2, 2)
+    plt.figure(figsize=(15, 5))
+    plt.subplot(1, 3, 1)
     plt.plot(gen, avg, label="average")
     plt.plot(gen, min_, label="minimum")
     plt.plot(gen, max_, label="maximum")
@@ -146,13 +147,11 @@ if __name__ == "__main__":
     plt.legend(loc="lower right")
 
     # Pareto
+    dominated = [ind for ind in history.genealogy_history.values() if pareto_dominance(best_individual, ind)]
+    dominators = [ind for ind in history.genealogy_history.values() if pareto_dominance(ind, best_individual)]
+    others = [ind for ind in history.genealogy_history.values() if not ind in dominated and not ind in dominators]
 
-    dominated = [ind for ind in history.genealogy_history if pareto_dominance(best_individual, ind)]
-    dominators = [ind for ind in history.genealogy_history if pareto_dominance(ind, best_individual)]
-    others = [ind for ind in history.genealogy_history if not ind in dominated and not ind in dominators]
-
-    plt.figure(figsize=(15, 5))
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 3, 2)
     for ind in dominators: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'r.', alpha=0.7)
     for ind in dominated: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'g.', alpha=0.7)
     for ind in others: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'k.', alpha=0.7, ms=3)
@@ -164,10 +163,10 @@ if __name__ == "__main__":
     plt.title('Objective space');
     plt.tight_layout()
 
-    non_dom = tools.sortNondominated(history.genealogy_history, k=len(history.genealogy_history), first_front_only=True)[0]
+    non_dom = tools.sortNondominated(history.genealogy_history.values(), k=len(history.genealogy_history.values()), first_front_only=True)[0]
 
-    plt.subplot(1,2,3)
-    for ind in history.genealogy_history:
+    plt.subplot(1,3,3)
+    for ind in history.genealogy_history.values():
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'k.', ms=3, alpha=0.5)
     for ind in non_dom:
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'bo', alpha=0.74, ms=5)

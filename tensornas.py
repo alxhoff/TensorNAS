@@ -152,6 +152,9 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.STRIDES.name] = strides
         self.args[Conv2DArgs.INPUT_SIZE.name] = input_size
 
+    def mutate(self):
+
+
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:
             return False
