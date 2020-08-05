@@ -1,12 +1,35 @@
 from enum import Enum, auto
 
 
+class Activations(Enum):
+    ELU = "elu"
+    EXPONENTIAL = "exponential"
+    HARD_SIGMOID = "hard_sigmoid"
+    LINEAR = "linear"
+    RELU = "relu"
+    SELU = "selu"
+    SIGMOID = "sigmoid"
+    SOFTMAX = "softmax"
+    SOFTPLUS = "softplus"
+    SOFTSIGN = "softsign"
+    SWISH = "swish"
+    TANH = "tanh"
+
+
+class PaddingArgs(Enum):
+    VALID = "valid"
+    SAME = "same"
+
+
 class Conv2DArgs(Enum):
     "Args needed for creating Conv2DArgs layer, list not complete"
     FILTERS = auto()
     KERNEL_SIZE = auto()
     STRIDES = auto()
     INPUT_SIZE = auto()
+    PADDING = auto()
+    DILATION_RATE = auto()
+    ACTIVATION = auto()
 
 
 class MaxPool2DArgs(Enum):

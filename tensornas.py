@@ -2,6 +2,8 @@ import tensorflow as tf
 import keras
 from tensorflowlayerargs import *
 import numpy as np
+import random
+from nasmutator import *
 
 
 class TensorNASModel:
@@ -143,23 +145,105 @@ class ModelLayer:
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
+
 class Conv2DLayer(ModelLayer):
-    def __init__(self, filters, kernel_size, strides, input_size):
+    MUTATABLE_PARAMETERS = 6
+    MAX_FILTER_COUNT = 128
+    MAX_KERNEL_DIMENSION = 7
+    MAX_STRIDE = 7
+
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        strides,
+        input_size,
+        padding=PaddingArgs.SAME.name,
+        dilation_rate=0,
+        activation=Activations.RELU.name,
+    ):
         super().__init__("Conv2D")
 
         self.args[Conv2DArgs.FILTERS.name] = filters
         self.args[Conv2DArgs.KERNEL_SIZE.name] = kernel_size
         self.args[Conv2DArgs.STRIDES.name] = strides
         self.args[Conv2DArgs.INPUT_SIZE.name] = input_size
+        self.args[Conv2DArgs.PADDING.name] = padding
+        self.args[Conv2DArgs.DILATION_RATE] = dilation_rate
+        self.args[Conv2DArgs.ACTIVATION] = activation
+
+    def _filters(self):
+        return self.args[Conv2DArgs.FILTERS.name]
+
+    def _kernel_size(self):
+        return self.args[Conv2DArgs.KERNEL_SIZE.name]
+
+    def _strides(self):
+        return self.args[Conv2DArgs.STRIDES.name]
+
+    def _input_size(self):
+        return self.args[Conv2DArgs.INPUT_SIZE.name]
+
+    def _padding(self):
+        return self.args[Conv2DArgs.PADDING.name]
+
+    def _dilation_rate(self):
+        return self.args[Conv2DArgs.DILATION_RATE]
+
+    def _activation(self):
+        return self.args[Conv2DArgs.ACTIVATION]
+
+    def _single_stride(self):
+        st = self._strides()
+        if st[0] == 1 and st[1] == 1:
+            return True
+        return False
+
+    def _single_dilation_rate(self):
+        dr = self._dilation_rate()
+        if dr[0] == 1 and dr[1]:
+            return True
+        return False
+
+    def _mutate_filters(self, operator=IntMutationOperators.RANDOM):
+        self.args[Conv2DArgs.FILTERS.name] = mutate_int(
+            self._filters(), 1, Conv2DLayer.MAX_FILTER_COUNT, operator
+        )
+
+    def _mutate_kernel_size(self, operator=TupleMutationOperators.SYNC_STEP):
+        self.args[Conv2DArgs.KERNEL_SIZE.name] = mutate_tuple(
+            self._kernel_size(), 1, Conv2DLayer.MAX_KERNEL_DIMENSION, operator
+        )
+
+    def _mutate_strides(self, operator=TupleMutationOperators.SYNC_STEP):
+        self.args[Conv2DArgs.STRIDES.name] = mutate_tuple(
+            self._strides(), 1, Conv2DLayer.MAX_STRIDE, operator
+        )
+
+    def _mutate_padding(self, operator=TupleMutationOperators.SYNC_STEP):
+        # TODO
+        pass
+
+    def _mutate_dilation_rate(self, operator=TupleMutationOperators.SYNC_STEP):
+        # TODO
+        pass
+
+    def _mutate_activation(self):
+        # TODO
+        pass
 
     def mutate(self):
-
+        # TODO
+        pass
 
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:
             return False
 
-        # more checks here
+        if not self._single_stride() and not self._single_dilation_rate():
+            return False
+
+        return True
 
     def getkeraslayer(self):
         return keras.layers.Conv2D(
