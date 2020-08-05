@@ -4,15 +4,10 @@ from tensorflowlayerargs import *
 import numpy as np
 
 
-# Note: it appears that keras models cannot be pickled and as such the tf.keras model should not be stored but generated
-# only once. As well tf.keras should be replaced with pure keras as it should support model pickling, should we add
-# a compiled model back into the TensorNASModel class.
-
-
 class TensorNASModel:
     def __init__(
         self,
-        model,
+        layer_iterator,
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
@@ -26,15 +21,8 @@ class TensorNASModel:
         self.accuracy = None
         self.param_count = None
 
-        # This init line is used if individual_repeat is used as the model argument is a generator function that generates
-        # iterators and as such we need to get ourselves an iterator to get our layers from
-        # our_model = next(model)
-
-        # If we are using individual_repeat then the model argument is already an iterator and we can just set it
-        our_model = model
-
         # Here we pull our ModelLayer objects from the iterator containing our architecture
-        for layer in our_model:
+        for layer in layer_iterator:
             self._addlayer(layer.name, layer.args)
 
     def print(self):
@@ -155,14 +143,20 @@ class ModelLayer:
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
-
 class Conv2DLayer(ModelLayer):
     def __init__(self, filters, kernel_size, strides, input_size):
         super().__init__("Conv2D")
+
         self.args[Conv2DArgs.FILTERS.name] = filters
         self.args[Conv2DArgs.KERNEL_SIZE.name] = kernel_size
         self.args[Conv2DArgs.STRIDES.name] = strides
         self.args[Conv2DArgs.INPUT_SIZE.name] = input_size
+
+    def validate(self):
+        if not 0 > self.args[Conv2DArgs.FILTERS.name]:
+            return False
+
+        # more checks here
 
     def getkeraslayer(self):
         return keras.layers.Conv2D(

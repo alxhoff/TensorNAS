@@ -38,31 +38,22 @@ demo_model_count = 2
 
 # Create a NAS model individual from one of the two demo models
 # Creating an iterable that is fed into initIterate
+
+#TODO generate random but valid starting model architectures
+
 def get_demo_model_iterator():
-    model = demo_models[random.randint(0, demo_model_count - 1)]
+    model = demo_models[random.randint(0, demo_model_count - 1)] # hardcoded test model
     iter = (
         ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args"))
         for layer in model.keys()
     )
     return iter
 
-
-# Problem with using generator to provide layers is that the initRepeat method requires 'n' which defines how many
-# layers are to be generated. This might vary and as such we should use an iterator where the 'n' of generated
-# layers can be modified, this is done using initIterate and get_demo_model_iterator.
-def get_demo_model_generator():
-    model = demo_models[0]
-    for layer in model.keys():
-        target_layer = model.get(str(layer))
-        yield ModelLayer(target_layer.get("name"), target_layer.get("args"))
-
-
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 def evaluate_individual(individual):
     return individual.evaluate(
         images_train, labels_train, images_test, labels_test, epochs, batch_size
     )
-
 
 # Note: please take note of arguments and return forms!
 def crossover_individuals(ind1, ind2):
@@ -74,6 +65,8 @@ def mutate_individual(individual):
     # TODO
     return (individual,)
 
+def pareto_dominance(ind1, ind2):
+    return tools.emo.isDominated(ind1.fitness.values, ind2.fitness.values)
 
 # We want to minimize param count and maximize accuracy
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
@@ -86,16 +79,8 @@ toolbox = base.Toolbox()
 pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
 
-toolbox.register("attr_nas_model_gen", get_demo_model_generator)
 toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
 
-toolbox.register(
-    "individual_repeat",
-    tools.initRepeat,
-    creator.Individual,
-    toolbox.attr_nas_model_gen,
-    n=6,
-)
 toolbox.register(
     "individual_iterate",
     tools.initIterate,
@@ -113,9 +98,18 @@ toolbox.register("mate", crossover_individuals)
 toolbox.register("mutate", mutate_individual)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
+# Statistics
+history = tools.History()
+
+toolbox.decorate("mate", history.decorator)
+toolbox.decorate("mutate", history.decorator)
+# toolbox.decorate("evaluate", history.decorator)
 
 def main():
     pop = toolbox.population(n=3)
+    # for ind in pop:
+    #     ind.fitness.values = toolbox.evaluate(ind)
+    # history.update(pop)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -138,14 +132,46 @@ def main():
 
 if __name__ == "__main__":
     pop, log, hof = main()
-    print("Best individual is: %s\nwith fitness: %s" % (hof[0], hof[0].fitness))
-    hof[0].print()
+    best_individual = hof[0]
+    print("Best individual is: %s\nwith fitness: %s" % (best_individual, best_individual.fitness))
+    best_individual.print()
 
     gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
+    plt.subplot(1, 2, 2)
     plt.plot(gen, avg, label="average")
     plt.plot(gen, min_, label="minimum")
     plt.plot(gen, max_, label="maximum")
     plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.legend(loc="lower right")
+
+    # Pareto
+
+    dominated = [ind for ind in history.genealogy_history if pareto_dominance(best_individual, ind)]
+    dominators = [ind for ind in history.genealogy_history if pareto_dominance(ind, best_individual)]
+    others = [ind for ind in history.genealogy_history if not ind in dominated and not ind in dominators]
+
+    plt.figure(figsize=(15, 5))
+    plt.subplot(1, 2, 2)
+    for ind in dominators: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'r.', alpha=0.7)
+    for ind in dominated: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'g.', alpha=0.7)
+    for ind in others: plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'k.', alpha=0.7, ms=3)
+    plt.plot(best_individual.fitness.values[0], best_individual.fitness.values[1], 'bo', ms=6);
+    plt.xlabel('$f_1(\mathbf{x})$');
+    plt.ylabel('$f_2(\mathbf{x})$');
+    plt.xlim((0.5, 3.6));
+    plt.ylim((0.5, 3.6));
+    plt.title('Objective space');
+    plt.tight_layout()
+
+    non_dom = tools.sortNondominated(history.genealogy_history, k=len(history.genealogy_history), first_front_only=True)[0]
+
+    plt.subplot(1,2,3)
+    for ind in history.genealogy_history:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'k.', ms=3, alpha=0.5)
+    for ind in non_dom:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], 'bo', alpha=0.74, ms=5)
+    plt.title('Pareto-optimal front')
+
     plt.show()
+
