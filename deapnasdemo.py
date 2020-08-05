@@ -6,6 +6,7 @@ import keras
 import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
+import nasmutator
 
 # Training MNIST data
 (
@@ -112,10 +113,18 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
+
+    ind = toolbox.individual_iterate()
+    for layer in ind.layers:
+        if layer.name == "Conv2D":
+            layer._mutate_kernel_size()
+            layer._mutate_strides(nasmutator.MutationOperators.SYNC_STEP)
+            layer._mutate_activation()
+
+            model = layer.getkeraslayer()
+            print("Hello")
+
     pop = toolbox.population(n=3)
-    # for ind in pop:
-    #     ind.fitness.values = toolbox.evaluate(ind)
-    # history.update(pop)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)

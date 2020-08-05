@@ -41,13 +41,24 @@ class TensorNASModel:
 
     def _addlayer(self, name, args):
         if name == "Conv2D":
-            filters = args.get(Conv2DArgs.FILTERS.name)
-            kernel = args.get(Conv2DArgs.KERNEL_SIZE.name)
-            kernel_size = tuple(kernel)
+            filters = args.get(Conv2DArgs.FILTERS.name, 1)
+            kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
             strides = args.get(Conv2DArgs.STRIDES.name, (1, 1))
-            input = args.get(Conv2DArgs.INPUT_SIZE.name)
-            input_size = tuple(input)
-            self.layers.append(Conv2DLayer(filters, kernel_size, strides, input_size))
+            input_size = tuple(args.get(Conv2DArgs.INPUT_SIZE.name))
+            activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
+            dilation_rate = args.get(Conv2DArgs.DILATION_RATE.name, (1, 1))
+            padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.SAME.value)
+            self.layers.append(
+                Conv2DLayer(
+                    filters=filters,
+                    kernel_size=kernel_size,
+                    strides=strides,
+                    input_size=input_size,
+                    activation=activation,
+                    dilation_rate=dilation_rate,
+                    padding=padding,
+                )
+            )
             if self.verbose:
                 print(
                     "Created {} layer with {} filters, {} kernel size, {} stride size and {} input size".format(
@@ -55,7 +66,7 @@ class TensorNASModel:
                     )
                 )
         elif name == "MaxPool2D" or name == "MaxPool3D":
-            pool_size = args.get(MaxPool2DArgs.POOL_SIZE.name)
+            pool_size = tuple(args.get(MaxPool2DArgs.POOL_SIZE.name, (1, 1)))
             strides = args.get(MaxPool2DArgs.STRIDES.name, None)
             if name == "MaxPool2D":
                 self.layers.append(MaxPool2DLayer(pool_size, strides))
@@ -151,6 +162,7 @@ class Conv2DLayer(ModelLayer):
     MAX_FILTER_COUNT = 128
     MAX_KERNEL_DIMENSION = 7
     MAX_STRIDE = 7
+    MAX_DILATION = 5
 
     def __init__(
         self,
@@ -158,9 +170,9 @@ class Conv2DLayer(ModelLayer):
         kernel_size,
         strides,
         input_size,
-        padding=PaddingArgs.SAME.name,
-        dilation_rate=0,
-        activation=Activations.RELU.name,
+        padding=PaddingArgs.SAME.value,
+        dilation_rate=(0, 0),
+        activation=Activations.RELU.value,
     ):
         super().__init__("Conv2D")
 
@@ -169,8 +181,8 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.STRIDES.name] = strides
         self.args[Conv2DArgs.INPUT_SIZE.name] = input_size
         self.args[Conv2DArgs.PADDING.name] = padding
-        self.args[Conv2DArgs.DILATION_RATE] = dilation_rate
-        self.args[Conv2DArgs.ACTIVATION] = activation
+        self.args[Conv2DArgs.DILATION_RATE.name] = dilation_rate
+        self.args[Conv2DArgs.ACTIVATION.name] = activation
 
     def _filters(self):
         return self.args[Conv2DArgs.FILTERS.name]
@@ -188,10 +200,10 @@ class Conv2DLayer(ModelLayer):
         return self.args[Conv2DArgs.PADDING.name]
 
     def _dilation_rate(self):
-        return self.args[Conv2DArgs.DILATION_RATE]
+        return self.args[Conv2DArgs.DILATION_RATE.name]
 
     def _activation(self):
-        return self.args[Conv2DArgs.ACTIVATION]
+        return self.args[Conv2DArgs.ACTIVATION.name]
 
     def _single_stride(self):
         st = self._strides()
@@ -205,36 +217,55 @@ class Conv2DLayer(ModelLayer):
             return True
         return False
 
-    def _mutate_filters(self, operator=IntMutationOperators.RANDOM):
+    def _mutate_filters(self, operator=MutationOperators.STEP):
         self.args[Conv2DArgs.FILTERS.name] = mutate_int(
             self._filters(), 1, Conv2DLayer.MAX_FILTER_COUNT, operator
         )
 
-    def _mutate_kernel_size(self, operator=TupleMutationOperators.SYNC_STEP):
+    def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
         self.args[Conv2DArgs.KERNEL_SIZE.name] = mutate_tuple(
             self._kernel_size(), 1, Conv2DLayer.MAX_KERNEL_DIMENSION, operator
         )
 
-    def _mutate_strides(self, operator=TupleMutationOperators.SYNC_STEP):
+    def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
         self.args[Conv2DArgs.STRIDES.name] = mutate_tuple(
             self._strides(), 1, Conv2DLayer.MAX_STRIDE, operator
         )
 
-    def _mutate_padding(self, operator=TupleMutationOperators.SYNC_STEP):
-        # TODO
-        pass
+    def _mutate_padding(self):
+        if self._padding() == PaddingArgs.SAME.value:
+            self.args[Conv2DArgs.PADDING.name] = PaddingArgs.VALID.value
+        else:
+            self.args[Conv2DArgs.PADDING.name] = PaddingArgs.SAME.value
 
-    def _mutate_dilation_rate(self, operator=TupleMutationOperators.SYNC_STEP):
-        # TODO
-        pass
+    def _mutate_dilation_rate(self, operator=MutationOperators.SYNC_STEP):
+        self.args[Conv2DArgs.DILATION_RATE] = mutate_tuple(
+            self._dilation_rate(), 1, Conv2DLayer.MAX_DILATION, operator
+        )
 
     def _mutate_activation(self):
-        # TODO
-        pass
+        while True:
+            new_activation = random.choice(list(Activations)).value
+            if new_activation != self._activation():
+                break
+
+        self.args[Conv2DArgs.ACTIVATION] = new_activation
 
     def mutate(self):
-        # TODO
-        pass
+        mutate_param = random.randrange(0, Conv2DLayer.MUTATABLE_PARAMETERS)
+
+        if mutate_param == 0:
+            self._mutate_filters()
+        elif mutate_param == 1:
+            self._mutate_kernel_size()
+        elif mutate_param == 2:
+            self._mutate_strides()
+        elif mutate_param == 3:
+            self._mutate_padding()
+        elif mutate_param == 4:
+            self._mutate_dilation_rate()
+        elif mutate_param == 5:
+            self._mutate_activation()
 
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:
@@ -251,10 +282,16 @@ class Conv2DLayer(ModelLayer):
             kernel_size=self.args.get(Conv2DArgs.KERNEL_SIZE.name),
             strides=self.args.get(Conv2DArgs.STRIDES.name),
             input_shape=self.args.get(Conv2DArgs.INPUT_SIZE.name),
+            activation=self.args.get(Conv2DArgs.ACTIVATION.name),
+            padding=self.args.get(Conv2DArgs.PADDING.name),
+            dilation_rate=self.args.get(Conv2DArgs.DILATION_RATE.name),
         )
 
 
 class MaxPool2DLayer(ModelLayer):
+    MUTATABLE_PARAMETERS = 1
+    MAX_POOL_SIZE = 7
+
     def __init__(self, pool_size, strides):
         super().__init__("MaxPool2D")
         self.args[MaxPool2DArgs.POOL_SIZE.name] = pool_size
@@ -265,6 +302,21 @@ class MaxPool2DLayer(ModelLayer):
             pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
             strides=self.args.get(MaxPool2DArgs.STRIDES.name),
         )
+
+    def _pool_size(self):
+        return self.args[MaxPool2DArgs.POOL_SIZE.name]
+
+    def _mutate_pool_size(self, operator=MutationOperators.SYNC_STEP):
+        self.args[MaxPool2DArgs.POOL_SIZE.name] = mutate_tuple(
+            self._pool_size(), 1, MaxPool2DLayer.MAX_POOL_SIZE, operator
+        )
+        pass
+
+    def mutate(self):
+        mutate_param = random.randrange(0, Conv2DLayer.MUTATABLE_PARAMETERS)
+
+        if mutate_param == 0:
+            self._mutate_pool_size()
 
 
 class MaxPool3DLayer(MaxPool2DLayer):

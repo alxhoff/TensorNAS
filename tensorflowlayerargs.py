@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 
-class Activations(Enum):
+class Activations(str, Enum):
     ELU = "elu"
     EXPONENTIAL = "exponential"
     HARD_SIGMOID = "hard_sigmoid"
@@ -16,7 +16,7 @@ class Activations(Enum):
     TANH = "tanh"
 
 
-class PaddingArgs(Enum):
+class PaddingArgs(str, Enum):
     VALID = "valid"
     SAME = "same"
 

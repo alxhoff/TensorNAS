@@ -2,97 +2,81 @@ from enum import Enum, auto
 import random
 
 
-class IntMutationOperators(Enum):
+class MutationOperators(Enum):
     STEP = auto()
     RANDOM = auto()
 
-
-class TupleMutationOperators(IntMutationOperators):
     SYNC_STEP = auto()  # Both values in the tuple are mutated together
     SYNC_RANDOM = auto()
 
 
-def mutate_int(val, min_bound, max_bound, operator=IntMutationOperators.STEP):
-    if operator == IntMutationOperators.RANDOM:
-        return random.randrange(min_bound, max_bound)
-    elif operator == IntMutationOperators.STEP:
-        if random.randrange(0, 1) and val < max_bound:
+def mutate_int(val, min_bound, max_bound, operator=MutationOperators.STEP):
+    if operator == MutationOperators.RANDOM:
+        return random.randrange(min_bound, max_bound + 1)
+    elif operator == MutationOperators.STEP:
+        if random.randrange(0, 2) and val < max_bound:
             return val + 1
         else:
-            if val > 1:
+            if val > min_bound:
                 return val - 1
             else:
                 return val + 1
 
 
-def mutate_tuple(
-    tuple, min_bound, max_bound, operator=TupleMutationOperators.SYNC_STEP
-):
-    ret = tuple
+def mutate_tuple(tuple, min_bound, max_bound, operator=MutationOperators.SYNC_STEP):
     while True:  # loop until a mutation was performed
-        if operator == TupleMutationOperators.STEP:
-            if random.randrange(0, 1):  # Inc
-                if random.randrange(0, 1):  # X value
+        if operator == MutationOperators.STEP:
+            if random.randrange(0, 2):  # Inc
+                if random.randrange(0, 2):  # X value
                     if tuple[0] < max_bound:
-                        ret[0] += 1
-                        return ret
+                        return (tuple[0] + 1, tuple[1])
                     else:
                         continue
                 else:  # Y value
                     if tuple[0] > 1:
-                        ret[1] += 1
-                        return ret
+                        return (tuple[0], tuple[1] + 1)
                     else:
                         continue
             else:  # Dec
-                if random.randrange(0, 1):  # X value
+                if random.randrange(0, 2):  # X value
                     if tuple[0] < max_bound:
-                        ret[0] -= 1
-                        return ret
+                        return (tuple[0] - 1, tuple[1])
                     else:
                         continue
                 else:  # Y value
                     if tuple[0] > 1:
-                        ret[1] -= 1
-                        return ret
+                        return (tuple[0], tuple[1] - 1)
                     else:
                         continue
-        elif operator == TupleMutationOperators.SYNC_STEP:
-            if random.randrange(0, 1):  # Inc
+        elif operator == MutationOperators.SYNC_STEP:
+            if random.randrange(0, 2):  # Inc
                 if tuple[0] < max_bound and tuple[1] < max_bound:
-                    ret[0] += 1
-                    ret[1] += 1
-                    return ret
+                    return (tuple[0] + 1, tuple[1] + 1)
                 else:
                     continue
             else:  # Dec
-                if tuple[0] > 1 and tuple[1] > 1:
-                    ret[0] -= 1
-                    ret[1] -= 1
-                    return ret
+                if tuple[0] > min_bound and tuple[1] > min_bound:
+                    return (tuple[0] - 1, tuple[1] - 1)
                 else:
                     continue
-        elif operator == TupleMutationOperators.SYNC_RANDOM:
+        elif operator == MutationOperators.SYNC_RANDOM:
             while (
                 True
             ):  # generate a different value to what we currently have (referenced using X val)
-                val = random.randrange(0, max_bound)
+                val = random.randrange(min_bound, max_bound + 1)
                 if val != tuple[0]:
                     break
-            ret[0] = val
-            ret[1] = val
-            return ret
-        elif operator == TupleMutationOperators.RANDOM:
-            if random.randrange(0, 1):  # X
+            return (val, val)
+        elif operator == MutationOperators.RANDOM:
+            if random.randrange(0, 2):  # X
                 while True:
-                    val = random.randrange(0, max_bound)
+                    val = random.randrange(min_bound, max_bound + 1)
                     if val != tuple[0]:
                         break
-                ret[0] = val
+                return (val, tuple[1])
             else:  # Y
                 while True:
-                    val = random.randrange(0, max_bound)
+                    val = random.randrange(min_bound, max_bound + 1)
                     if val != tuple[0]:
                         break
-                ret[1] = val
-            return ret
+                return (tuple[0], val)
