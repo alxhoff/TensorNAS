@@ -120,6 +120,7 @@ def main():
             layer._mutate_kernel_size()
             layer._mutate_strides(nasmutator.MutationOperators.SYNC_STEP)
             layer._mutate_activation()
+            layer._mutate_padding()
 
             model = layer.getkeraslayer()
             print("Hello")

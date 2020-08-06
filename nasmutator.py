@@ -23,40 +23,40 @@ def mutate_int(val, min_bound, max_bound, operator=MutationOperators.STEP):
                 return val + 1
 
 
-def mutate_tuple(tuple, min_bound, max_bound, operator=MutationOperators.SYNC_STEP):
+def mutate_tuple(val, min_bound, max_bound, operator=MutationOperators.SYNC_STEP):
     while True:  # loop until a mutation was performed
         if operator == MutationOperators.STEP:
             if random.randrange(0, 2):  # Inc
                 if random.randrange(0, 2):  # X value
-                    if tuple[0] < max_bound:
-                        return (tuple[0] + 1, tuple[1])
+                    if val[0] < max_bound:
+                        return val[0] + 1, val[1]
                     else:
                         continue
                 else:  # Y value
-                    if tuple[0] > 1:
-                        return (tuple[0], tuple[1] + 1)
+                    if val[0] > 1:
+                        return val[0], val[1] + 1
                     else:
                         continue
             else:  # Dec
                 if random.randrange(0, 2):  # X value
-                    if tuple[0] < max_bound:
-                        return (tuple[0] - 1, tuple[1])
+                    if val[0] < max_bound:
+                        return val[0] - 1, val[1]
                     else:
                         continue
                 else:  # Y value
-                    if tuple[0] > 1:
-                        return (tuple[0], tuple[1] - 1)
+                    if val[0] > 1:
+                        return val[0], val[1] - 1
                     else:
                         continue
         elif operator == MutationOperators.SYNC_STEP:
             if random.randrange(0, 2):  # Inc
-                if tuple[0] < max_bound and tuple[1] < max_bound:
-                    return (tuple[0] + 1, tuple[1] + 1)
+                if val[0] < max_bound and val[1] < max_bound:
+                    return val[0] + 1, val[1] + 1
                 else:
                     continue
             else:  # Dec
-                if tuple[0] > min_bound and tuple[1] > min_bound:
-                    return (tuple[0] - 1, tuple[1] - 1)
+                if val[0] > min_bound and val[1] > min_bound:
+                    return val[0] - 1, val[1] - 1
                 else:
                     continue
         elif operator == MutationOperators.SYNC_RANDOM:
@@ -64,19 +64,26 @@ def mutate_tuple(tuple, min_bound, max_bound, operator=MutationOperators.SYNC_ST
                 True
             ):  # generate a different value to what we currently have (referenced using X val)
                 val = random.randrange(min_bound, max_bound + 1)
-                if val != tuple[0]:
+                if val != val[0]:
                     break
-            return (val, val)
+            return val, val
         elif operator == MutationOperators.RANDOM:
             if random.randrange(0, 2):  # X
                 while True:
                     val = random.randrange(min_bound, max_bound + 1)
-                    if val != tuple[0]:
+                    if val != val[0]:
                         break
-                return (val, tuple[1])
+                return val, val[1]
             else:  # Y
                 while True:
                     val = random.randrange(min_bound, max_bound + 1)
-                    if val != tuple[0]:
+                    if val != val[0]:
                         break
-                return (tuple[0], val)
+                return val[0], val
+
+
+def mutate_enum(val, enum):
+    while True:
+        new_val = random.choice(list(enum)).value
+        if new_val != val:
+            return new_val

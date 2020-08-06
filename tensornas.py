@@ -233,23 +233,17 @@ class Conv2DLayer(ModelLayer):
         )
 
     def _mutate_padding(self):
-        if self._padding() == PaddingArgs.SAME.value:
-            self.args[Conv2DArgs.PADDING.name] = PaddingArgs.VALID.value
-        else:
-            self.args[Conv2DArgs.PADDING.name] = PaddingArgs.SAME.value
+        self.args[Conv2DArgs.PADDING.name] = mutate_enum(self._padding(), PaddingArgs)
 
     def _mutate_dilation_rate(self, operator=MutationOperators.SYNC_STEP):
-        self.args[Conv2DArgs.DILATION_RATE] = mutate_tuple(
+        self.args[Conv2DArgs.DILATION_RATE.name] = mutate_tuple(
             self._dilation_rate(), 1, Conv2DLayer.MAX_DILATION, operator
         )
 
     def _mutate_activation(self):
-        while True:
-            new_activation = random.choice(list(Activations)).value
-            if new_activation != self._activation():
-                break
-
-        self.args[Conv2DArgs.ACTIVATION] = new_activation
+        self.args[Conv2DArgs.ACTIVATION.name] = mutate_enum(
+            self._activation(), Activations
+        )
 
     def mutate(self):
         mutate_param = random.randrange(0, Conv2DLayer.MUTATABLE_PARAMETERS)
