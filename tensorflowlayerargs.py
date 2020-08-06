@@ -36,6 +36,7 @@ class MaxPool2DArgs(Enum):
     "Args needed for creating MaxPool2D layer, list not complete"
     POOL_SIZE = auto()
     STRIDES = auto()
+    PADDING = auto()
 
 
 class ReshapeArgs(Enum):

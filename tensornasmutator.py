@@ -23,6 +23,21 @@ def mutate_int(val, min_bound, max_bound, operator=MutationOperators.STEP):
                 return val + 1
 
 
+def mutate_unit_interval(
+    val, min_bound, max_bound, operator=MutationOperators.STEP, step_size=0.05
+):
+    if operator == MutationOperators.RANDOM:
+        return random.random()
+    elif operator == MutationOperators.STEP:
+        if random.randrange(0, 2) and val <= max_bound - step_size:
+            return val + step_size
+        else:
+            if val >= min_bound + step_size:
+                return val - step_size
+            else:
+                return val + step_size
+
+
 def mutate_tuple(val, min_bound, max_bound, operator=MutationOperators.SYNC_STEP):
     while True:  # loop until a mutation was performed
         if operator == MutationOperators.STEP:

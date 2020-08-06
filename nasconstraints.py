@@ -1,5 +1,5 @@
 import random
-from tensornas import *
+from tensornasmodel import *
 import itertools
 
 # This class should generate models needed for creating individuals which is done using iterators and DEAP's initIterate

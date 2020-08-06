@@ -1,138 +1,6 @@
-import tensorflow as tf
-import keras
 from tensorflowlayerargs import *
-import numpy as np
-import random
-from nasmutator import *
-
-
-class TensorNASModel:
-    def __init__(
-        self,
-        layer_iterator,
-        optimizer="adam",
-        loss="sparse_categorical_crossentropy",
-        metrics=["accuracy"],
-        verbose=False,
-    ):
-        self.optimizer = optimizer
-        self.loss = loss
-        self.metrics = metrics
-        self.layers = []
-        self.verbose = verbose
-        self.accuracy = None
-        self.param_count = None
-
-        # Here we pull our ModelLayer objects from the iterator containing our architecture
-        for layer in layer_iterator:
-            self._addlayer(layer.name, layer.args)
-
-    def print(self):
-        for layer in self.layers:
-            layer.print()
-
-    def loadlayersfromjson(self, json):
-        if json:
-            for x in range(len(json.keys())):
-                layer = json.get(str(x))
-                name = layer.get("name")
-                args = layer.get("args")
-                self.addlayer(name, args)
-
-    def _addlayer(self, name, args):
-        if name == "Conv2D":
-            filters = args.get(Conv2DArgs.FILTERS.name, 1)
-            kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
-            strides = args.get(Conv2DArgs.STRIDES.name, (1, 1))
-            input_size = tuple(args.get(Conv2DArgs.INPUT_SIZE.name))
-            activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
-            dilation_rate = args.get(Conv2DArgs.DILATION_RATE.name, (1, 1))
-            padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.SAME.value)
-            self.layers.append(
-                Conv2DLayer(
-                    filters=filters,
-                    kernel_size=kernel_size,
-                    strides=strides,
-                    input_size=input_size,
-                    activation=activation,
-                    dilation_rate=dilation_rate,
-                    padding=padding,
-                )
-            )
-            if self.verbose:
-                print(
-                    "Created {} layer with {} filters, {} kernel size, {} stride size and {} input size".format(
-                        name, filters, kernel_size, strides, input_size
-                    )
-                )
-        elif name == "MaxPool2D" or name == "MaxPool3D":
-            pool_size = tuple(args.get(MaxPool2DArgs.POOL_SIZE.name, (1, 1)))
-            strides = args.get(MaxPool2DArgs.STRIDES.name, None)
-            if name == "MaxPool2D":
-                self.layers.append(MaxPool2DLayer(pool_size, strides))
-                if self.verbose:
-                    print(
-                        "Created {} layer with {} pool size and {} stride size".format(
-                            name, pool_size, strides
-                        )
-                    )
-            else:
-                self.layers.append(MaxPool3DLayer(pool_size, strides))
-                if self.verbose:
-                    print(
-                        "Created {} layer with {} pool size and {} stride size".format(
-                            name, pool_size, strides
-                        )
-                    )
-        elif name == "Reshape":
-            target_shape = args.get(ReshapeArgs.TARGET_SHAPE.name)
-            self.layers.append(ReshapeLayer(target_shape))
-            if self.verbose:
-                print(
-                    " Created {} layer with {} target shape".format(name, target_shape)
-                )
-        elif name == "Dense":
-            units = args.get(DenseArgs.UNITS.name)
-            activation = getattr(tf.nn, args.get(DenseArgs.ACTIVATION.name))
-            self.layers.append(DenseLayer(units, activation))
-            if self.verbose:
-                print(
-                    "Created {} layer with {} units and {} activation".format(
-                        name, units, activation
-                    )
-                )
-        elif name == "Flatten":
-            self.layers.append(FlattenLayer())
-            if self.verbose:
-                print("Create {} layer".format(name))
-        elif name == "Dropout":
-            rate = args.get(DropoutArgs.RATE.name)
-            self.layers.append(Dropout(rate))
-            if self.verbose:
-                print("Created {} layers with {} rate".format(name, rate))
-
-    def _gettfmodel(self):
-        model = keras.Sequential()
-        for layer in self.layers:
-            model.add(layer.getkeraslayer())
-        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
-        if self.verbose:
-            model.summary()
-        return model
-
-    def evaluate(
-        self, train_data, train_labels, test_data, test_labels, epochs, batch_size
-    ):
-        model = self._gettfmodel()
-        model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
-        self.param_count = int(
-            np.sum([keras.backend.count_params(p) for p in model.trainable_weights])
-        ) + int(
-            np.sum([keras.backend.count_params(p) for p in model.non_trainable_weights])
-        )
-        self.accuracy = model.evaluate(test_data, test_labels)[1] * 100
-
-        return self.param_count, self.accuracy
+from tensornasmutator import *
+import keras
 
 
 class ModelLayer:
@@ -246,20 +114,16 @@ class Conv2DLayer(ModelLayer):
         )
 
     def mutate(self):
-        mutate_param = random.randrange(0, Conv2DLayer.MUTATABLE_PARAMETERS)
-
-        if mutate_param == 0:
-            self._mutate_filters()
-        elif mutate_param == 1:
-            self._mutate_kernel_size()
-        elif mutate_param == 2:
-            self._mutate_strides()
-        elif mutate_param == 3:
-            self._mutate_padding()
-        elif mutate_param == 4:
-            self._mutate_dilation_rate()
-        elif mutate_param == 5:
-            self._mutate_activation()
+        random.choice(
+            [
+                self._mutate_activation,
+                self._mutate_filters,
+                self._mutate_kernel_size,
+                self._mutate_padding,
+                self._mutate_strides,
+                self._mutate_dilation_rate,
+            ]
+        )()
 
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:
@@ -283,49 +147,62 @@ class Conv2DLayer(ModelLayer):
 
 
 class MaxPool2DLayer(ModelLayer):
-    MUTATABLE_PARAMETERS = 1
+    MUTATABLE_PARAMETERS = 3
     MAX_POOL_SIZE = 7
+    MAX_STRIDE = 7
 
-    def __init__(self, pool_size, strides):
+    def __init__(self, pool_size, strides=(1, 1), padding=PaddingArgs.SAME.value):
         super().__init__("MaxPool2D")
         self.args[MaxPool2DArgs.POOL_SIZE.name] = pool_size
         self.args[MaxPool2DArgs.STRIDES.name] = strides
+        self.args[MaxPool2DArgs.PADDING.name] = padding
 
     def getkeraslayer(self):
         return keras.layers.MaxPool2D(
             pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
             strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+            padding=self.args.get(MaxPool2DArgs.PADDING.name),
         )
 
     def _pool_size(self):
         return self.args[MaxPool2DArgs.POOL_SIZE.name]
 
+    def _strides(self):
+        return self.args[MaxPool2DArgs.STRIDES.name]
+
+    def _padding(self):
+        return self.args[MaxPool2DArgs.PADDING.name]
+
     def _mutate_pool_size(self, operator=MutationOperators.SYNC_STEP):
         self.args[MaxPool2DArgs.POOL_SIZE.name] = mutate_tuple(
-            self._pool_size(), 1, MaxPool2DLayer.MAX_POOL_SIZE, operator
+            self._pool_size(), 1, MaxPool2DLayer.MAX_POOL_SIZE, operator=operator
         )
-        pass
+
+    def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
+        self.args[MaxPool2DArgs.STRIDES.name] = mutate_tuple(
+            self._strides(), 1, MaxPool2DLayer.MAX_STRIDE, operator=operator
+        )
 
     def mutate(self):
-        mutate_param = random.randrange(0, Conv2DLayer.MUTATABLE_PARAMETERS)
-
-        if mutate_param == 0:
-            self._mutate_pool_size()
+        random.choice([self._mutate_pool_size, self._mutate_strides])()
 
 
 class MaxPool3DLayer(MaxPool2DLayer):
-    def __init__(self, pool_size, strides):
+    def __init__(self, pool_size, strides, padding):
         super(MaxPool2DLayer, self).__init__("MaxPool3D")
-        super().__init__(pool_size, strides)
+        super().__init__(pool_size=pool_size, strides=strides, padding=padding)
 
     def getkeraslayer(self):
         return keras.layers.MaxPool3D(
             pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
             strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+            padding=self.args.get(MaxPool2DArgs.PADDING.name),
         )
 
 
 class ReshapeLayer(ModelLayer):
+    MUTATABLE_PARAMETERS = 0
+
     def __init__(self, target_shape):
         super().__init__("Reshape")
         self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
@@ -336,10 +213,15 @@ class ReshapeLayer(ModelLayer):
 
 
 class DenseLayer(ModelLayer):
+    MUTATABLE_PARAMETERS = 1
+
     def __init__(self, units, activation):
         super().__init__("Dense")
         self.args[DenseArgs.UNITS.name] = units
         self.args[DenseArgs.ACTIVATION.name] = activation
+
+    def _activation(self):
+        return self.args[DenseArgs.ACTIVATION.name]
 
     def getkeraslayer(self):
         return keras.layers.Dense(
@@ -347,8 +229,18 @@ class DenseLayer(ModelLayer):
             activation=self.args.get(DenseArgs.ACTIVATION.name),
         )
 
+    def _mutate_activation(self):
+        self.args[DenseArgs.ACTIVATION.name] = mutate_enum(
+            self._activation(), Activations
+        )
+
+    def mutate(self):
+        random.choice([self._mutate_activation])()
+
 
 class FlattenLayer(ModelLayer):
+    MUTATABLE_PARAMETERS = 0
+
     def __init__(self):
         super().__init__("Flatten")
 
@@ -357,10 +249,21 @@ class FlattenLayer(ModelLayer):
 
 
 class Dropout(ModelLayer):
+    MUTATABLE_PARAMETERS = 1
+
     def __init__(self, rate):
         super().__init__("Dropout")
         self.args[DropoutArgs.RATE.name] = rate
 
+    def _rate(self):
+        return self.args[DropoutArgs.RATE.name]
+
     def getkeraslayer(self):
         rate = self.args.get(DropoutArgs.RATE.name)
         return keras.layers.Dropout(rate)
+
+    def _mutate_rate(self):
+        self.args[DropoutArgs.RATE.name] = mutate_unit_interval(self._rate(), 0, 1)
+
+    def mutate(self):
+        random.choice([self._mutate_rate])()

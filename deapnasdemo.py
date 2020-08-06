@@ -1,4 +1,4 @@
-from tensornas import *
+from tensornasmodel import *
 from deap import base, creator, tools, algorithms
 import random
 import tensorflow as tf
@@ -6,7 +6,7 @@ import keras
 import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
-import nasmutator
+import tensornasmutator
 
 # Training MNIST data
 (
@@ -118,9 +118,10 @@ def main():
     for layer in ind.layers:
         if layer.name == "Conv2D":
             layer._mutate_kernel_size()
-            layer._mutate_strides(nasmutator.MutationOperators.SYNC_STEP)
+            layer._mutate_strides(tensornasmutator.MutationOperators.SYNC_STEP)
             layer._mutate_activation()
             layer._mutate_padding()
+            layer.mutate()
 
             model = layer.getkeraslayer()
             print("Hello")
