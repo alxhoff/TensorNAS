@@ -13,15 +13,8 @@ class LayerShape:
         else:
             return "?"
 
-
-class LayerInputShape(LayerShape):
-    def __init__(self, dimensions=None):
-        super().__init__(dimensions)
-
-
-class LayerOutputShape(LayerShape):
-    def __init__(self, dimensions=None):
-        super().__init__(dimensions)
+    def set(self, dimensions):
+        self.dimensions = dimensions
 
 
 class ModelLayer:
@@ -34,8 +27,8 @@ class ModelLayer:
         else:
             self.args = {}
 
-        self.inputshape = LayerInputShape()
-        self.outputshape = LayerOutputShape()
+        self.inputshape = LayerShape()
+        self.outputshape = LayerShape()
 
     def getname(self):
         return self.name
@@ -75,6 +68,9 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.PADDING.name] = padding
         self.args[Conv2DArgs.DILATION_RATE.name] = dilation_rate
         self.args[Conv2DArgs.ACTIVATION.name] = activation
+
+        self.inputshape.set(input_size)
+        self.calc_output_shape()
 
     def _filters(self):
         return self.args[Conv2DArgs.FILTERS.name]
@@ -149,9 +145,28 @@ class Conv2DLayer(ModelLayer):
             ]
         )()
 
+    def _valid_pad_output_shape(self, input, kernel, stride):
+        return ((input - kernel) // stride) + 1
+
+    def _same_pad_output_shape(self, input, stride):
+        return ((input - 1) // stride) + 1
+
     def calc_output_shape(self):
-        # TODO
-        pass
+        inp = self._input_size()
+        stri = self._strides()
+        ks = self._kernel_size()
+        fcount = self._filters()
+        if self._padding() == PaddingArgs.SAME.value:
+            X = self._same_pad_output_shape(inp[0], stri[0])
+            Y = self._same_pad_output_shape(inp[1], stri[1])
+            self.outputshape.set((X, Y, fcount))
+            return
+        elif self._padding() == PaddingArgs.VALID.value:
+            X = self._valid_pad_output_shape(inp[0], ks[0], stri[0])
+            Y = self._valid_pad_output_shape(inp[1], ks[1], stri[1])
+            self.outputshape.set((X, Y, fcount))
+            return
+        self.outputshape.set((0, 0, 0))
 
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:
