@@ -8,8 +8,6 @@ Model_Configuration1 = {
             Conv2DArgs.FILTERS.name: 28,
             Conv2DArgs.KERNEL_SIZE.name: [3, 3],
             Conv2DArgs.INPUT_SIZE.name: [28, 28, 1],
-            Conv2DArgs.STRIDES.name: [2, 3],
-            Conv2DArgs.PADDING.name: "valid",
         },
     },
     1: {"name": "MaxPool2D", "args": {MaxPool2DArgs.POOL_SIZE.name: [2, 2],}},

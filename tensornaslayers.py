@@ -256,8 +256,6 @@ class ReshapeLayer(ModelLayer):
 
 
 class DenseLayer(ModelLayer):
-    MUTATABLE_PARAMETERS = 1
-
     def __init__(self, units, activation):
         super().__init__("Dense")
         self.args[DenseArgs.UNITS.name] = units
@@ -265,6 +263,9 @@ class DenseLayer(ModelLayer):
 
     def _activation(self):
         return self.args[DenseArgs.ACTIVATION.name]
+
+    def _unit(self):
+        return self.args[DenseArgs.UNITS.name]
 
     def getkeraslayer(self):
         return keras.layers.Dense(
@@ -276,6 +277,21 @@ class DenseLayer(ModelLayer):
         self.args[DenseArgs.ACTIVATION.name] = mutate_enum(
             self._activation(), Activations
         )
+
+
+class HiddenDenseLayer(DenseLayer):
+    MAX_UNITS = 256
+    MUTATABLE_PARAMETERS = 2
+
+    def _mutate_units(self):
+        self.args[DenseArgs.UNITS.name] = mutate_int(self._unit(), 1, DenseLayer)
+
+    def mutate(self):
+        random.choice([self._mutate_activation, self._mutate_units])()
+
+
+class OutputDenseLayer(DenseLayer):
+    MUTATABLE_PARAMETERS = 1
 
     def mutate(self):
         random.choice([self._mutate_activation])()

@@ -82,8 +82,10 @@ creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
 
 toolbox = base.Toolbox()
 
+### Multithreading ###
 pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
+######
 
 toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
 
@@ -113,8 +115,6 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
-
-    ind = toolbox.individual_iterate()
 
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)

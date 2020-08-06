@@ -41,11 +41,11 @@ class TensorNASModel:
         if name == "Conv2D":
             filters = args.get(Conv2DArgs.FILTERS.name, 1)
             kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
-            strides = args.get(Conv2DArgs.STRIDES.name, (1, 1))
+            strides = tuple(args.get(Conv2DArgs.STRIDES.name, (1, 1)))
             input_size = tuple(args.get(Conv2DArgs.INPUT_SIZE.name))
             activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
-            dilation_rate = args.get(Conv2DArgs.DILATION_RATE.name, (1, 1))
-            padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.SAME.value)
+            dilation_rate = tuple(args.get(Conv2DArgs.DILATION_RATE.name, (1, 1)))
+            padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.VALID.value)
             self.layers.append(
                 Conv2DLayer(
                     filters=filters,
@@ -65,9 +65,9 @@ class TensorNASModel:
                 )
         elif name == "MaxPool2D" or name == "MaxPool3D":
             pool_size = tuple(args.get(MaxPool2DArgs.POOL_SIZE.name, (1, 1)))
-            strides = args.get(MaxPool2DArgs.STRIDES.name, None)
-            padding = args.get(MaxPool2DArgs.PADDING.name, PaddingArgs.SAME.value)
+            padding = args.get(MaxPool2DArgs.PADDING.name, PaddingArgs.VALID.value)
             if name == "MaxPool2D":
+                strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1)))
                 self.layers.append(
                     MaxPool2DLayer(
                         pool_size=pool_size, strides=strides, padding=padding
@@ -80,7 +80,12 @@ class TensorNASModel:
                         )
                     )
             else:
-                self.layers.append(MaxPool3DLayer(pool_size, strides, padding=padding))
+                strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1, 1)))
+                self.layers.append(
+                    MaxPool3DLayer(
+                        pool_size=pool_size, strides=strides, padding=padding
+                    )
+                )
                 if self.verbose:
                     print(
                         "Created {} layer with {} pool size and {} stride size".format(
@@ -119,7 +124,10 @@ class TensorNASModel:
     def _gettfmodel(self):
         model = keras.Sequential()
         for layer in self.layers:
-            model.add(layer.getkeraslayer())
+            try:
+                model.add(layer.getkeraslayer())
+            except Exception as e:
+                print("Hello")
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
             model.summary()
