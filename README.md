@@ -1,2 +1,3 @@
 # TensorNAS
-Network Architecture Search (NAS) for simple TensorFlow models aimed at TFLM (micro) applications
+Network Architecture Search (NAS) for simple TensorFlow models aimed at TFLM (micro) applications.
+This is modified read me.
