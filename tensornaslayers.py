@@ -3,6 +3,27 @@ from tensornasmutator import *
 import keras
 
 
+class LayerShape:
+    def __init__(self, dimensions=None):
+        self.dimensions = dimensions
+
+    def __str__(self):
+        if self.dimensions:
+            return str(self.dimensions)
+        else:
+            return "?"
+
+
+class LayerInputShape(LayerShape):
+    def __init__(self, dimensions=None):
+        super().__init__(dimensions)
+
+
+class LayerOutputShape(LayerShape):
+    def __init__(self, dimensions=None):
+        super().__init__(dimensions)
+
+
 class ModelLayer:
     "Common layer properties"
 
@@ -13,6 +34,9 @@ class ModelLayer:
         else:
             self.args = {}
 
+        self.inputshape = LayerInputShape()
+        self.outputshape = LayerOutputShape()
+
     def getname(self):
         return self.name
 
@@ -20,7 +44,7 @@ class ModelLayer:
         return self.args
 
     def print(self):
-        print("{} ->".format(self.name))
+        print("{} [{}]-> [{}]".format(self.name, self.inputshape, self.outputshape))
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
@@ -124,6 +148,10 @@ class Conv2DLayer(ModelLayer):
                 self._mutate_dilation_rate,
             ]
         )()
+
+    def calc_output_shape(self):
+        # TODO
+        pass
 
     def validate(self):
         if not 0 > self.args[Conv2DArgs.FILTERS.name]:

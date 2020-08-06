@@ -115,16 +115,6 @@ toolbox.decorate("mutate", history.decorator)
 def main():
 
     ind = toolbox.individual_iterate()
-    for layer in ind.layers:
-        if layer.name == "Conv2D":
-            layer._mutate_kernel_size()
-            layer._mutate_strides(tensornasmutator.MutationOperators.SYNC_STEP)
-            layer._mutate_activation()
-            layer._mutate_padding()
-            layer.mutate()
-
-            model = layer.getkeraslayer()
-            print("Hello")
 
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)
