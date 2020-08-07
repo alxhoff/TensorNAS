@@ -8,6 +8,7 @@ class TensorNASModel:
     def __init__(
         self,
         layer_iterator,
+        input_shape,
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
@@ -20,10 +21,16 @@ class TensorNASModel:
         self.verbose = verbose
         self.accuracy = None
         self.param_count = None
+        cur_input_shape = input_shape
+
+        # TODO here
 
         # Here we pull our ModelLayer objects from the iterator containing our architecture
         for layer in layer_iterator:
-            self._addlayer(layer.name, layer.args)
+            self._addlayer(
+                name=layer.name, args=layer.args, input_shape=cur_input_shape
+            )
+            cur_input_shape = self.layers[-1].calc_output_shape()
 
     def print(self):
         for layer in self.layers:
@@ -37,7 +44,11 @@ class TensorNASModel:
                 args = layer.get("args")
                 self.addlayer(name, args)
 
-    def _addlayer(self, name, args):
+    # Input shape is given to add layer such that adding layers can check if the new layer can handle the output
+    # shape of the previous layer. The shape required is tracked as the TensorNASModel builds the layers
+    def _addlayer(self, name, args, input_shape=None):
+        new_layer = None
+
         if name == "Conv2D":
             filters = args.get(Conv2DArgs.FILTERS.name, 1)
             kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
@@ -46,33 +57,33 @@ class TensorNASModel:
             activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
             dilation_rate = tuple(args.get(Conv2DArgs.DILATION_RATE.name, (1, 1)))
             padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.VALID.value)
-            self.layers.append(
-                Conv2DLayer(
-                    filters=filters,
-                    kernel_size=kernel_size,
-                    strides=strides,
-                    input_size=input_size,
-                    activation=activation,
-                    dilation_rate=dilation_rate,
-                    padding=padding,
-                )
+
+            new_layer = Conv2DLayer(
+                filters=filters,
+                kernel_size=kernel_size,
+                strides=strides,
+                input_shape=input_size,
+                activation=activation,
+                dilation_rate=dilation_rate,
+                padding=padding,
             )
+            self.layers.append(new_layer)
             if self.verbose:
                 print(
                     "Created {} layer with {} filters, {} kernel size, {} stride size and {} input size".format(
                         name, filters, kernel_size, strides, input_size
                     )
                 )
+
         elif name == "MaxPool2D" or name == "MaxPool3D":
             pool_size = tuple(args.get(MaxPool2DArgs.POOL_SIZE.name, (1, 1)))
             padding = args.get(MaxPool2DArgs.PADDING.name, PaddingArgs.VALID.value)
             if name == "MaxPool2D":
                 strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1)))
-                self.layers.append(
-                    MaxPool2DLayer(
-                        pool_size=pool_size, strides=strides, padding=padding
-                    )
+                new_layer = MaxPool2DLayer(
+                    pool_size=pool_size, strides=strides, padding=padding
                 )
+                self.layers.append(new_layer)
                 if self.verbose:
                     print(
                         "Created {} layer with {} pool size and {} stride size".format(
@@ -81,11 +92,10 @@ class TensorNASModel:
                     )
             else:
                 strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1, 1)))
-                self.layers.append(
-                    MaxPool3DLayer(
-                        pool_size=pool_size, strides=strides, padding=padding
-                    )
+                new_layer = MaxPool3DLayer(
+                    pool_size=pool_size, strides=strides, padding=padding
                 )
+                self.layers.append(new_layer)
                 if self.verbose:
                     print(
                         "Created {} layer with {} pool size and {} stride size".format(
@@ -94,7 +104,8 @@ class TensorNASModel:
                     )
         elif name == "Reshape":
             target_shape = args.get(ReshapeArgs.TARGET_SHAPE.name)
-            self.layers.append(ReshapeLayer(target_shape))
+            new_layer = ReshapeLayer(target_shape)
+            self.layers.append(new_layer)
             if self.verbose:
                 print(
                     " Created {} layer with {} target shape".format(name, target_shape)
@@ -104,7 +115,9 @@ class TensorNASModel:
             activation = getattr(
                 tf.nn, args.get(DenseArgs.ACTIVATION.name, Activations.LINEAR.value)
             )
-            self.layers.append(DenseLayer(units, activation))
+
+            new_layer = DenseLayer(units=units, activation=activation)
+            self.layers.append(new_layer)
             if self.verbose:
                 print(
                     "Created {} layer with {} units and {} activation".format(
@@ -112,7 +125,8 @@ class TensorNASModel:
                     )
                 )
         elif name == "Flatten":
-            self.layers.append(FlattenLayer())
+            new_layer = FlattenLayer()
+            self.layers.append()
             if self.verbose:
                 print("Create {} layer".format(name))
         elif name == "Dropout":
@@ -120,6 +134,8 @@ class TensorNASModel:
             self.layers.append(Dropout(rate))
             if self.verbose:
                 print("Created {} layers with {} rate".format(name, rate))
+
+        return new_layer.calc_output_shape()
 
     def _gettfmodel(self):
         model = keras.Sequential()
