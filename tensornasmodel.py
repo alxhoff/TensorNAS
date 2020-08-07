@@ -33,7 +33,7 @@ class TensorNASModel:
         self.print()
 
     def print(self):
-        for x,layer in enumerate(self.layers):
+        for x, layer in enumerate(self.layers):
             print("-------------------------------------------")
             print("Layer #{}".format(x))
             layer.print()
@@ -152,7 +152,7 @@ class TensorNASModel:
         return model
 
     def validate(self):
-        #TODO
+        # TODO
         pass
 
     def evaluate(
