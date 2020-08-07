@@ -52,6 +52,12 @@ class ModelLayer:
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
+    # The use of DEAP to instantiate individuals and in turm Models with ModelLayers means that the use
+    # of abstract classes (using the abs package) cannot be done. As such the following methods are "abstract"
+    # and should be implemented by all layer sub-classes.
+    def repair(self):
+        pass
+
     def mutate(self):
         pass
 
@@ -342,8 +348,8 @@ class ReshapeLayer(ModelLayer):
     def __init__(self, input_shape, target_shape):
         super().__init__("Reshape")
         self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
-        self.inputshape.set(input_shape)
-        self.outputshape = self.calcoutputshape()
+
+        self.outputshape.set(self.calcoutputshape())
 
     def _target_shape(self):
         return self.args[ReshapeArgs.TARGET_SHAPE.name]
@@ -352,6 +358,9 @@ class ReshapeLayer(ModelLayer):
         self.args[ReshapeArgs.TARGET_SHAPE.name] = mutate_dimension(
             self._target_shape()
         )
+
+    def repair(self):
+        pass
 
     def mutate(self):
         self._mutate_target_shape()

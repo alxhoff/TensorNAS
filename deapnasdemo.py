@@ -85,8 +85,8 @@ creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
 toolbox = base.Toolbox()
 
 ### Multithreading ###
-# pool = multiprocessing.Pool()
-# toolbox.register("map", pool.map)
+pool = multiprocessing.Pool()
+toolbox.register("map", pool.map)
 ######
 
 toolbox.register("attr_nas_model_itr", get_demo_model_iterator)

@@ -104,8 +104,8 @@ class TensorNASModel:
                         )
                     )
         elif name == "Reshape":
-            target_shape = args.get(ReshapeArgs.TARGET_SHAPE.name)
-            new_layer = ReshapeLayer(target_shape)
+            target_shape = tuple(args.get(ReshapeArgs.TARGET_SHAPE.name, input_shape))
+            new_layer = ReshapeLayer(input_shape=input_shape, target_shape=target_shape)
             if self.verbose:
                 print(
                     " Created {} layer with {} target shape".format(name, target_shape)

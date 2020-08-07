@@ -18,13 +18,14 @@ Model_Configuration1 = {
             MaxPool2DArgs.PADDING.name: "same",
         },
     },
-    2: {"name": "Flatten"},
-    3: {
+    2: {"name": "Reshape", "args": {ReshapeArgs.TARGET_SHAPE.name: [169, 28]}},
+    3: {"name": "Flatten"},
+    4: {
         "name": "Dense",
         "args": {DenseArgs.UNITS.name: 128, DenseArgs.ACTIVATION.name: "relu"},
     },
-    4: {"name": "Dropout", "args": {DropoutArgs.RATE.name: 0.2}},
-    5: {
+    5: {"name": "Dropout", "args": {DropoutArgs.RATE.name: 0.2}},
+    6: {
         "name": "Dense",
         "args": {DenseArgs.UNITS.name: 10, DenseArgs.ACTIVATION.name: "softmax"},
     },
