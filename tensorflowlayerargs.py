@@ -26,7 +26,7 @@ class Conv2DArgs(Enum):
     FILTERS = auto()
     KERNEL_SIZE = auto()
     STRIDES = auto()
-    INPUT_SIZE = auto()
+    INPUT_SHAPE = auto()
     PADDING = auto()
     DILATION_RATE = auto()
     ACTIVATION = auto()
