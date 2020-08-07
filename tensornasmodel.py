@@ -8,7 +8,6 @@ class TensorNASModel:
     def __init__(
         self,
         layer_iterator,
-        input_shape,
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
@@ -21,16 +20,15 @@ class TensorNASModel:
         self.verbose = verbose
         self.accuracy = None
         self.param_count = None
-        cur_input_shape = input_shape
-
-        # TODO here
+        cur_input_shape = None
 
         # Here we pull our ModelLayer objects from the iterator containing our architecture
         for layer in layer_iterator:
-            self._addlayer(
+            if not cur_input_shape:
+                cur_input_shape = layer.args.get("INPUT_SHAPE")
+            cur_input_shape = self._addlayer(
                 name=layer.name, args=layer.args, input_shape=cur_input_shape
             )
-            cur_input_shape = self.layers[-1].calc_output_shape()
 
     def print(self):
         for layer in self.layers:
@@ -53,21 +51,20 @@ class TensorNASModel:
             filters = args.get(Conv2DArgs.FILTERS.name, 1)
             kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
             strides = tuple(args.get(Conv2DArgs.STRIDES.name, (1, 1)))
-            input_size = tuple(args.get(Conv2DArgs.INPUT_SIZE.name))
+            input_size = tuple(args.get(Conv2DArgs.INPUT_SHAPE.name, input_shape))
             activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
             dilation_rate = tuple(args.get(Conv2DArgs.DILATION_RATE.name, (1, 1)))
             padding = args.get(Conv2DArgs.PADDING.name, PaddingArgs.VALID.value)
 
             new_layer = Conv2DLayer(
+                input_shape=input_size,
                 filters=filters,
                 kernel_size=kernel_size,
                 strides=strides,
-                input_shape=input_size,
                 activation=activation,
                 dilation_rate=dilation_rate,
                 padding=padding,
             )
-            self.layers.append(new_layer)
             if self.verbose:
                 print(
                     "Created {} layer with {} filters, {} kernel size, {} stride size and {} input size".format(
@@ -81,9 +78,11 @@ class TensorNASModel:
             if name == "MaxPool2D":
                 strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1)))
                 new_layer = MaxPool2DLayer(
-                    pool_size=pool_size, strides=strides, padding=padding
+                    input_shape=input_shape,
+                    pool_size=pool_size,
+                    strides=strides,
+                    padding=padding,
                 )
-                self.layers.append(new_layer)
                 if self.verbose:
                     print(
                         "Created {} layer with {} pool size and {} stride size".format(
@@ -93,9 +92,11 @@ class TensorNASModel:
             else:
                 strides = tuple(args.get(MaxPool2DArgs.STRIDES.name, (1, 1, 1)))
                 new_layer = MaxPool3DLayer(
-                    pool_size=pool_size, strides=strides, padding=padding
+                    input_shape=input_shape,
+                    pool_size=pool_size,
+                    strides=strides,
+                    padding=padding,
                 )
-                self.layers.append(new_layer)
                 if self.verbose:
                     print(
                         "Created {} layer with {} pool size and {} stride size".format(
@@ -105,7 +106,6 @@ class TensorNASModel:
         elif name == "Reshape":
             target_shape = args.get(ReshapeArgs.TARGET_SHAPE.name)
             new_layer = ReshapeLayer(target_shape)
-            self.layers.append(new_layer)
             if self.verbose:
                 print(
                     " Created {} layer with {} target shape".format(name, target_shape)
@@ -116,8 +116,9 @@ class TensorNASModel:
                 tf.nn, args.get(DenseArgs.ACTIVATION.name, Activations.LINEAR.value)
             )
 
-            new_layer = DenseLayer(units=units, activation=activation)
-            self.layers.append(new_layer)
+            new_layer = DenseLayer(
+                input_shape=input_shape, units=units, activation=activation
+            )
             if self.verbose:
                 print(
                     "Created {} layer with {} units and {} activation".format(
@@ -125,17 +126,17 @@ class TensorNASModel:
                     )
                 )
         elif name == "Flatten":
-            new_layer = FlattenLayer()
-            self.layers.append()
+            new_layer = FlattenLayer(input_shape=input_shape)
             if self.verbose:
                 print("Create {} layer".format(name))
         elif name == "Dropout":
             rate = args.get(DropoutArgs.RATE.name)
-            self.layers.append(Dropout(rate))
+            new_layer = DropoutLayer(input_shape=input_shape, rate=rate)
             if self.verbose:
                 print("Created {} layers with {} rate".format(name, rate))
 
-        return new_layer.calc_output_shape()
+        self.layers.append(new_layer)
+        return new_layer.outputshape.get()
 
     def _gettfmodel(self):
         model = keras.Sequential()

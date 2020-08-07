@@ -35,7 +35,7 @@ batch_size = 600
 # Demo hard-coded models
 demomodels.generate_demo_model_jsons()
 demo_models = demomodels.generate_demo_model_array()
-demo_model_count = 2
+demo_model_count = 1
 
 # Functions used for EA demo
 
@@ -85,8 +85,8 @@ creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
 toolbox = base.Toolbox()
 
 ### Multithreading ###
-pool = multiprocessing.Pool()
-toolbox.register("map", pool.map)
+# pool = multiprocessing.Pool()
+# toolbox.register("map", pool.map)
 ######
 
 toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
@@ -117,9 +117,6 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
-
-    test_dim = [4, 8, 10]
-    dim_mut = tensornasmutator.mutate_dimension(test_dim)
 
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)

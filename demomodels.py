@@ -7,10 +7,17 @@ Model_Configuration1 = {
         "args": {
             Conv2DArgs.FILTERS.name: 28,
             Conv2DArgs.KERNEL_SIZE.name: [3, 3],
-            Conv2DArgs.INPUT_SIZE.name: [28, 28, 1],
+            Conv2DArgs.INPUT_SHAPE.name: [28, 28, 1],
         },
     },
-    1: {"name": "MaxPool2D", "args": {MaxPool2DArgs.POOL_SIZE.name: [2, 2],}},
+    1: {
+        "name": "MaxPool2D",
+        "args": {
+            MaxPool2DArgs.POOL_SIZE.name: [2, 2],
+            MaxPool2DArgs.STRIDES.name: [2, 2],
+            MaxPool2DArgs.PADDING.name: "same",
+        },
+    },
     2: {"name": "Flatten"},
     3: {
         "name": "Dense",
@@ -30,7 +37,7 @@ Model_Configuration2 = {
             Conv2DArgs.FILTERS.name: 12,
             Conv2DArgs.KERNEL_SIZE.name: [3, 3],
             Conv2DArgs.STRIDES.name: [2, 2],
-            Conv2DArgs.INPUT_SIZE.name: [28, 28, 1],
+            Conv2DArgs.INPUT_SHAPE.name: [28, 28, 1],
         },
     },
     1: {"name": "Reshape", "args": {ReshapeArgs.TARGET_SHAPE.name: [13, 13, 12, 1]}},

@@ -1,7 +1,6 @@
 from tensorflowlayerargs import *
 from tensornasmutator import *
 import keras
-from abc import ABC, abstractmethod
 from tensornasmutator import dimension_mag
 
 
@@ -27,7 +26,7 @@ class LayerShape:
         return self.dimensions
 
 
-class ModelLayer(ABC):
+class ModelLayer:
     "Common layer properties"
 
     def __init__(self, name, args=None, input_shape=(0, 0, 0)):
@@ -49,23 +48,19 @@ class ModelLayer(ABC):
         return self.args
 
     def print(self):
-        print("{} [{}]-> [{}]".format(self.name, self.inputshape, self.outputshape))
+        print("{} {}-> {}".format(self.name, self.inputshape, self.outputshape))
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
-    @abstractmethod
     def mutate(self):
         pass
 
-    @abstractmethod
     def validate(self):
         pass
 
-    @abstractmethod
     def calcoutputshape(self):
         pass
 
-    @abstractmethod
     def getkeraslayer(self):
         pass
 
@@ -92,7 +87,7 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.FILTERS.name] = filters
         self.args[Conv2DArgs.KERNEL_SIZE.name] = kernel_size
         self.args[Conv2DArgs.STRIDES.name] = strides
-        self.args[Conv2DArgs.INPUT_SIZE.name] = input_shape
+        self.args[Conv2DArgs.INPUT_SHAPE.name] = input_shape
         self.args[Conv2DArgs.PADDING.name] = padding
         self.args[Conv2DArgs.DILATION_RATE.name] = dilation_rate
         self.args[Conv2DArgs.ACTIVATION.name] = activation
@@ -109,7 +104,7 @@ class Conv2DLayer(ModelLayer):
         return self.args[Conv2DArgs.STRIDES.name]
 
     def _input_size(self):
-        return self.args[Conv2DArgs.INPUT_SIZE.name]
+        return self.args[Conv2DArgs.INPUT_SHAPE.name]
 
     def _padding(self):
         return self.args[Conv2DArgs.PADDING.name]
@@ -160,6 +155,14 @@ class Conv2DLayer(ModelLayer):
             self._activation(), Activations
         )
 
+    @staticmethod
+    def _valid_pad_output_shape(input, kernel, stride):
+        return ((input - kernel) // stride) + 1
+
+    @staticmethod
+    def _same_pad_output_shape(input, stride):
+        return ((input - 1) // stride) + 1
+
     def mutate(self):
         random.choice(
             [
@@ -172,13 +175,17 @@ class Conv2DLayer(ModelLayer):
             ]
         )()
 
-    @staticmethod
-    def _valid_pad_output_shape(input, kernel, stride):
-        return ((input - kernel) // stride) + 1
+    def validate(self):
+        if not self._filters() > 0:
+            return False
 
-    @staticmethod
-    def _same_pad_output_shape(input, stride):
-        return ((input - 1) // stride) + 1
+        if not self._single_stride() and not self._single_dilation_rate():
+            return False
+
+        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
+            return False
+
+        return True
 
     def calcoutputshape(self):
         inp = self._input_size()
@@ -195,24 +202,12 @@ class Conv2DLayer(ModelLayer):
             return X, Y, fcount
         return 0, 0, 0
 
-    def validate(self):
-        if not self._filters() > 0:
-            return False
-
-        if not self._single_stride() and not self._single_dilation_rate():
-            return False
-
-        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
-            return False
-
-        return True
-
     def getkeraslayer(self):
         return keras.layers.Conv2D(
             self.args.get(Conv2DArgs.FILTERS.name),
             kernel_size=self.args.get(Conv2DArgs.KERNEL_SIZE.name),
             strides=self.args.get(Conv2DArgs.STRIDES.name),
-            input_shape=self.args.get(Conv2DArgs.INPUT_SIZE.name),
+            input_shape=self.args.get(Conv2DArgs.INPUT_SHAPE.name),
             activation=self.args.get(Conv2DArgs.ACTIVATION.name),
             padding=self.args.get(Conv2DArgs.PADDING.name),
             dilation_rate=self.args.get(Conv2DArgs.DILATION_RATE.name),
@@ -239,13 +234,6 @@ class MaxPool2DLayer(ModelLayer):
 
         self.outputshape.set(self.calcoutputshape())
 
-    def getkeraslayer(self):
-        return keras.layers.MaxPool2D(
-            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
-            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
-            padding=self.args.get(MaxPool2DArgs.PADDING.name),
-        )
-
     def _pool_size(self):
         return self.args[MaxPool2DArgs.POOL_SIZE.name]
 
@@ -270,21 +258,10 @@ class MaxPool2DLayer(ModelLayer):
         return ((input - pool) // stride) + 1
 
     @staticmethod
-    def _same_pad_output_shape(input, stride):
-        return (input // stride) + 1
-
-    def calcoutputshape(self):
-        inp = self._input_size()
-        stri = self._strides()
-        if self._padding() == PaddingArgs.SAME.value:
-            X = self._same_pad_output_shape(inp[0], stri[1])
-            Y = self._same_pad_output_shape(inp[0], stri[1])
-            return X, Y, inp[2]
-        elif self._padding() == PaddingArgs.VALID.value:
-            X = self._valid_pad_output_shape(inp[0], stri[1])
-            Y = self._valid_pad_output_shape(inp[0], stri[1])
-            return X, Y, inp[2]
-        return 0, 0, 0
+    def _same_pad_output_shape(input, pool, stride):
+        return MaxPool2DLayer._valid_pad_output_shape(input, pool, stride) + (
+            1 if ((input - pool) % stride) else 0
+        )
 
     def mutate(self):
         random.choice([self._mutate_pool_size, self._mutate_strides])()
@@ -295,6 +272,27 @@ class MaxPool2DLayer(ModelLayer):
         if not self._pool_size()[0] > 0 or not self._pool_size()[1] > 0:
             return False
         return True
+
+    def calcoutputshape(self):
+        inp = self.inputshape.get()
+        pool = self._pool_size()
+        stri = self._strides()
+        if self._padding() == PaddingArgs.SAME.value:
+            x = self._same_pad_output_shape(inp[0], pool[0], stri[0])
+            y = self._same_pad_output_shape(inp[1], pool[1], stri[1])
+            return x, y, inp[2]
+        elif self._padding() == PaddingArgs.VALID.value:
+            x = self._valid_pad_output_shape(inp[0], pool[0], stri[0])
+            y = self._valid_pad_output_shape(inp[1], pool[1], stri[1])
+            return x, y, inp[2]
+        return 0, 0, 0
+
+    def getkeraslayer(self):
+        return keras.layers.MaxPool2D(
+            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
+            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+            padding=self.args.get(MaxPool2DArgs.PADDING.name),
+        )
 
 
 class MaxPool3DLayer(MaxPool2DLayer):
@@ -307,12 +305,9 @@ class MaxPool3DLayer(MaxPool2DLayer):
             name="MaxPool2D",
         )
 
-    def getkeraslayer(self):
-        return keras.layers.MaxPool3D(
-            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
-            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
-            padding=self.args.get(MaxPool2DArgs.PADDING.name),
-        )
+    def mutate(self):
+        # TODO
+        pass
 
     def validate(self):
         if (
@@ -333,6 +328,13 @@ class MaxPool3DLayer(MaxPool2DLayer):
         # TODO
         return self.inputshape
 
+    def getkeraslayer(self):
+        return keras.layers.MaxPool3D(
+            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
+            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+            padding=self.args.get(MaxPool2DArgs.PADDING.name),
+        )
+
 
 class ReshapeLayer(ModelLayer):
     MUTATABLE_PARAMETERS = 0
@@ -346,12 +348,13 @@ class ReshapeLayer(ModelLayer):
     def _target_shape(self):
         return self.args[ReshapeArgs.TARGET_SHAPE.name]
 
-    def getkeraslayer(self):
-        target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.name)
-        return keras.layers.Reshape(target_shape)
+    def _mutate_target_shape(self):
+        self.args[ReshapeArgs.TARGET_SHAPE.name] = mutate_dimension(
+            self._target_shape()
+        )
 
-    def calcoutputshape(self):
-        return self._target_shape()
+    def mutate(self):
+        self._mutate_target_shape()
 
     def validate(self, output_shape=None):
         input_mag = dimension_mag(list(self.inputshape.get()))
@@ -363,13 +366,12 @@ class ReshapeLayer(ModelLayer):
             return False
         return True
 
-    def _mutate_target_shape(self):
-        self.args[ReshapeArgs.TARGET_SHAPE.name] = mutate_dimension(
-            self._target_shape()
-        )
+    def calcoutputshape(self):
+        return self._target_shape()
 
-    def mutate(self):
-        self._mutate_target_shape()
+    def getkeraslayer(self):
+        target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.name)
+        return keras.layers.Reshape(target_shape)
 
 
 class DenseLayer(ModelLayer):
@@ -383,31 +385,32 @@ class DenseLayer(ModelLayer):
     def _activation(self):
         return self.args[DenseArgs.ACTIVATION.name]
 
-    def _unit(self):
+    def _units(self):
         return self.args[DenseArgs.UNITS.name]
-
-    def getkeraslayer(self):
-        return keras.layers.Dense(
-            self.args.get(DenseArgs.UNITS.name),
-            activation=self.args.get(DenseArgs.ACTIVATION.name),
-        )
 
     def _mutate_activation(self):
         self.args[DenseArgs.ACTIVATION.name] = mutate_enum(
             self._activation(), Activations
         )
 
-    def calcoutputshape(self):
-        # TODO
-        return
+    def mutate(self):
+        random.choice([self._mutate_activation])()
 
     def validate(self):
-        # TODO
+        # Dense layers take in a 1D tensor array, ie. previous layer should be a flatten layer
+        if not len(self.inputshape.get()) == 1:
+            return False
+
         return True
 
-    def mutate(self):
-        # TODO
-        return True
+    def calcoutputshape(self):
+        return (self._units(),)
+
+    def getkeraslayer(self):
+        return keras.layers.Dense(
+            self.args.get(DenseArgs.UNITS.name),
+            activation=self.args.get(DenseArgs.ACTIVATION.name),
+        )
 
 
 class HiddenDenseLayer(DenseLayer):
@@ -418,10 +421,21 @@ class HiddenDenseLayer(DenseLayer):
         super().__init__(input_shape=input_shape, units=units, activation=activation)
 
     def _mutate_units(self):
-        self.args[DenseArgs.UNITS.name] = mutate_int(self._unit(), 1, DenseLayer)
+        self.args[DenseArgs.UNITS.name] = mutate_int(
+            self._unit(), 1, HiddenDenseLayer.MAX_UNITS
+        )
 
     def mutate(self):
         random.choice([self._mutate_activation, self._mutate_units])()
+
+    def validate(self):
+        super().mutate()
+
+    def calcoutputshape(self):
+        super().calcoutputshape()
+
+    def getkeraslayer(self):
+        super().getkeraslayer()
 
 
 class OutputDenseLayer(DenseLayer):
@@ -431,7 +445,16 @@ class OutputDenseLayer(DenseLayer):
         super().__init__(input_shape=input_shape, units=units, activation=activation)
 
     def mutate(self):
-        random.choice([self._mutate_activation])()
+        super().mutate()
+
+    def validate(self):
+        super().mutate()
+
+    def calcoutputshape(self):
+        super().calcoutputshape()
+
+    def getkeraslayer(self):
+        super().getkeraslayer()
 
 
 class FlattenLayer(ModelLayer):
@@ -441,47 +464,47 @@ class FlattenLayer(ModelLayer):
         super().__init__("Flatten", input_shape=input_shape)
         self.outputshape.set(self.calcoutputshape())
 
-    def getkeraslayer(self):
-        return keras.layers.Flatten()
+    def mutate(self):
+        pass
 
     def validate(self):
-        # TODO
-        return True
-
-    def mutate(self):
-        # TODO
         return True
 
     def calcoutputshape(self):
-        # TODO
-        return True
+        return (dimension_mag(self.inputshape.get()),)
+
+    def getkeraslayer(self):
+        return keras.layers.Flatten()
 
 
-class Dropout(ModelLayer):
+class DropoutLayer(ModelLayer):
     MUTATABLE_PARAMETERS = 1
+    MAX_RATE = 0.5
 
     def __init__(self, input_shape, rate):
         super().__init__("Dropout", input_shape=input_shape)
         self.args[DropoutArgs.RATE.name] = rate
         self.inputshape.set(input_shape)
 
+        self.outputshape.set(self.calcoutputshape())
+
     def _rate(self):
         return self.args[DropoutArgs.RATE.name]
 
-    def getkeraslayer(self):
-        rate = self.args.get(DropoutArgs.RATE.name)
-        return keras.layers.Dropout(rate)
-
     def _mutate_rate(self):
-        self.args[DropoutArgs.RATE.name] = mutate_unit_interval(self._rate(), 0, 1)
+        self.args[DropoutArgs.RATE.name] = mutate_unit_interval(
+            self._rate(), 0, DropoutLayer.MAX_RATE
+        )
 
     def mutate(self):
         random.choice([self._mutate_rate])()
 
     def validate(self):
-        # TODO
         return True
 
     def calcoutputshape(self):
-        # TODO
-        return True
+        return self.inputshape.get()
+
+    def getkeraslayer(self):
+        rate = self.args.get(DropoutArgs.RATE.name)
+        return keras.layers.Dropout(rate)
