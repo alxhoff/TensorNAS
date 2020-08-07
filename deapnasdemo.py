@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
 import tensornasmutator
+import math
+from tensornasmutator import *
 
 # Training MNIST data
 (
@@ -115,6 +117,9 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
+
+    test_dim = [4, 8, 10]
+    dim_mut = tensornasmutator.mutate_dimension(test_dim)
 
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)

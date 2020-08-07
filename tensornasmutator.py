@@ -1,5 +1,7 @@
 from enum import Enum, auto
 import random
+import math
+from functools import reduce
 
 
 class MutationOperators(Enum):
@@ -8,6 +10,41 @@ class MutationOperators(Enum):
 
     SYNC_STEP = auto()  # Both values in the tuple are mutated together
     SYNC_RANDOM = auto()
+
+
+def dimension_mag(dimension):
+    return reduce((lambda x, y: x * y), dimension)
+
+
+def _find_prime_factors(product):
+    primeFactors = []
+    while not product % 2:
+        primeFactors.append(2)
+        product //= 2
+    for i in range(3, int(math.sqrt(product))):
+        while not product % i:
+            primeFactors.append(i)
+            product //= i
+    if product > 2:
+        primeFactors.append(product)
+    return primeFactors
+
+
+def _generate_permutations(product, item_count):
+    prime_factors = _find_prime_factors(product)
+    while len(prime_factors) > item_count:
+        index = random.randrange(0, len(prime_factors) - 1)
+        prime_factors[index : index + 2] = [
+            prime_factors[index] * prime_factors[index + 1]
+        ]
+    return prime_factors
+
+
+def mutate_dimension(intput_dim):
+    while True:
+        new_dim = _generate_permutations(dimension_mag(intput_dim), len(intput_dim))
+        if new_dim != intput_dim:
+            return new_dim
 
 
 def mutate_int(val, min_bound, max_bound, operator=MutationOperators.STEP):

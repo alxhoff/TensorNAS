@@ -2,6 +2,7 @@ from tensorflowlayerargs import *
 from tensornasmutator import *
 import keras
 from abc import ABC, abstractmethod
+from tensornasmutator import dimension_mag
 
 
 class LayerShape:
@@ -14,8 +15,16 @@ class LayerShape:
         else:
             return "?"
 
+    def __eq__(self, other):
+        if isinstance(other, LayerShape):
+            return self.dimensions == other.dimensions
+        return False
+
     def set(self, dimensions):
         self.dimensions = dimensions
+
+    def get(self):
+        return self.dimensions
 
 
 class ModelLayer(ABC):
@@ -187,10 +196,13 @@ class Conv2DLayer(ModelLayer):
         return 0, 0, 0
 
     def validate(self):
-        if not 0 > self.args[Conv2DArgs.FILTERS.name]:
+        if not self._filters() > 0:
             return False
 
         if not self._single_stride() and not self._single_dilation_rate():
+            return False
+
+        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
             return False
 
         return True
@@ -278,6 +290,10 @@ class MaxPool2DLayer(ModelLayer):
         random.choice([self._mutate_pool_size, self._mutate_strides])()
 
     def validate(self):
+        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
+            return False
+        if not self._pool_size()[0] > 0 or not self._pool_size()[1] > 0:
+            return False
         return True
 
 
@@ -299,6 +315,18 @@ class MaxPool3DLayer(MaxPool2DLayer):
         )
 
     def validate(self):
+        if (
+            not self._strides()[0] > 0
+            or not self._strides()[1] > 0
+            or not self._strides()[2] > 0
+        ):
+            return False
+        if (
+            not self._pool_size()[0] > 0
+            or not self._pool_size()[1] > 0
+            or not self._pool_size()[2] > 0
+        ):
+            return False
         return True
 
     def calcoutputshape(self):
@@ -315,21 +343,33 @@ class ReshapeLayer(ModelLayer):
         self.inputshape.set(input_shape)
         self.outputshape = self.calcoutputshape()
 
+    def _target_shape(self):
+        return self.args[ReshapeArgs.TARGET_SHAPE.name]
+
     def getkeraslayer(self):
         target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.name)
         return keras.layers.Reshape(target_shape)
 
     def calcoutputshape(self):
-        # TODO
-        return
+        return self._target_shape()
 
-    def validate(self):
-        # TODO
+    def validate(self, output_shape=None):
+        input_mag = dimension_mag(list(self.inputshape.get()))
+        if not output_shape:
+            output_mag = dimension_mag(list(self.calcoutputshape()))
+        else:
+            output_mag = dimension_mag(list(output_shape))
+        if not input_mag == output_mag:
+            return False
         return True
+
+    def _mutate_target_shape(self):
+        self.args[ReshapeArgs.TARGET_SHAPE.name] = mutate_dimension(
+            self._target_shape()
+        )
 
     def mutate(self):
-        # TODO
-        return True
+        self._mutate_target_shape()
 
 
 class DenseLayer(ModelLayer):

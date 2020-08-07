@@ -140,10 +140,7 @@ class TensorNASModel:
     def _gettfmodel(self):
         model = keras.Sequential()
         for layer in self.layers:
-            try:
-                model.add(layer.getkeraslayer())
-            except Exception as e:
-                print("Hello")
+            model.add(layer.getkeraslayer())
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
             model.summary()
