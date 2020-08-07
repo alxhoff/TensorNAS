@@ -30,8 +30,12 @@ class TensorNASModel:
                 name=layer.name, args=layer.args, input_shape=cur_input_shape
             )
 
+        self.print()
+
     def print(self):
-        for layer in self.layers:
+        for x,layer in enumerate(self.layers):
+            print("-------------------------------------------")
+            print("Layer #{}".format(x))
             layer.print()
 
     def loadlayersfromjson(self, json):
@@ -146,6 +150,10 @@ class TensorNASModel:
         if self.verbose:
             model.summary()
         return model
+
+    def validate(self):
+        #TODO
+        pass
 
     def evaluate(
         self, train_data, train_labels, test_data, test_labels, epochs, batch_size

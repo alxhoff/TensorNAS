@@ -18,7 +18,7 @@ Model_Configuration1 = {
             MaxPool2DArgs.PADDING.name: "same",
         },
     },
-    2: {"name": "Reshape", "args": {ReshapeArgs.TARGET_SHAPE.name: [168, 28]}},
+    2: {"name": "Reshape", "args": {ReshapeArgs.TARGET_SHAPE.name: [169, 28]}},
     3: {"name": "Flatten"},
     4: {
         "name": "Dense",
