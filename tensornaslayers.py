@@ -46,11 +46,12 @@ class ModelLayer:
 
     def getargs(self):
         return self.args
+    #extra code
 
-    def print(self):
-        print("{} {}-> {}".format(self.name, self.inputshape, self.outputshape))
-        for param_name, param_value in self.args.items():
-            print("{}: {}".format(param_name, param_value))
+    # def print(self):
+    #     print("{} {}-> {}".format(self.name, self.inputshape, self.outputshape))
+    #     for param_name, param_value in self.args.items():
+    #         print("{}: {}".format(param_name, param_value))
 
     # The use of DEAP to instantiate individuals and in turm Models with ModelLayers means that the use
     # of abstract classes (using the abs package) cannot be done. As such the following methods are "abstract"

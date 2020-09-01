@@ -1,9 +1,8 @@
-import random
-from itertools import *
-
 import tensorflow as tf
 import keras
+from tensorflowlayerargs import *
 import numpy as np
+import tensornas
 
 class TensorNASModel:
     def __init__(
@@ -23,7 +22,9 @@ class TensorNASModel:
         self.param_count = None
 
         # Here we pull our ModelLayer objects from the iterator containing our architecture
-        #for layer in layer_iterator:
+        for layer in layer_iterator:
+            self.layers.append(layer)
+            print("entered layers iterator")
             #self._addlayer(layer.name, layer.args)
 
     def print(self):
@@ -101,7 +102,7 @@ class TensorNASModel:
 
     def _gettfmodel(self):
         model = keras.Sequential()
-        for layer in self.layers:
+        for layer in self.layer:
             model.add(layer.getkeraslayer())
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
@@ -123,3 +124,118 @@ class TensorNASModel:
         return self.param_count, self.accuracy
 
 
+class ModelLayer:
+    "Common layer properties"
+
+    def __init__(self, name, args=None):
+        self.name = name
+        if args:
+            self.args = args
+        else:
+            self.args = {}
+
+    def getname(self):
+        return self.name
+
+    def getargs(self):
+        return self.args
+
+    def print(self):
+        print("{} ->".format(self.name))
+        for param_name, param_value in self.args.items():
+            print("{}: {}".format(param_name, param_value))
+
+class Conv2DLayer(ModelLayer):
+    def __init__(self, filters, kernel_size, strides, input_size):
+        super().__init__("Conv2D")
+
+        self.args[Conv2DArgs.FILTERS.name] = filters
+        self.args[Conv2DArgs.KERNEL_SIZE.name] = kernel_size
+        self.args[Conv2DArgs.STRIDES.name] = strides
+        self.args[Conv2DArgs.INPUT_SIZE.name] = input_size
+
+    def mutate(self):
+        pass
+
+    def validate(self):
+        if not 0 > self.args[Conv2DArgs.FILTERS.name]:
+            return False
+
+
+
+
+        # more checks here
+
+    def getkeraslayer(self):
+        return keras.layers.Conv2D(
+            self.args.get(Conv2DArgs.FILTERS.name),
+            kernel_size=self.args.get(Conv2DArgs.KERNEL_SIZE.name),
+            strides=self.args.get(Conv2DArgs.STRIDES.name),
+            input_shape=self.args.get(Conv2DArgs.INPUT_SIZE.name),
+        )
+
+
+class MaxPool2DLayer(ModelLayer):
+    def __init__(self, pool_size, strides):
+        super().__init__("MaxPool2D")
+        self.args[MaxPool2DArgs.POOL_SIZE.name] = pool_size
+        self.args[MaxPool2DArgs.STRIDES.name] = strides
+
+    def getkeraslayer(self):
+        return keras.layers.MaxPool2D(
+            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
+            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+        )
+
+
+class MaxPool3DLayer(MaxPool2DLayer):
+    def __init__(self, pool_size, strides):
+        super(MaxPool2DLayer, self).__init__("MaxPool3D")
+        super().__init__(pool_size, strides)
+
+    def getkeraslayer(self):
+        return keras.layers.MaxPool3D(
+            pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
+            strides=self.args.get(MaxPool2DArgs.STRIDES.name),
+        )
+
+
+class ReshapeLayer(ModelLayer):
+    def __init__(self, target_shape):
+        super().__init__("Reshape")
+        self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
+
+    def getkeraslayer(self):
+        target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.name)
+        return keras.layers.Reshape(target_shape)
+
+
+class DenseLayer(ModelLayer):
+    def __init__(self, units, activation):
+        super().__init__("Dense")
+        self.args[DenseArgs.UNITS.name] = units
+        self.args[DenseArgs.ACTIVATION.name] = activation
+
+    def getkeraslayer(self):
+        return keras.layers.Dense(
+            self.args.get(DenseArgs.UNITS.name),
+            activation=self.args.get(DenseArgs.ACTIVATION.name),
+        )
+
+
+class FlattenLayer(ModelLayer):
+    def __init__(self):
+        super().__init__("Flatten")
+
+    def getkeraslayer(self):
+        return keras.layers.Flatten()
+
+
+class Dropout(ModelLayer):
+    def __init__(self, rate):
+        super().__init__("Dropout")
+        self.args[DropoutArgs.RATE.name] = rate
+
+    def getkeraslayer(self):
+        rate = self.args.get(DropoutArgs.RATE.name)
+        return keras.layers.Dropout(rate)

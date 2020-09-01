@@ -8,8 +8,12 @@ import demomodels
 import multiprocessing
 import tensornasmutator
 import math
+import Individual_gen as nas
 from tensornasmutator import *
 
+#pmName = input('nasconstraints')
+#nas = __import__(pmName)
+#print(dir(nas))
 # Training MNIST data
 (
     (images_train, labels_train),
@@ -23,6 +27,7 @@ images_test = images_test.reshape(
     images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
 )
 input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
+print(input_tensor_shape)
 images_train = images_train.astype("float32")
 images_test = images_test.astype("float32")
 images_train /= 255
@@ -44,11 +49,12 @@ demo_model_count = 1
 
 # TODO generate random but valid starting model architectures
 
-
 def get_demo_model_iterator():
     model = demo_models[random.randint(0, demo_model_count - 1)]  # hardcoded test model
     iter = (
         ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args"))
+        #Added extra code
+        #ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args")).print()
         for layer in model.keys()
     )
     return iter
@@ -77,20 +83,36 @@ def pareto_dominance(ind1, ind2):
 
 
 # We want to minimize param count and maximize accuracy
+print("creating fitness")
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
+print("created fitness")
 
+
+print("creating individual")
 # Each individual will be an architecture model
 creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
-
+print("created individual")
 toolbox = base.Toolbox()
 
 ### Multithreading ###
 pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
 ######
+print("registering attr")
+Feature_layers_min=1
+Feature_layers_max=3
+Classification_layer_min=1
+Classification_layer_max=2
+Feature_Block_min=1
+Feature_Block_max=3
+Feature_Layers=random.randint(Feature_layers_min,Feature_layers_max)
+Classification_Layers=random.randint(Classification_layer_min,Classification_layer_max)
+Feature_Blocks=random.randint(Feature_Block_min,Feature_Block_max)
+#toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
+toolbox.register("attr_nas_model_itr",nas.BlockArchitecture().generateblocksequence,Feature_Layers,Classification_Layers,Feature_Blocks,input_tensor_shape )
+print("registered attr")
 
-toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
-
+print("registering individual")
 toolbox.register(
     "individual_iterate",
     tools.initIterate,
@@ -98,11 +120,16 @@ toolbox.register(
     toolbox.attr_nas_model_itr,
 )
 
+print("registered individual")
+
+
+print("registering population")
 toolbox.register(
     "population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count
 )
-
-# Genetic operators
+print("registered population")
+# Genetic operatorsA
+print("calling evaluation")
 toolbox.register("evaluate", evaluate_individual)
 toolbox.register("mate", crossover_individuals)
 toolbox.register("mutate", mutate_individual)
@@ -118,24 +145,33 @@ toolbox.decorate("mutate", history.decorator)
 
 def main():
 
-    pop = toolbox.population(n=3)
+    pop = toolbox.population(n=5)
+    if not (toolbox.attr_nas_model_itr):
+        print("Uncompatible individual")
+    print("completed population")
     hof = tools.HallOfFame(1)
+    print("start hof")
     stats = tools.Statistics(lambda ind: ind.fitness.values)
+    print("start stats")
     stats.register("avg", np.mean)
     stats.register("min", np.min)
     stats.register("max", np.max)
-
+    print("start easimple")
+    print(list(pop))
     pop, logbook = algorithms.eaSimple(
         pop,
         toolbox,
         cxpb=0.5,
+
+
+
         mutpb=0.2,
         ngen=2,
         stats=stats,
         halloffame=hof,
         verbose=True,
     )
-
+    print("complete easimple")
     return pop, logbook, hof
 
 
@@ -146,7 +182,7 @@ if __name__ == "__main__":
         "Best individual is: %s\nwith fitness: %s"
         % (best_individual, best_individual.fitness)
     )
-    best_individual.print()
+    print(best_individual)
 
     gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
     plt.figure(figsize=(15, 5))

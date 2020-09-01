@@ -2,7 +2,7 @@ import tensorflow as tf
 import keras
 from tensornaslayers import *
 import numpy as np
-
+import nasconstraints as nas
 
 class TensorNASModel:
     def __init__(
@@ -24,21 +24,28 @@ class TensorNASModel:
 
         # Here we pull our ModelLayer objects from the iterator containing our architecture
         for layer in layer_iterator:
-            if not cur_input_shape:
-                cur_input_shape = layer.args.get("INPUT_SHAPE")
-            cur_input_shape = self._addlayer(
-                name=layer.name, args=layer.args, input_shape=cur_input_shape
-            )
+            print("entered TensorNASmodel.py")
+            #print(layer)
+            self.layers.append(layer)
+            
+            #if not cur_input_shape:
+                #cur_input_shape = layer.args.get("INPUT_SHAPE")
+            #cur_input_shape = self._addlayer(
+                #name=layer.name, args=layer.args, input_shape=cur_input_shape
+            #)
 
-        self.print()
+        #self.print()
+        #print(self)
 
     def print(self):
         for x, layer in enumerate(self.layers):
             print("-------------------------------------------")
             print("Layer #{}".format(x))
             layer.print()
+            #print(layer)
 
     def loadlayersfromjson(self, json):
+
         if json:
             for x in range(len(json.keys())):
                 layer = json.get(str(x))
@@ -50,7 +57,7 @@ class TensorNASModel:
     # shape of the previous layer. The shape required is tracked as the TensorNASModel builds the layers
     def _addlayer(self, name, args, input_shape=None):
         new_layer = None
-
+        print("called add layer")
         if name == "Conv2D":
             filters = args.get(Conv2DArgs.FILTERS.name, 1)
             kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
@@ -143,21 +150,30 @@ class TensorNASModel:
         return new_layer.outputshape.get()
 
     def _gettfmodel(self):
+        print("entered gettfmodel")
         model = keras.Sequential()
+        #print(self.layers)
+        print(list(self.layers))
         for layer in self.layers:
-            model.add(layer.getkeraslayer())
+            #print(type(layer))
+            model.add(layer)
+            print("returning 1 model")
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
             model.summary()
+        print("returning model")
         return model
 
     def validate(self):
-        # TODO
-        pass
+        for layer in self.layers:
+            if(layer.name == "Conv2D"):
+            #validation1:
+                pass
 
     def evaluate(
         self, train_data, train_labels, test_data, test_labels, epochs, batch_size
     ):
+        print("entered evaluation")
         model = self._gettfmodel()
         model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
         self.param_count = int(
