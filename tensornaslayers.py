@@ -1,7 +1,12 @@
 from tensorflowlayerargs import *
 from tensornasmutator import *
 import keras
-from tensornasmutator import dimension_mag
+import random
+import itertools
+from enum import Enum, auto
+import numpy as np
+from tensornasmutator import *
+import tensornaslayers
 
 
 class LayerShape:
@@ -48,10 +53,10 @@ class ModelLayer:
         return self.args
     #extra code
 
-    # def print(self):
-    #     print("{} {}-> {}".format(self.name, self.inputshape, self.outputshape))
-    #     for param_name, param_value in self.args.items():
-    #         print("{}: {}".format(param_name, param_value))
+    def print(self):
+        print("{} {}-> {}".format(self.name, self.inputshape, self.outputshape))
+        for param_name, param_value in self.args.items():
+            print("{}: {}".format(param_name, param_value))
 
     # The use of DEAP to instantiate individuals and in turm Models with ModelLayers means that the use
     # of abstract classes (using the abs package) cannot be done. As such the following methods are "abstract"
@@ -78,7 +83,13 @@ class ModelLayer:
     # to information on parameters that are local to it. Validating the arrangement of various layers should be
     # performed at a high level of the model tree.
     def validate(self, repair=True):
-        pass
+        if self.inputshape[0] <= 0 or self.inputshape[1] <= 0 or self.inputshape[2] <= 0:
+            print("invalid input ")
+            return False
+
+        return True
+
+
 
     # Returns the size of the layer's output dimension given the layer's current configuation.
     def calcoutputshape(self):
@@ -103,7 +114,7 @@ class Conv2DLayer(ModelLayer):
         kernel_size,
         strides,
         padding=PaddingArgs.SAME.value,
-        dilation_rate=(0, 0),
+        dilation_rate=(1, 1),
         activation=Activations.RELU.value,
     ):
         super().__init__("Conv2D", input_shape=input_shape)
@@ -117,7 +128,7 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.ACTIVATION.name] = activation
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate(repair=True)
 
     def _filters(self):
         return self.args[Conv2DArgs.FILTERS.name]
@@ -189,7 +200,10 @@ class Conv2DLayer(ModelLayer):
         return ((input - 1) // stride) + 1
 
     def repair(self):
-        # TODO
+        #
+        #reparing filters
+        #if valid
+
         pass
 
     def mutate(self):
@@ -205,16 +219,28 @@ class Conv2DLayer(ModelLayer):
         )()
 
     def validate(self, repair=True):
-        if not self._filters() > 0:
-            return False
 
-        if not self._single_stride() and not self._single_dilation_rate():
-            return False
+        if self.inputshape.dimensions[0] <= 0 or self.inputshape.dimensions[1] <= 0 or self.inputshape.dimensions[2] <= 0:
+            print("invalid input to conv layer ")
+        #validating filter size
+        while not self._filters() > 0:
+            self._mutate_filters()
+        #validating Stride and dilation rate
+        while not self._strides()[0] > 0 or not self._strides()[1] > 0:
+            self._mutate_strides()
+        #while not self._padding() > 0:
+            #Conv2DLayer._mutate_padding()
+        while not self._kernel_size()[0] > 0:
+            self._mutate_kernel_size()
 
-        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
-            return False
+        while self._kernel_size()[0] >= self.inputshape.dimensions[0]:
+            self._mutate_kernel_size()
+
+        while self._strides()[0] >= self.inputshape.dimensions[0]:
+            self._mutate_strides()
 
         return True
+
 
     def calcoutputshape(self):
         inp = self._input_size()
@@ -262,7 +288,7 @@ class MaxPool2DLayer(ModelLayer):
         self.args[MaxPool2DArgs.PADDING.name] = padding
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate()
 
     def _pool_size(self):
         return self.args[MaxPool2DArgs.POOL_SIZE.name]
@@ -294,6 +320,7 @@ class MaxPool2DLayer(ModelLayer):
         )
 
     def repair(self):
+        #taking stride validation and repair to validate function
         for x, val in enumerate(self._strides()):
             if not val > 0:
                 self.args[MaxPool2DArgs.STRIDES.name][x] = 1
@@ -305,19 +332,18 @@ class MaxPool2DLayer(ModelLayer):
     def mutate(self):
         random.choice([self._mutate_pool_size, self._mutate_strides])()
 
-    def validate(self, repair=True):
-        if not self._strides()[0] > 0 or not self._strides()[1] > 0:
-            if repair:
-                while not self.validate(repair):
-                    self.repair()
-            else:
-                return False
-        if not self._pool_size()[0] > 0 or not self._pool_size()[1] > 0:
-            if repair:
-                while not self.validate(repair):
-                    self.repair()
-            else:
-                return False
+    def validate(self):
+        if self.inputshape.dimensions[0] <= 0 or self.inputshape.dimensions[1] <= 0 or self.inputshape.dimensions[2] <= 0:
+            print("invalid input to maxpool ")
+        while  self._strides()[0] < 0 or  self._strides()[1] < 0:
+            self._mutate_strides(MutationOperators.SYNC_STEP)
+        while  self._pool_size()[0] < 0 or  self._pool_size()[1] < 0:
+            self._mutate_pool_size(MutationOperators.SYNC_STEP)
+        while  self._pool_size()[0] >= self.inputshape.dimensions[0] or self._pool_size()[1] >= self.inputshape.dimensions[1]:
+            self._mutate_pool_size(MutationOperators.SYNC_STEP)
+        while  self._strides()[0] >= self.inputshape.dimensions[0] or  self._strides()[1] >= self.inputshape.dimensions[1]:
+            self._mutate_strides(MutationOperators.SYNC_STEP)
+
         return True
 
     def calcoutputshape(self):
@@ -360,7 +386,7 @@ class MaxPool3DLayer(MaxPool2DLayer):
         # TODO
         pass
 
-    def validate(self, repair=True):
+    def validate(self):
         if (
             not self._strides()[0] > 0
             or not self._strides()[1] > 0
@@ -373,6 +399,10 @@ class MaxPool3DLayer(MaxPool2DLayer):
             or not self._pool_size()[2] > 0
         ):
             return False
+        if not self._pool_size()<= self.inputshape.dimensions[0]:
+            return False
+        if self.inputshape.dimensions[0] <= 0 or self.inputshape.dimensions[1] <= 0 or self.inputshape.dimensions[2] <= 0:
+            print("invalid input ")
         return True
 
     def calcoutputshape(self):
@@ -395,7 +425,7 @@ class ReshapeLayer(ModelLayer):
         self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate(repair=True)
 
     def _target_shape(self):
         return self.args.get(ReshapeArgs.TARGET_SHAPE.name, self.inputshape.get())
@@ -412,18 +442,23 @@ class ReshapeLayer(ModelLayer):
     def mutate(self):
         self._mutate_target_shape()
 
-    def validate(self, repair=True):
-        input_mag = dimension_mag(list(self.inputshape.get()))
+    def validate(self):
+        if self.inputshape.dimensions[0] <= 0 or self.inputshape.dimensions[1] <= 0 or self.inputshape.dimensions[2] <= 0:
+            print("invalid input ")
+            return False
+
+        input_mag = dimension_mag(list(self.inputshape.dimensions))
         output_mag = dimension_mag(list(self.calcoutputshape()))
 
-        if not input_mag == output_mag:
-            if repair:
-                while not input_mag == output_mag:
-                    self.repair()
-                    input_mag = dimension_mag(list(self.inputshape.get()))
-                    output_mag = dimension_mag(list(self.calcoutputshape()))
-            else:
-                return False
+        #if not input_mag == output_mag:
+            #if repair:
+                #while not input_mag == output_mag:
+                    #self.repair()
+
+                    #input_mag = dimension_mag(list(self.inputshape.dimensions))
+                    #output_mag = dimension_mag(list(self.calcoutputshape()))
+            #else:
+                #return False
         return True
 
     def calcoutputshape(self):
@@ -441,13 +476,18 @@ class DenseLayer(ModelLayer):
         self.args[DenseArgs.ACTIVATION.name] = activation
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate(repair=True)
 
     def _activation(self):
         return self.args[DenseArgs.ACTIVATION.name]
 
     def _units(self):
         return self.args[DenseArgs.UNITS.name]
+
+    def _mutate_units(self):
+        self.args[DenseArgs.UNITS.name] = mutate_enum(
+            self._units()
+        )
 
     def _mutate_activation(self):
         self.args[DenseArgs.ACTIVATION.name] = mutate_enum(
@@ -461,11 +501,13 @@ class DenseLayer(ModelLayer):
     def mutate(self):
         random.choice([self._mutate_activation])()
 
-    def validate(self, repair=True):
+    def validate(self):
+        if self.inputshape.dimensions[0] <= 0:
+            print("invalid input ")
         # Dense layers take in a 1D tensor array, ie. previous layer should be a flatten layer
-        if not len(self.inputshape.get()) == 1:
+        if not len(self.inputshape.dimensions) == 1:
+            print('dense layer input not as 1D tensor')
             return False
-
         return True
 
     def calcoutputshape(self):
@@ -497,7 +539,7 @@ class HiddenDenseLayer(DenseLayer):
     def mutate(self):
         random.choice([self._mutate_activation, self._mutate_units])()
 
-    def validate(self, repair=True):
+    def validate(self):
         super().validate()
 
     def calcoutputshape(self):
@@ -514,14 +556,16 @@ class OutputDenseLayer(DenseLayer):
         super().__init__(input_shape=input_shape, units=units, activation=activation)
 
     def repair(self):
-        # TODO
-        pass
+        super().mutate()
 
     def mutate(self):
         super().mutate()
 
-    def validate(self, repair=True):
+    def validate(self):
         super().validate()
+        if not self._units() == 10:
+            self._units() == 10
+        return True
 
     def calcoutputshape(self):
         super().calcoutputshape()
@@ -537,7 +581,7 @@ class FlattenLayer(ModelLayer):
         super().__init__("Flatten", input_shape=input_shape)
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate(repair=True)
 
     def repair(self):
         # TODO
@@ -546,7 +590,11 @@ class FlattenLayer(ModelLayer):
     def mutate(self):
         pass
 
-    def validate(self, repair=True):
+    def validate(self):
+
+        if self.inputshape.dimensions[0] <= 0 or self.inputshape.dimensions[1] <= 0 or self.inputshape.dimensions[2] <= 0:
+            print("invalid input to flatten")
+            return False
         return True
 
     def calcoutputshape(self):
@@ -566,7 +614,7 @@ class DropoutLayer(ModelLayer):
         self.inputshape.set(input_shape)
 
         self.outputshape.set(self.calcoutputshape())
-        self.validate(repair=True)
+        #self.validate(repair=True)
 
     def _rate(self):
         return self.args[DropoutArgs.RATE.name]
@@ -583,7 +631,12 @@ class DropoutLayer(ModelLayer):
     def mutate(self):
         random.choice([self._mutate_rate])()
 
-    def validate(self, repair=True):
+    def validate(self):
+
+        if self.inputshape.dimensions[0] <= 0:
+            print("invalid input ")
+        while self._rate() < 0:
+            self._mutate_rate()
         return True
 
     def calcoutputshape(self):
@@ -592,3 +645,4 @@ class DropoutLayer(ModelLayer):
     def getkeraslayer(self):
         rate = self.args.get(DropoutArgs.RATE.name)
         return keras.layers.Dropout(rate)
+

@@ -34,7 +34,7 @@ def _generate_permutations(product, item_count):
     prime_factors = _find_prime_factors(product)
     while len(prime_factors) > item_count:
         index = random.randrange(0, len(prime_factors) - 1)
-        prime_factors[index : index + 2] = [
+        prime_factors[index: index + 2] = [
             prime_factors[index] * prime_factors[index + 1]
         ]
     return prime_factors
@@ -61,7 +61,7 @@ def mutate_int(val, min_bound, max_bound, operator=MutationOperators.STEP):
 
 
 def mutate_unit_interval(
-    val, min_bound, max_bound, operator=MutationOperators.STEP, step_size=0.05
+        val, min_bound, max_bound, operator=MutationOperators.STEP, step_size=0.05
 ):
     if operator == MutationOperators.RANDOM:
         return random.random()
@@ -113,7 +113,7 @@ def mutate_tuple(val, min_bound, max_bound, operator=MutationOperators.SYNC_STEP
                     continue
         elif operator == MutationOperators.SYNC_RANDOM:
             while (
-                True
+                    True
             ):  # generate a different value to what we currently have (referenced using X val)
                 val = random.randrange(min_bound, max_bound + 1)
                 if val != val[0]:
@@ -139,3 +139,9 @@ def mutate_enum(val, enum):
         new_val = random.choice(list(enum)).value
         if new_val != val:
             return new_val
+
+
+# enum becomes a datatype and is used to access the static constants whose value is known at compile type
+def mutate_enum_i(enum):
+    return random.choice(list(enum)).value
+    # chooses a random index in enum and returns value as 1 or 2

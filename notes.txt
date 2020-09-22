@@ -1,3 +1,4 @@
+### Validations at Layer level: (TensornasLayers.py)
 # Convolutional Layers
 
 Convolutional layers towards the begining of a model should have fewer filters while those towards the end should have more.
@@ -8,3 +9,52 @@ Kernel size must be odd
 Increasing size of stride can replace pooling to reduce spatial dimentions of the output volume
 
 specifying any dilation_rate value != 1 is incompatible with specifying any stride value != 1.
+
+#Max pool layer validations:
+
+Input should not be negative
+Strides > 0, Pool Size >0 , Pool_Size < Input/2, Strides < Input/4
+
+
+#Dense Layer Validations:
+Input should be 1D tensor
+Input should not be negative
+
+
+
+#Dropout Layer Validations:
+Input should not be negative
+Dropout rate non-negative
+
+
+
+#Flatten Layer Validations:
+Input should not be negative
+Output should be 1D tensor
+
+
+#Block Level Validations:
+output_Prev_layer == Input_Next_Layer
+Output dimensions should not turn out to be negative
+
+Next Validations Planned at Block level:
+Flatten before Dense Layer
+Valid  integration of Reshape Layer
+
+
+
+Architecture:
+
+M * Feature extraction block, N* Classification block
+
+Current update:
+M=2, N =1
+
+Feature extraction block: Conv, Maxpool 2D/3D
+Classification block: Flatten, Dense, Dropout,OutputDense,
+
+
+#update 1:
+The repair function is integrated in to the validate function, if some of the parameters are generated as invalid, they are repaired and validated again.
+Therefore, always a valid architecture is returned.
+If sometimes repair is not possible ( which rarely happens), the validation function returns false.

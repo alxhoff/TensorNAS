@@ -22,20 +22,24 @@ class TensorNASModel:
         self.param_count = None
         cur_input_shape = None
 
+
+
         # Here we pull our ModelLayer objects from the iterator containing our architecture
         for layer in layer_iterator:
-            print("entered TensorNASmodel.py")
-            #print(layer)
-            self.layers.append(layer)
-            
-            #if not cur_input_shape:
-                #cur_input_shape = layer.args.get("INPUT_SHAPE")
-            #cur_input_shape = self._addlayer(
-                #name=layer.name, args=layer.args, input_shape=cur_input_shape
-            #)
+            for every_layer in layer:
+                if not cur_input_shape:
+                    cur_input_shape = every_layer.args.get("INPUT_SHAPE")
+                    if every_layer.validate and (not every_layer.calcoutputshape()[0] < 0):
+                        cur_input_shape = self._addlayer(
+                            name=every_layer.name, args=every_layer.args, input_shape=cur_input_shape)
+                else:
+                    every_layer.inputshape.set(cur_input_shape)
+                    if every_layer.validate():
+                        cur_input_shape = self._addlayer(
+                        name=every_layer.name, args=every_layer.args, input_shape=cur_input_shape
+                )
 
-        #self.print()
-        #print(self)
+        self.print()
 
     def print(self):
         for x, layer in enumerate(self.layers):
@@ -57,11 +61,11 @@ class TensorNASModel:
     # shape of the previous layer. The shape required is tracked as the TensorNASModel builds the layers
     def _addlayer(self, name, args, input_shape=None):
         new_layer = None
-        print("called add layer")
         if name == "Conv2D":
             filters = args.get(Conv2DArgs.FILTERS.name, 1)
             kernel_size = tuple(args.get(Conv2DArgs.KERNEL_SIZE.name, (3, 3)))
             strides = tuple(args.get(Conv2DArgs.STRIDES.name, (1, 1)))
+            args['INPUT_SHAPE']= input_shape
             input_size = tuple(args.get(Conv2DArgs.INPUT_SHAPE.name, input_shape))
             activation = args.get(Conv2DArgs.ACTIVATION.name, Activations.RELU.value)
             dilation_rate = tuple(args.get(Conv2DArgs.DILATION_RATE.name, (1, 1)))
@@ -145,42 +149,54 @@ class TensorNASModel:
             new_layer = DropoutLayer(input_shape=input_shape, rate=rate)
             if self.verbose:
                 print("Created {} layers with {} rate".format(name, rate))
+        elif name == "Output_Dense":
+            units = args.get(DenseArgs.UNITS.name)
+            activation = getattr(
+                tf.nn, args.get(DenseArgs.ACTIVATION.name, Activations.SOFTMAX.value)
+            )
+
+            new_layer = DenseLayer(
+                input_shape=input_shape, units=units, activation=activation
+            )
+            if self.verbose:
+                print(
+                    "Created Output {} layer with {} units and {} activation".format(
+                        name, units, activation
+                    )
+                )
 
         self.layers.append(new_layer)
         return new_layer.outputshape.get()
 
     def _gettfmodel(self):
-        print("entered gettfmodel")
         model = keras.Sequential()
-        #print(self.layers)
-        print(list(self.layers))
         for layer in self.layers:
-            #print(type(layer))
-            model.add(layer)
-            print("returning 1 model")
+            #print(layer)
+            #for every_
+            model.add(layer.getkeraslayer())
+        #print(model.summary())
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
             model.summary()
-        print("returning model")
         return model
 
-    def validate(self):
-        for layer in self.layers:
-            if(layer.name == "Conv2D"):
-            #validation1:
-                pass
-
     def evaluate(
-        self, train_data, train_labels, test_data, test_labels, epochs, batch_size
+            self, train_data, train_labels, test_data, test_labels, epochs, batch_size
     ):
-        print("entered evaluation")
         model = self._gettfmodel()
+        #model._maybe_build((28,28,1))
+        #print(model.summary())
+        print(train_labels.shape)
+        print(train_data.shape)
         model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
+        print("Completed fit")
+
         self.param_count = int(
             np.sum([keras.backend.count_params(p) for p in model.trainable_weights])
         ) + int(
             np.sum([keras.backend.count_params(p) for p in model.non_trainable_weights])
         )
         self.accuracy = model.evaluate(test_data, test_labels)[1] * 100
+        print("completed evaluate")
 
         return self.param_count, self.accuracy

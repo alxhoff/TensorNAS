@@ -8,12 +8,9 @@ import demomodels
 import multiprocessing
 import tensornasmutator
 import math
-import Individual_gen as nas
+import nasconstraints as nas
 from tensornasmutator import *
-
-#pmName = input('nasconstraints')
-#nas = __import__(pmName)
-#print(dir(nas))
+from tensornaslayers import *
 # Training MNIST data
 (
     (images_train, labels_train),
@@ -26,13 +23,14 @@ images_train = images_train.reshape(
 images_test = images_test.reshape(
     images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
 )
-input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
+input_tensor_shape = (images_train.shape[1], images_train.shape[2], 1)
 print(input_tensor_shape)
+print(labels_train.shape)
 images_train = images_train.astype("float32")
 images_test = images_test.astype("float32")
 images_train /= 255
 images_test /= 255
-
+no_classes = 10
 # Tensorflow parameters
 epochs = 1
 batch_size = 600
@@ -59,11 +57,16 @@ def get_demo_model_iterator():
     )
     return iter
 
+def GetArchitectureIndividual():
+    #### DEBUGGING PRINT STUFF
+    #nas.BlockArchitecture(input_tensor_shape, batch_size, no_classes).ind_gen()
+
+    return nas.BlockArchitecture(input_tensor_shape,batch_size, no_classes).ind_gen()
 
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 def evaluate_individual(individual):
-    return individual.evaluate(
-        images_train, labels_train, images_test, labels_test, epochs, batch_size
+        return individual.evaluate(
+        train_data=images_train, train_labels=labels_train, test_data=images_test, test_labels=labels_test, epochs=1, batch_size=600
     )
 
 
@@ -83,36 +86,17 @@ def pareto_dominance(ind1, ind2):
 
 
 # We want to minimize param count and maximize accuracy
-print("creating fitness")
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
-print("created fitness")
-
-
-print("creating individual")
 # Each individual will be an architecture model
 creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
-print("created individual")
 toolbox = base.Toolbox()
 
 ### Multithreading ###
 pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
-######
-print("registering attr")
-Feature_layers_min=1
-Feature_layers_max=3
-Classification_layer_min=1
-Classification_layer_max=2
-Feature_Block_min=1
-Feature_Block_max=3
-Feature_Layers=random.randint(Feature_layers_min,Feature_layers_max)
-Classification_Layers=random.randint(Classification_layer_min,Classification_layer_max)
-Feature_Blocks=random.randint(Feature_Block_min,Feature_Block_max)
-#toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
-toolbox.register("attr_nas_model_itr",nas.BlockArchitecture().generateblocksequence,Feature_Layers,Classification_Layers,Feature_Blocks,input_tensor_shape )
-print("registered attr")
 
-print("registering individual")
+#toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
+toolbox.register("attr_nas_model_itr", GetArchitectureIndividual)
 toolbox.register(
     "individual_iterate",
     tools.initIterate,
@@ -120,21 +104,13 @@ toolbox.register(
     toolbox.attr_nas_model_itr,
 )
 
-print("registered individual")
-
-
-print("registering population")
 toolbox.register(
     "population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count
 )
-print("registered population")
-# Genetic operatorsA
-print("calling evaluation")
 toolbox.register("evaluate", evaluate_individual)
 toolbox.register("mate", crossover_individuals)
 toolbox.register("mutate", mutate_individual)
 toolbox.register("select", tools.selTournament, tournsize=3)
-
 # Statistics
 history = tools.History()
 
@@ -142,29 +118,27 @@ toolbox.decorate("mate", history.decorator)
 toolbox.decorate("mutate", history.decorator)
 # toolbox.decorate("evaluate", history.decorator)
 
-
 def main():
 
-    pop = toolbox.population(n=5)
-    if not (toolbox.attr_nas_model_itr):
-        print("Uncompatible individual")
-    print("completed population")
+    pop = toolbox.population(n=100)
+    #print(pop)
+    #for ind in pop:
+        #toolbox.evaluate(ind)
+    #if not (toolbox.attr_nas_model_itr):
+        #print("Uncompatible individual")
+    #print("completed population")
     hof = tools.HallOfFame(1)
     print("start hof")
-    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats = tools.Statistics(key=lambda ind: ind.fitness.values)
     print("start stats")
     stats.register("avg", np.mean)
     stats.register("min", np.min)
     stats.register("max", np.max)
     print("start easimple")
-    print(list(pop))
     pop, logbook = algorithms.eaSimple(
         pop,
         toolbox,
         cxpb=0.5,
-
-
-
         mutpb=0.2,
         ngen=2,
         stats=stats,
