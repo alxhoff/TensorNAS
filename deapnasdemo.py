@@ -112,7 +112,6 @@ history = tools.History()
 
 toolbox.decorate("mate", history.decorator)
 toolbox.decorate("mutate", history.decorator)
-# toolbox.decorate("evaluate", history.decorator)
 
 def main():
 
