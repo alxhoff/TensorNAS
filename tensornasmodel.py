@@ -46,7 +46,6 @@ class TensorNASModel:
             print("-------------------------------------------")
             print("Layer #{}".format(x))
             layer.print()
-            #print(layer)
 
     def loadlayersfromjson(self, json):
 
@@ -171,10 +170,7 @@ class TensorNASModel:
     def _gettfmodel(self):
         model = keras.Sequential()
         for layer in self.layers:
-            #print(layer)
-            #for every_
             model.add(layer.getkeraslayer())
-        #print(model.summary())
         model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         if self.verbose:
             model.summary()
@@ -184,8 +180,6 @@ class TensorNASModel:
             self, train_data, train_labels, test_data, test_labels, epochs, batch_size
     ):
         model = self._gettfmodel()
-        #model._maybe_build((28,28,1))
-        #print(model.summary())
         print(train_labels.shape)
         print(train_data.shape)
         model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)

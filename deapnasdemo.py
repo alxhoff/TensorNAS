@@ -51,15 +51,11 @@ def get_demo_model_iterator():
     model = demo_models[random.randint(0, demo_model_count - 1)]  # hardcoded test model
     iter = (
         ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args"))
-        #Added extra code
-        #ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args")).print()
         for layer in model.keys()
     )
     return iter
 
 def GetArchitectureIndividual():
-    #### DEBUGGING PRINT STUFF
-    #nas.BlockArchitecture(input_tensor_shape, batch_size, no_classes).ind_gen()
 
     return nas.BlockArchitecture(input_tensor_shape,batch_size, no_classes).ind_gen()
 
@@ -120,13 +116,8 @@ toolbox.decorate("mutate", history.decorator)
 
 def main():
 
-    pop = toolbox.population(n=100)
-    #print(pop)
-    #for ind in pop:
-        #toolbox.evaluate(ind)
-    #if not (toolbox.attr_nas_model_itr):
-        #print("Uncompatible individual")
-    #print("completed population")
+    pop = toolbox.population(n=2)
+
     hof = tools.HallOfFame(1)
     print("start hof")
     stats = tools.Statistics(key=lambda ind: ind.fitness.values)
@@ -134,7 +125,6 @@ def main():
     stats.register("avg", np.mean)
     stats.register("min", np.min)
     stats.register("max", np.max)
-    print("start easimple")
     pop, logbook = algorithms.eaSimple(
         pop,
         toolbox,
@@ -145,7 +135,7 @@ def main():
         halloffame=hof,
         verbose=True,
     )
-    print("complete easimple")
+
     return pop, logbook, hof
 
 
@@ -156,7 +146,6 @@ if __name__ == "__main__":
         "Best individual is: %s\nwith fitness: %s"
         % (best_individual, best_individual.fitness)
     )
-    print(best_individual)
 
     gen, avg, min_, max_ = log.select("gen", "avg", "min", "max")
     plt.figure(figsize=(15, 5))

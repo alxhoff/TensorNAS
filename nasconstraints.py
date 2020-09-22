@@ -171,8 +171,6 @@ class ModelBuilder:
         kernel_size = self.get_kernel_size(input_shape[0]/2)
         strides = [1,1]
         padding = "valid"
-        #if tensornaslayers.Conv2DLayer(input_shape, filters, kernel_size, strides,padding).validate:
-            #can't return output shape here
         # we only get repaired layer out of validate and return the layer object to be built into .getkeraslayer()
         return  tensornaslayers.Conv2DLayer(input_shape,filters, kernel_size, strides,padding )
 
