@@ -1,13 +1,10 @@
 from tensornasmodel import *
 from deap import base, creator, tools, algorithms
-import random
-import tensorflow as tf
 import keras
 import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
-import tensornasmutator
-import math
+
 from tensornasmutator import *
 
 # Training MNIST data

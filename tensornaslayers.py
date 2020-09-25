@@ -1,6 +1,6 @@
 from tensorflowlayerargs import *
 from tensornasmutator import *
-import keras
+from tensorflow import keras
 from tensornasmutator import dimension_mag
 
 
@@ -97,13 +97,13 @@ class Conv2DLayer(ModelLayer):
 
     def __init__(
         self,
-        input_shape,
         filters,
         kernel_size,
         strides,
         padding=PaddingArgs.SAME.value,
         dilation_rate=(0, 0),
         activation=Activations.RELU.value,
+        input_shape=(0, 0, 0),
     ):
         super().__init__("Conv2D", input_shape=input_shape)
 
@@ -249,11 +249,11 @@ class MaxPool2DLayer(ModelLayer):
 
     def __init__(
         self,
-        input_shape,
         pool_size,
         strides=(1, 1),
         padding=PaddingArgs.SAME.value,
         name="MaxPool2D",
+        input_shape=(0, 0, 0),
     ):
         super().__init__(name, input_shape=input_shape)
         self.args[MaxPool2DArgs.POOL_SIZE.name] = pool_size
@@ -342,7 +342,7 @@ class MaxPool2DLayer(ModelLayer):
 
 
 class MaxPool3DLayer(MaxPool2DLayer):
-    def __init__(self, input_shape, pool_size, strides, padding):
+    def __init__(self, pool_size, strides, padding, input_shape=(0, 0, 0)):
         super().__init__(
             input_shape=input_shape,
             pool_size=pool_size,
@@ -389,7 +389,7 @@ class MaxPool3DLayer(MaxPool2DLayer):
 class ReshapeLayer(ModelLayer):
     MUTATABLE_PARAMETERS = 0
 
-    def __init__(self, input_shape, target_shape):
+    def __init__(self, target_shape, input_shape=(0, 0, 0)):
         super().__init__("Reshape", input_shape=input_shape)
         self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
 
@@ -434,7 +434,7 @@ class ReshapeLayer(ModelLayer):
 
 
 class DenseLayer(ModelLayer):
-    def __init__(self, input_shape, units, activation):
+    def __init__(self, units, activation, input_shape=(0, 0, 0)):
         super().__init__("Dense", input_shape=input_shape)
         self.args[DenseArgs.UNITS.name] = units
         self.args[DenseArgs.ACTIVATION.name] = activation
@@ -481,7 +481,7 @@ class HiddenDenseLayer(DenseLayer):
     MAX_UNITS = 256
     MUTATABLE_PARAMETERS = 2
 
-    def __init__(self, input_shape, units, activation):
+    def __init__(self, units, activation, input_shape=(0, 0, 0)):
         super().__init__(input_shape=input_shape, units=units, activation=activation)
 
     def _mutate_units(self):
@@ -509,7 +509,7 @@ class HiddenDenseLayer(DenseLayer):
 class OutputDenseLayer(DenseLayer):
     MUTATABLE_PARAMETERS = 1
 
-    def __init__(self, input_shape, units, activation):
+    def __init__(self, units, activation, input_shape=(0, 0, 0)):
         super().__init__(input_shape=input_shape, units=units, activation=activation)
 
     def repair(self):
@@ -532,7 +532,7 @@ class OutputDenseLayer(DenseLayer):
 class FlattenLayer(ModelLayer):
     MUTATABLE_PARAMETERS = 0
 
-    def __init__(self, input_shape):
+    def __init__(self, input_shape=(0, 0, 0)):
         super().__init__("Flatten", input_shape=input_shape)
 
         self.outputshape.set(self.calcoutputshape())
@@ -559,7 +559,7 @@ class DropoutLayer(ModelLayer):
     MUTATABLE_PARAMETERS = 1
     MAX_RATE = 0.5
 
-    def __init__(self, input_shape, rate):
+    def __init__(self, rate, input_shape=(0, 0, 0)):
         super().__init__("Dropout", input_shape=input_shape)
         self.args[DropoutArgs.RATE.name] = rate
         self.inputshape.set(input_shape)
