@@ -1,5 +1,5 @@
-from tensornasjson import *
-from tensorflowlayerargs import *
+from demomodels.jsonmodel import *
+from tensornas.layerargs import *
 
 Model_Configuration1 = {
     0: {

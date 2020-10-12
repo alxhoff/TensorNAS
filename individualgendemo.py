@@ -1,5 +1,4 @@
-import implementedblocks
-import demomodels
+from tensornasblocks import classificationblockarchitectures
 from tensorflow import keras
 
 ##### Training MNIST data
@@ -22,13 +21,15 @@ images_test = images_test.astype("float32")
 images_train /= 255
 images_test /= 255
 mnist_class_count = 10
-
-# Demo hard-coded models
-demomodels.generate_demo_model_jsons()
-demo_models = demomodels.generate_demo_model_array()
-demo_model_count = 1
 #######
 
-model = implementedblocks.BlockArchitecture(input_tensor_shape, mnist_class_count)
+model = classificationblockarchitectures.ClassificationBlockArchitecture(
+    input_tensor_shape, mnist_class_count
+)
+iter = model.get_iterator()
+print("Layers: {}".format(list(iter)))
+
+for it in iter:
+    print(it)
 
 print("Done")

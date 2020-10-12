@@ -1,7 +1,19 @@
-from tensorflowlayerargs import *
-from tensornasmutator import *
+from tensornas.layerargs import *
+from tensornas.mutator import *
 from tensorflow import keras
-from tensornasmutator import dimension_mag
+from tensornas.mutator import dimension_mag
+from enum import Enum, auto
+
+
+class SupportedLayers(Enum):
+    Conv2D = auto()
+    MaxPool2D = auto()
+    MaxPool3D = auto()
+    Reshape = auto()
+    HiddenDense = auto()
+    OutputDense = auto()
+    Flatten = auto()
+    Dropout = auto()
 
 
 class LayerShape:
@@ -52,7 +64,7 @@ class ModelLayer:
         for param_name, param_value in self.args.items():
             print("{}: {}".format(param_name, param_value))
 
-    # The use of DEAP to instantiate individuals and in turm Models with ModelLayers means that the use
+    # The use of DEAP to instantiate individuals and in turn Models with ModelLayers means that the use
     # of abstract classes (using the abs package) cannot be done. As such the following methods are "abstract"
     # and should be implemented by all layer sub-classes.
 
@@ -79,12 +91,12 @@ class ModelLayer:
     def validate(self, repair=True):
         pass
 
-    # Returns the size of the layer's output dimension given the layer's current configuation.
-    def calcoutputshape(self):
+    # Returns the size of the layer's output dimension given the layer's current configuration.
+    def output_shape(self):
         pass
 
     # Returns the keras layer object used for constructing the keras model for training.
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         pass
 
 
@@ -115,7 +127,7 @@ class Conv2DLayer(ModelLayer):
         self.args[Conv2DArgs.DILATION_RATE.name] = dilation_rate
         self.args[Conv2DArgs.ACTIVATION.name] = activation
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def _filters(self):
@@ -179,14 +191,6 @@ class Conv2DLayer(ModelLayer):
             self._activation(), Activations
         )
 
-    @staticmethod
-    def _valid_pad_output_shape(input, kernel, stride):
-        return ((input - kernel) // stride) + 1
-
-    @staticmethod
-    def _same_pad_output_shape(input, stride):
-        return ((input - 1) // stride) + 1
-
     def repair(self):
         # TODO
         pass
@@ -215,22 +219,40 @@ class Conv2DLayer(ModelLayer):
 
         return True
 
-    def calcoutputshape(self):
-        inp = self._input_size()
-        stri = self._strides()
-        ks = self._kernel_size()
-        fcount = self._filters()
-        if self._padding() == PaddingArgs.SAME.value:
-            X = self._same_pad_output_shape(inp[0], stri[0])
-            Y = self._same_pad_output_shape(inp[1], stri[1])
-            return X, Y, fcount
-        elif self._padding() == PaddingArgs.VALID.value:
-            X = self._valid_pad_output_shape(inp[0], ks[0], stri[0])
-            Y = self._valid_pad_output_shape(inp[1], ks[1], stri[1])
-            return X, Y, fcount
+    def output_shape(self):
+        return Conv2DLayer.conv2Doutputshape(
+            input_size=self._input_size(),
+            stride=self._strides(),
+            kernel_size=self._kernel_size(),
+            filter_count=self._filters(),
+            padding=self._padding(),
+        )
+
+    @staticmethod
+    def _valid_pad_output_shape(input, kernel, stride):
+        return ((input - kernel) // stride) + 1
+
+    @staticmethod
+    def _same_pad_output_shape(input, stride):
+        return ((input - 1) // stride) + 1
+
+    @staticmethod
+    def conv2Doutputshape(input_size, stride, kernel_size, filter_count, padding):
+        if padding == PaddingArgs.SAME.value:
+            X = Conv2DLayer._same_pad_output_shape(input_size[0], stride[0])
+            Y = Conv2DLayer._same_pad_output_shape(input_size[1], stride[1])
+            return X, Y, filter_count
+        elif padding == PaddingArgs.VALID.value:
+            X = Conv2DLayer._valid_pad_output_shape(
+                input_size[0], kernel_size[0], stride[0]
+            )
+            Y = Conv2DLayer._valid_pad_output_shape(
+                input_size[1], kernel_size[1], stride[1]
+            )
+            return X, Y, filter_count
         return 0, 0, 0
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         return keras.layers.Conv2D(
             self.args.get(Conv2DArgs.FILTERS.name),
             kernel_size=self.args.get(Conv2DArgs.KERNEL_SIZE.name),
@@ -260,7 +282,7 @@ class MaxPool2DLayer(ModelLayer):
         self.args[MaxPool2DArgs.STRIDES.name] = strides
         self.args[MaxPool2DArgs.PADDING.name] = padding
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def _pool_size(self):
@@ -319,7 +341,7 @@ class MaxPool2DLayer(ModelLayer):
                 return False
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         inp = self.inputshape.get()
         pool = self._pool_size()
         stri = self._strides()
@@ -333,7 +355,7 @@ class MaxPool2DLayer(ModelLayer):
             return x, y, inp[2]
         return 0, 0, 0
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         return keras.layers.MaxPool2D(
             pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
             strides=self.args.get(MaxPool2DArgs.STRIDES.name),
@@ -374,11 +396,11 @@ class MaxPool3DLayer(MaxPool2DLayer):
             return False
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         # TODO
         return self.inputshape
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         return keras.layers.MaxPool3D(
             pool_size=self.args.get(MaxPool2DArgs.POOL_SIZE.name),
             strides=self.args.get(MaxPool2DArgs.STRIDES.name),
@@ -393,7 +415,7 @@ class ReshapeLayer(ModelLayer):
         super().__init__("Reshape", input_shape=input_shape)
         self.args[ReshapeArgs.TARGET_SHAPE.name] = target_shape
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def _target_shape(self):
@@ -413,22 +435,22 @@ class ReshapeLayer(ModelLayer):
 
     def validate(self, repair=True):
         input_mag = dimension_mag(list(self.inputshape.get()))
-        output_mag = dimension_mag(list(self.calcoutputshape()))
+        output_mag = dimension_mag(list(self.output_shape()))
 
         if not input_mag == output_mag:
             if repair:
                 while not input_mag == output_mag:
                     self.repair()
                     input_mag = dimension_mag(list(self.inputshape.get()))
-                    output_mag = dimension_mag(list(self.calcoutputshape()))
+                    output_mag = dimension_mag(list(self.output_shape()))
             else:
                 return False
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         return self._target_shape()
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.name)
         return keras.layers.Reshape(target_shape)
 
@@ -439,7 +461,7 @@ class DenseLayer(ModelLayer):
         self.args[DenseArgs.UNITS.name] = units
         self.args[DenseArgs.ACTIVATION.name] = activation
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def _activation(self):
@@ -467,10 +489,10 @@ class DenseLayer(ModelLayer):
 
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         return (self._units(),)
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         return keras.layers.Dense(
             self.args.get(DenseArgs.UNITS.name),
             activation=self.args.get(DenseArgs.ACTIVATION.name),
@@ -499,11 +521,11 @@ class HiddenDenseLayer(DenseLayer):
     def validate(self, repair=True):
         super().validate()
 
-    def calcoutputshape(self):
-        super().calcoutputshape()
+    def output_shape(self):
+        super().output_shape()
 
-    def getkeraslayer(self):
-        super().getkeraslayer()
+    def get_keras_layer(self):
+        super().get_keras_layer()
 
 
 class OutputDenseLayer(DenseLayer):
@@ -522,11 +544,11 @@ class OutputDenseLayer(DenseLayer):
     def validate(self, repair=True):
         super().validate()
 
-    def calcoutputshape(self):
-        super().calcoutputshape()
+    def output_shape(self):
+        super().output_shape()
 
-    def getkeraslayer(self):
-        super().getkeraslayer()
+    def get_keras_layer(self):
+        super().get_keras_layer()
 
 
 class FlattenLayer(ModelLayer):
@@ -535,7 +557,7 @@ class FlattenLayer(ModelLayer):
     def __init__(self, input_shape=(0, 0, 0)):
         super().__init__("Flatten", input_shape=input_shape)
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def repair(self):
@@ -548,10 +570,10 @@ class FlattenLayer(ModelLayer):
     def validate(self, repair=True):
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         return (dimension_mag(self.inputshape.get()),)
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         return keras.layers.Flatten()
 
 
@@ -564,7 +586,7 @@ class DropoutLayer(ModelLayer):
         self.args[DropoutArgs.RATE.name] = rate
         self.inputshape.set(input_shape)
 
-        self.outputshape.set(self.calcoutputshape())
+        self.outputshape.set(self.output_shape())
         self.validate(repair=True)
 
     def _rate(self):
@@ -585,9 +607,9 @@ class DropoutLayer(ModelLayer):
     def validate(self, repair=True):
         return True
 
-    def calcoutputshape(self):
+    def output_shape(self):
         return self.inputshape.get()
 
-    def getkeraslayer(self):
+    def get_keras_layer(self):
         rate = self.args.get(DropoutArgs.RATE.name)
         return keras.layers.Dropout(rate)

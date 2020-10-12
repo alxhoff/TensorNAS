@@ -1,11 +1,11 @@
-from tensornasmodel import *
+from tensornas.model import *
 from deap import base, creator, tools, algorithms
 import keras
 import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
 
-from tensornasmutator import *
+from tensornas.mutator import *
 
 # Training MNIST data
 (
