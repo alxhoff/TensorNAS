@@ -26,15 +26,6 @@ class LayerBlock(Block):
     def mutate(self):
         self.layer.mutate()
 
-    def generate_constrained_output_sub_blocks(self, input_shape):
-        pass
-
-    def generate_constrained_input_sub_blocks(self, input_shape):
-        pass
-
-    def generate_random_sub_block(self, layer_type):
-        pass
-
     def output_shape(self):
         self.layer.output_shape()
 
@@ -169,22 +160,32 @@ class LayerBlock(Block):
         print("Layers: {}".format(self.layer_type))
 
     def create_layer(self, name, input_shape):
-        new_layer = None
-
         if name == "Conv2D":
-            self.args = gen_conv2d_args()
+            self.args = gen_conv2d_args(input_shape)
 
         elif name == "MaxPool2D":
-            self.args = gen_pool2d_args()
+            self.args = gen_pool2d_args(input_shape)
 
         elif name == "MaxPool3D":
-            self.args = gen_pool3d_args()
+            self.args = gen_pool3d_args(input_shape)
 
         elif name == "Reshape":
-            self.args = gen_reshape_args()
+            self.args = gen_reshape_args(input_shape)
 
         elif name == "Dense":
             self.args = gen_dense_args()
 
         elif name == "Dropout":
             self.args = gen_drop_args()
+
+    #### NOT REQUIRED
+    def generate_constrained_output_sub_blocks(self, input_shape):
+        pass
+
+    def generate_constrained_input_sub_blocks(self, input_shape):
+        pass
+
+    def generate_random_sub_block(self, layer_type):
+        pass
+
+    ####
