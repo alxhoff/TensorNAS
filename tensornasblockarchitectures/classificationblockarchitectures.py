@@ -1,4 +1,5 @@
 from tensornas.block import Block
+from tensornas.blockarchitecture import BlockArchitecture
 from tensornasblocks.classificationblock import ClassificationBlock
 from tensornasblocks.featureextractionblock import FeatureExtractionBlock
 from enum import Enum, auto
@@ -9,7 +10,7 @@ class TopLevelBlockTypes(Enum):
     FEATURE_EXTRACTION_BLOCK = auto()
 
 
-class ClassificationBlockArchitecture(Block):
+class ClassificationBlockArchitecture(BlockArchitecture):
 
     MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = TopLevelBlockTypes

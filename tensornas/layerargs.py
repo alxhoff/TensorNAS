@@ -81,6 +81,13 @@ def gen_dilation():
     return (1, 1)
 
 
+def gen_dropout(max):
+    while True:
+        ret = round(random.uniform(0, max), 2)
+        if ret != 0.0:
+            return ret
+
+
 def gen_padding():
     return random.choice(list(PaddingArgs)).value
 
@@ -142,7 +149,7 @@ def gen_Flatten_args(input_shape, none):
 
 
 def gen_Dropout_args(input_shape, max=1.0):
-    return {DropoutArgs.RATE: random.uniform(0, max)}
+    return {DropoutArgs.RATE.value: gen_dropout(max)}
 
 
 def gen_Reshape_args(input_shape, target_shape):

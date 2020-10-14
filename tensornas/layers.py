@@ -510,5 +510,4 @@ class DropoutLayer(ModelLayer):
         return self.inputshape.get()
 
     def get_keras_layer(self):
-        rate = self.args.get(DropoutArgs.RATE.value)
-        return keras.layers.Dropout(rate)
+        return keras.layers.Dropout(rate=self.args.get(DropoutArgs.RATE.value))

@@ -24,11 +24,22 @@ mnist_class_count = 10
 model = classificationblockarchitectures.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
-iter = model.get_iterator()
 
-for it in iter:
-    it.print()
+model.print()
 
-keras_model = model.get_keras_layers()
+model.evaluate(
+    train_data=images_train,
+    train_labels=labels_train,
+    test_data=images_test,
+    test_labels=labels_test,
+    epochs=2,
+    batch_size=100,
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)
+
+
+# idea, constrain previous layer, it stop multiple flatten being created sequentially
 
 print("Done")
