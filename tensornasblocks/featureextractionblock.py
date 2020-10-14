@@ -33,9 +33,6 @@ class FeatureExtractionBlock(Block):
     def mutate(self):
         pass
 
-    def get_output_shape(self):
-        self.sub_blocks[-1].get_output_shape()
-
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D.value:
             return LayerBlock(

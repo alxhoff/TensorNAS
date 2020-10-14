@@ -1,4 +1,4 @@
-from tensornas.blockarchitecture import BlockArchitecture
+from tensornas.block import Block
 from tensornasblocks.classificationblock import ClassificationBlock
 from tensornasblocks.featureextractionblock import FeatureExtractionBlock
 from enum import Enum, auto
@@ -9,7 +9,7 @@ class TopLevelBlockTypes(Enum):
     FEATURE_EXTRACTION_BLOCK = auto()
 
 
-class ClassificationBlockArchitecture(BlockArchitecture):
+class ClassificationBlockArchitecture(Block):
 
     MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = TopLevelBlockTypes
@@ -39,9 +39,6 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def mutate(self):
         pass
-
-    def get_output_shape(self):
-        return [1, self.class_count]
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK.value:

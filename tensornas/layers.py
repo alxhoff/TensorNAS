@@ -24,7 +24,7 @@ class LayerShape:
         self.dimensions = dimensions
 
     def get(self):
-        return self.dimensions
+        return list(self.dimensions)
 
 
 class ModelLayer(ABC):
@@ -99,9 +99,6 @@ class Conv2DLayer(ModelLayer):
 
     def _strides(self):
         return self.args[Conv2DArgs.STRIDES.value]
-
-    def _input_size(self):
-        return self.args[Conv2DArgs.INPUT_SHAPE.value]
 
     def _padding(self):
         return self.args[Conv2DArgs.PADDING.value]
@@ -182,7 +179,7 @@ class Conv2DLayer(ModelLayer):
 
     def output_shape(self):
         return Conv2DLayer.conv2Doutputshape(
-            input_size=self._input_size(),
+            input_size=self.inputshape.get(),
             stride=self._strides(),
             kernel_size=self._kernel_size(),
             filter_count=self._filters(),
@@ -202,7 +199,7 @@ class Conv2DLayer(ModelLayer):
         if padding == PaddingArgs.SAME.value:
             X = Conv2DLayer._same_pad_output_shape(input_size[0], stride[0])
             Y = Conv2DLayer._same_pad_output_shape(input_size[1], stride[1])
-            return X, Y, filter_count
+            return (X, Y, filter_count)
         elif padding == PaddingArgs.VALID.value:
             X = Conv2DLayer._valid_pad_output_shape(
                 input_size[0], kernel_size[0], stride[0]
@@ -210,15 +207,16 @@ class Conv2DLayer(ModelLayer):
             Y = Conv2DLayer._valid_pad_output_shape(
                 input_size[1], kernel_size[1], stride[1]
             )
-            return X, Y, filter_count
-        return 0, 0, 0
+            return (X, Y, filter_count)
+        else:
+            raise Exception("Invalid Conv2D padding for calculating output shape")
 
     def get_keras_layer(self):
         return keras.layers.Conv2D(
-            self.args.get(Conv2DArgs.FILTERS.value),
+            filters=self.args.get(Conv2DArgs.FILTERS.value),
             kernel_size=self.args.get(Conv2DArgs.KERNEL_SIZE.value),
             strides=self.args.get(Conv2DArgs.STRIDES.value),
-            input_shape=self.args.get(Conv2DArgs.INPUT_SHAPE.value),
+            input_shape=self.inputshape.get(),
             activation=self.args.get(Conv2DArgs.ACTIVATION.value),
             padding=self.args.get(Conv2DArgs.PADDING.value),
             dilation_rate=self.args.get(Conv2DArgs.DILATION_RATE.value),
@@ -293,12 +291,12 @@ class MaxPool2DLayer(ModelLayer):
         if self._padding() == PaddingArgs.SAME.value:
             x = self._same_pad_output_shape(inp[0], pool[0], stri[0])
             y = self._same_pad_output_shape(inp[1], pool[1], stri[1])
-            return x, y, inp[2]
+            return (x, y, inp[2])
         elif self._padding() == PaddingArgs.VALID.value:
             x = self._valid_pad_output_shape(inp[0], pool[0], stri[0])
             y = self._valid_pad_output_shape(inp[1], pool[1], stri[1])
-            return x, y, inp[2]
-        return 0, 0, 0
+            return (x, y, inp[2])
+        return (0, 0, 0)
 
     def get_keras_layer(self):
         return keras.layers.MaxPool2D(
@@ -411,7 +409,7 @@ class DenseLayer(ModelLayer):
         return True
 
     def output_shape(self):
-        return (self._units(),)
+        return (1, self._units())
 
     def get_keras_layer(self):
         return keras.layers.Dense(
@@ -480,7 +478,7 @@ class FlattenLayer(ModelLayer):
         return True
 
     def output_shape(self):
-        return (dimension_mag(self.inputshape.get()),)
+        return (1, dimension_mag(self.inputshape.get()))
 
     def get_keras_layer(self):
         return keras.layers.Flatten()

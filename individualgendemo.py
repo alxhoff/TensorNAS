@@ -14,8 +14,6 @@ images_test = images_test.reshape(
     images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
 )
 input_tensor_shape = (images_train.shape[1], images_train.shape[2], 1)
-print(input_tensor_shape)
-print(labels_train.shape)
 images_train = images_train.astype("float32")
 images_test = images_test.astype("float32")
 images_train /= 255
@@ -30,5 +28,7 @@ iter = model.get_iterator()
 
 for it in iter:
     it.print()
+
+keras_model = model.get_keras_layers()
 
 print("Done")

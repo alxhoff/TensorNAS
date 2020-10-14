@@ -1,5 +1,6 @@
 from enum import Enum, auto
 import random
+from math import ceil
 
 
 class Activations(str, Enum):
@@ -27,7 +28,6 @@ class Conv2DArgs(Enum):
     FILTERS = auto()
     KERNEL_SIZE = auto()
     STRIDES = auto()
-    INPUT_SHAPE = auto()
     PADDING = auto()
     DILATION_RATE = auto()
     ACTIVATION = auto()
@@ -58,22 +58,27 @@ class DropoutArgs(Enum):
 
 def gen_kernel_size(input_size):
     kernel_size = random.randint(1, input_size)
-    return [kernel_size, kernel_size]
+    return (kernel_size, kernel_size)
 
 
 def gen_2d_strides(max_bound):
     stride_size = random.randint(1, max_bound)
-    return [stride_size, stride_size]
+    return (stride_size, stride_size)
 
 
 def gen_3d_strides(max_bound):
     stride_size = random.randint(1, max_bound)
-    return [stride_size, stride_size, stride_size]
+    return (stride_size, stride_size, stride_size)
 
 
 def gen_poolsize(max_bound):
     size = random.randint(1, max_bound)
-    return [size, size]
+    return (size, size)
+
+
+def gen_dilation():
+    # TODO
+    return (1, 1)
 
 
 def gen_padding():
@@ -94,27 +99,30 @@ if not required.
 
 
 def gen_Conv2D_args(input_shape, args):
-    return {
-        Conv2DArgs.INPUT_SHAPE.value: input_shape,
-        Conv2DArgs.FILTERS.value: random.randint(1, input_shape[0] / 2),
-        Conv2DArgs.KERNEL_SIZE.value: gen_kernel_size(input_shape[0] / 2),
-        Conv2DArgs.STRIDES.value: [1, 1],
-        Conv2DArgs.PADDING.value: gen_padding(),
-    }
+    try:
+        return {
+            Conv2DArgs.FILTERS.value: random.randint(1, ceil(input_shape[0] / 2)),
+            Conv2DArgs.KERNEL_SIZE.value: gen_kernel_size(ceil(input_shape[0] / 2)),
+            Conv2DArgs.STRIDES.value: [1, 1],
+            Conv2DArgs.PADDING.value: gen_padding(),
+            Conv2DArgs.DILATION_RATE.value: gen_dilation(),
+        }
+    except Exception as e:
+        print(e)
 
 
 def gen_MaxPool2D_args(input_shape, args):
     return {
-        MaxPool2DArgs.POOL_SIZE.value: gen_poolsize(input_shape[0] / 2),
-        MaxPool2DArgs.STRIDES.value: gen_2d_strides(input_shape[0] / 2),
+        MaxPool2DArgs.POOL_SIZE.value: gen_poolsize(ceil(input_shape[0] / 2)),
+        MaxPool2DArgs.STRIDES.value: gen_2d_strides(ceil(input_shape[0] / 2)),
         MaxPool2DArgs.PADDING.value: gen_padding(),
     }
 
 
 def gen_MaxPool3D_args(input_shape, args):
     return {
-        MaxPool2DArgs.POOL_SIZE.value: gen_poolsize(input_shape[0] / 2),
-        MaxPool2DArgs.STRIDES.value: gen_3d_strides(input_shape[0] / 2),
+        MaxPool2DArgs.POOL_SIZE.value: gen_poolsize(ceil(input_shape[0] / 2)),
+        MaxPool2DArgs.STRIDES.value: gen_3d_strides(ceil(input_shape[0] / 2)),
         MaxPool2DArgs.PADDING.value: gen_padding(),
     }
 

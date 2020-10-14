@@ -18,12 +18,12 @@ class Block(ABC):
         - Generate constrained output sub blocks
         - Generate constrained input sub blocks
         - Generate random sub block
-        - Output shape
 
     Optional methods:
         - Validate
         - Get keras model
         - Print self
+        - Output shape
 
     Should not be overridden:
         - __init__
@@ -96,12 +96,11 @@ class Block(ABC):
         """
         return NotImplementedError
 
-    @abstractmethod
     def get_output_shape(self):
         """
         Returns the output shape of the block
         """
-        return NotImplementedError
+        return self.sub_blocks[-1].get_output_shape()
 
     def get_input_shape(self):
         """
@@ -124,13 +123,25 @@ class Block(ABC):
         """By default this method simply calls this method in all child blocks, it should be overriden for layer
         blocks, ie. blocks that are leaves within the block hierarchy and contain a keras layer, such blocks should
         return an appropriately instantiated keras layer object"""
+        ret = []
         for sb in self.sub_blocks:
-            return [sb.get_keras_layers()]
+            ret.append(sb.get_keras_layers())
+
+        if hasattr(ret[0], "__iter__"):
+            return list(itertools.chain(*ret))
+        else:
+            return ret
 
     def __get_cur_output_shape(self):
         if len(self.sub_blocks):
-            return self.sub_blocks[-1].get_output_shape()
-        return self.get_input_shape()
+            ret = self.sub_blocks[-1].get_output_shape()
+        else:
+            ret = self.get_input_shape()
+        try:
+            assert ret, "Input shape None"
+            return ret
+        except Exception as e:
+            exit(e)
 
     def print(self):
         self.print_self()
