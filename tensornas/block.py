@@ -82,11 +82,14 @@ class Block(ABC):
         if self.MAX_SUB_BLOCKS:
             for i in range(random.randrange(1, self.MAX_SUB_BLOCKS)):
                 self.sub_blocks.append(
-                    self.generate_random_sub_block(self.__get_random_sub_block_type())
+                    self.generate_random_sub_block(
+                        self.__get_cur_output_shape(),
+                        self.__get_random_sub_block_type(),
+                    )
                 )
 
     @abstractmethod
-    def generate_random_sub_block(self, layer_type):
+    def generate_random_sub_block(self, input_shape, layer_type):
         """This method appends a randomly selected possible sub-block to the classes sub-block list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
@@ -94,13 +97,13 @@ class Block(ABC):
         return NotImplementedError
 
     @abstractmethod
-    def output_shape(self):
+    def get_output_shape(self):
         """
         Returns the output shape of the block
         """
         return NotImplementedError
 
-    def input_shape(self):
+    def get_input_shape(self):
         """
         Returns in the input shape of the block
         """
@@ -126,8 +129,8 @@ class Block(ABC):
 
     def __get_cur_output_shape(self):
         if len(self.sub_blocks):
-            return self.sub_blocks[-1].output_shape()
-        return None
+            return self.sub_blocks[-1].get_output_shape()
+        return self.get_input_shape()
 
     def print(self):
         self.print_self()
@@ -156,8 +159,13 @@ class Block(ABC):
 
         while True:
             self.sub_blocks = []
-            self.generate_constrained_input_sub_blocks(input_shape)
-            self.__generate_sub_blocks(self.__get_cur_output_shape())
-            self.generate_constrained_output_sub_blocks(self.__get_cur_output_shape())
-            if self.validate():
-                break
+            if self.MAX_SUB_BLOCKS:
+                self.generate_constrained_input_sub_blocks(input_shape)
+                self.__generate_sub_blocks()
+                self.generate_constrained_output_sub_blocks(
+                    self.__get_cur_output_shape()
+                )
+                if self.validate():
+                    return
+            else:
+                return

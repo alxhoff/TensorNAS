@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 
-class TensorNASModel:
+class Model:
     def __init__(
         self,
         block_architecture_class,

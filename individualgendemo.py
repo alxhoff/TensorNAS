@@ -1,4 +1,4 @@
-from tensornasblocks import classificationblockarchitectures
+from tensornasblockarchitectures import classificationblockarchitectures
 from tensorflow import keras
 
 ##### Training MNIST data
@@ -27,9 +27,8 @@ model = classificationblockarchitectures.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 iter = model.get_iterator()
-print("Layers: {}".format(list(iter)))
 
 for it in iter:
-    print(it)
+    it.print()
 
 print("Done")

@@ -22,5 +22,5 @@ class BlockArchitecture(Block):
     def generate_constrained_output_sub_blocks(self, input_shape):
         pass
 
-    def output_shape(self):
+    def get_output_shape(self):
         pass

@@ -77,7 +77,7 @@ def pareto_dominance(ind1, ind2):
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
 
 # Each individual will be an architecture model
-creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
+creator.create("Individual", Model, fitness=creator.FitnessMulti)
 
 toolbox = base.Toolbox()
 

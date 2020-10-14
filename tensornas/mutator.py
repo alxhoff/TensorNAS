@@ -144,4 +144,3 @@ def mutate_enum(val, enum):
 # enum becomes a datatype and is used to access the static constants whose value is known at compile type
 def mutate_enum_i(enum):
     return random.choice(list(enum)).value
-    # chooses a random index in enum and returns value as 1 or 2

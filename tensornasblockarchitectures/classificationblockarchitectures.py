@@ -1,6 +1,6 @@
 from tensornas.blockarchitecture import BlockArchitecture
-from tensornas.blocks import ClassificationBlock
-from tensornas.blocks import FeatureExtractionBlock
+from tensornasblocks.classificationblock import ClassificationBlock
+from tensornasblocks.featureextractionblock import FeatureExtractionBlock
 from enum import Enum, auto
 
 
@@ -17,7 +17,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
     def __init__(self, input_shape, class_count):
         self.class_count = class_count
 
-        super().__init__(input_shape)
+        super().__init__(input_shape, parent_block=None)
 
     def validate(self):
         ret = True
@@ -25,7 +25,10 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             ret = False
         return ret
 
-    def generate_constrained_input_sub_blocks(self):
+    def generate_constrained_input_sub_blocks(self, input_shape):
+        pass
+
+    def generate_constrained_output_sub_blocks(self, input_shape):
         self.sub_blocks.append(
             ClassificationBlock(
                 input_shape=self.input_shape,
@@ -34,10 +37,14 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             )
         )
 
-    def generate_random_sub_block(self, layer_type):
+    def mutate(self):
+        pass
+
+    def get_output_shape(self):
+        return [1, self.class_count]
+
+    def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK.value:
-            return ClassificationBlock(input_shape=self.input_shape, parent_block=self)
+            return ClassificationBlock(input_shape=input_shape, parent_block=self)
         elif layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK.value:
-            return FeatureExtractionBlock(
-                input_shape=self.input_shape, parent_block=self
-            )
+            return FeatureExtractionBlock(input_shape=input_shape, parent_block=self)
