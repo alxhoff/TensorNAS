@@ -20,10 +20,10 @@ class Layer(NetworkLayer):
         return True
 
     def get_output_shape(self):
-        return (1, self.args.get(self.get_args_enum().UNITS.value))
+        return (1, self.args.get(self.get_args_enum().UNITS))
 
     def get_keras_layer(self):
         return tf.keras.layers.Dense(
-            self.args.get(self.get_args_enum().UNITS.value),
-            activation=self.args.get(self.get_args_enum().ACTIVATION.value),
+            self.args.get(self.get_args_enum().UNITS),
+            activation=self.args.get(self.get_args_enum().ACTIVATION).value,
         )

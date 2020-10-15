@@ -13,11 +13,11 @@ class Args(Enum):
 
 class Layer(NetworkLayer):
     def _gen_args(cls, input_shape, target_shape):
-        return {cls.get_args_enum().TARGET_SHAPE.value: target_shape}
+        return {cls.get_args_enum().TARGET_SHAPE: target_shape}
 
     def _mutate_target_shape(self):
-        self.args[self.get_args_enum().TARGET_SHAPE.value] = mutate_dimension(
-            self.args[self.get_args_enum().TARGET_SHAPE.value]
+        self.args[self.get_args_enum().TARGET_SHAPE] = mutate_dimension(
+            self.args[self.get_args_enum().TARGET_SHAPE]
         )
 
     def repair(self):
@@ -39,9 +39,7 @@ class Layer(NetworkLayer):
         return True
 
     def get_output_shape(self):
-        return self.args[self.get_args_enum().TARGET_SHAPE.value]
+        return self.args[self.get_args_enum().TARGET_SHAPE]
 
     def get_keras_layer(self):
-        return tf.keras.layers.Reshape(
-            self.args.get(self.get_args_enum().TARGET_SHAPE.value)
-        )
+        return tf.keras.layers.Reshape(self.args.get(self.get_args_enum().TARGET_SHAPE))

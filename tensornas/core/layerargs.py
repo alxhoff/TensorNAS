@@ -55,8 +55,8 @@ def gen_dropout(max):
 
 
 def gen_padding():
-    return random.choice(list(ArgPadding)).value
+    return random.choice(list(ArgPadding))
 
 
 def gen_activation():
-    return random.choice(list(ArgActivations)).value
+    return random.choice(list(ArgActivations))

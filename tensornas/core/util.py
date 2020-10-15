@@ -137,14 +137,14 @@ def mutate_tuple(val, min_bound, max_bound, operator=MutationOperators.SYNC_STEP
 
 def mutate_enum(val, enum):
     while True:
-        new_val = random.choice(list(enum)).value
+        new_val = random.choice(list(enum))
         if new_val != val:
             return new_val
 
 
 # enum becomes a datatype and is used to access the static constants whose value is known at compile type
 def mutate_enum_i(enum):
-    return random.choice(list(enum)).value
+    return random.choice(list(enum))
 
 
 def find_modules(pkg, dir):

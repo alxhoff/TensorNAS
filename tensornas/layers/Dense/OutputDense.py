@@ -7,6 +7,6 @@ class Layer(Layer):
         if not args:
             raise Exception("Creating output dense layer without output class count")
         return {
-            cls.get_args_enum().UNITS.value: args,
-            cls.get_args_enum().ACTIVATION.value: la.ArgActivations.SOFTMAX.value,
+            cls.get_args_enum().UNITS: args,
+            cls.get_args_enum().ACTIVATION: la.ArgActivations.SOFTMAX,
         }

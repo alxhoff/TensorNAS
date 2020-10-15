@@ -38,13 +38,13 @@ class FeatureExtractionBlock(Block):
         return True
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        if layer_type == self.SUB_BLOCK_TYPES.CONV2D.value:
+        if layer_type == self.SUB_BLOCK_TYPES.CONV2D:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=SupportedLayers.CONV2D,
             )
-        elif layer_type == self.SUB_BLOCK_TYPES.MAXPOOL2D.value:
+        elif layer_type == self.SUB_BLOCK_TYPES.MAXPOOL2D:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,

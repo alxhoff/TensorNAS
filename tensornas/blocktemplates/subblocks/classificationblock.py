@@ -38,10 +38,7 @@ class ClassificationBlock(Block):
 
     def validate(self):
         ret = True
-        if (
-            not self.sub_blocks[-1].layer.get_name()
-            == SupportedLayers.OUTPUTDENSE.value
-        ):
+        if not self.sub_blocks[-1].layer_type == SupportedLayers.OUTPUTDENSE:
             ret = False
         return ret
 
@@ -62,25 +59,25 @@ class ClassificationBlock(Block):
         pass
 
     def check_new_layer_type(self, layer_type):
-        if len(self.sub_blocks) and layer_type == self.SUB_BLOCK_TYPES.FLATTEN.value:
+        if len(self.sub_blocks) and layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
             if self.sub_blocks[-1].layer_type == SupportedLayers.FLATTEN:
                 return False
         return True
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        if layer_type == self.SUB_BLOCK_TYPES.FLATTEN.value:
+        if layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=SupportedLayers.FLATTEN,
             )
-        elif layer_type == self.SUB_BLOCK_TYPES.HIDDENDENSE.value:
+        elif layer_type == self.SUB_BLOCK_TYPES.HIDDENDENSE:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=SupportedLayers.HIDDENDENSE,
             )
-        elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT.value:
+        elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
