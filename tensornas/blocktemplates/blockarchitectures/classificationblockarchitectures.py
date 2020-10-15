@@ -33,7 +33,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
     def generate_constrained_output_sub_blocks(self, input_shape):
         self.sub_blocks.append(
             ClassificationBlock(
-                input_shape=self.input_shape,
+                input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
                 layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
