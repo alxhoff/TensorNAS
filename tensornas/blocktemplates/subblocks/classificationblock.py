@@ -1,7 +1,8 @@
 from enum import Enum, auto
 
-from tensornas.block import Block
-from tensornas.layerblock import LayerBlock, SupportedLayerTypes
+from tensornas.core.block import Block
+from tensornas.core.layerblock import LayerBlock
+from tensornas.layers import SupportedLayers
 
 
 class ClassificationBlockLayerTypes(Enum):
@@ -37,7 +38,7 @@ class ClassificationBlock(Block):
 
     def validate(self):
         ret = True
-        if not self.sub_blocks[-1].layer.layer_type == SupportedLayerTypes.DENSE:
+        if not self.sub_blocks[-1].layer.layer_type == SupportedLayers.DENSE:
             ret = False
         return ret
 
@@ -49,7 +50,7 @@ class ClassificationBlock(Block):
             LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayerTypes.DENSE,
+                layer_type=SupportedLayers.DENSE,
                 args=self.class_count,
             )
         )
@@ -62,18 +63,18 @@ class ClassificationBlock(Block):
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayerTypes.FLATTEN,
+                layer_type=SupportedLayers.FLATTEN,
             )
         elif layer_type == self.SUB_BLOCK_TYPES.DENSE.value:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayerTypes.DENSE,
+                layer_type=SupportedLayers.DENSE,
             )
         elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT.value:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayerTypes.DROPOUT,
+                layer_type=SupportedLayers.DROPOUT,
                 args=self.DROPOUT_RATE_MAX,
             )

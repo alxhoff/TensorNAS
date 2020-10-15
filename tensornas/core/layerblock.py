@@ -1,15 +1,7 @@
-from tensornas.block import Block
-from tensornas.layers import *
+from enum import Enum
 
-
-class SupportedLayerTypes(Enum):
-    CONV2D = "Conv2D"
-    MAX_POOL_2D = "MaxPool2D"
-    MAX_POOL_3D = "MaxPool3D"
-    RESHAPE = "Reshape"
-    DENSE = "Dense"
-    FLATTEN = "Flatten"
-    DROPOUT = "Dropout"
+from tensornas.core.block import Block
+from tensornas.core.layerargs import create_layer_args
 
 
 class LayerBlock(Block):
@@ -40,7 +32,7 @@ class LayerBlock(Block):
         return self.layer.mutate()
 
     def get_output_shape(self):
-        return self.layer.output_shape()
+        return self.layer.get_output_shape()
 
     def validate(self):
         return self.layer.validate()

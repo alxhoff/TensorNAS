@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import itertools
 import random
-from tensornas.mutator import mutate_enum_i
+from tensornas.core.util import mutate_enum_i
 
 
 class Block(ABC):
@@ -51,14 +51,6 @@ class Block(ABC):
         mutate them"""
         return NotImplemented
 
-    def validate(self):
-        """This function will check if the generated block sequence is valid. Default implementation can be used which
-        always returns true, ie. the block is always considered valid.
-
-        @return True if the sub-block sequence is valid else False
-        """
-        return True
-
     @abstractmethod
     def generate_constrained_output_sub_blocks(self, input_shape):
         """This method is called after the sub-blocks have been generated to generate the required blocks,
@@ -75,6 +67,22 @@ class Block(ABC):
         """
         pass
 
+    @abstractmethod
+    def generate_random_sub_block(self, input_shape, layer_type):
+        """This method appends a randomly selected possible sub-block to the classes sub-block list, The block type is
+        passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
+        possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
+        """
+        return NotImplementedError
+
+    def validate(self):
+        """This function will check if the generated block sequence is valid. Default implementation can be used which
+        always returns true, ie. the block is always considered valid.
+
+        @return True if the sub-block sequence is valid else False
+        """
+        return True
+
     def __generate_sub_blocks(self):
         """Subclasses of Block should not populate their sub-block lists but instead implement this function which
         will handle this
@@ -87,14 +95,6 @@ class Block(ABC):
                         self.__get_random_sub_block_type(),
                     )
                 )
-
-    @abstractmethod
-    def generate_random_sub_block(self, input_shape, layer_type):
-        """This method appends a randomly selected possible sub-block to the classes sub-block list, The block type is
-        passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
-        possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
-        """
-        return NotImplementedError
 
     def get_output_shape(self):
         """
@@ -144,15 +144,15 @@ class Block(ABC):
             exit(e)
 
     def print(self):
+        """
+        Function useful for print debugging, the function by default invokes print self and then invokes printing in all
+        child nodes. If you wish to print all children nodes then only override print_self and not print_self
+        """
         self.print_self()
         for sb in self.sub_blocks:
             sb.print()
 
     def print_self(self):
-        """
-        Function useful for print debugging, the function by default invokes print self and then invokes printing in all
-        child nodes. If you wish to print all children nodes then only override print_self and not print_self
-        """
         pass
 
     def __init__(self, input_shape, parent_block):

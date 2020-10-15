@@ -1,4 +1,4 @@
-from tensornasblockarchitectures import classificationblockarchitectures
+from tensornas.blocktemplates.blockarchitectures import classificationblockarchitectures
 from tensorflow import keras
 
 ##### Training MNIST data
@@ -21,25 +21,55 @@ images_test /= 255
 mnist_class_count = 10
 #######
 
-model = classificationblockarchitectures.ClassificationBlockArchitecture(
-    input_tensor_shape, mnist_class_count
-)
+from tensornas.layers import Conv2D, Flatten, Dropout
+from tensornas.layers.Dense import HiddenDense, OutputDense
 
-model.print()
+# test = Conv2D.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+#
+# test = Flatten.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+#
+# test = Dropout.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
 
-model.evaluate(
-    train_data=images_train,
-    train_labels=labels_train,
-    test_data=images_test,
-    test_labels=labels_test,
-    epochs=2,
-    batch_size=100,
-    optimizer="adam",
-    loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"],
-)
+test = HiddenDense.Layer(input_tensor_shape)
+print(test.get_name())
+test.print()
+test.mutate()
+test.print()
 
+test = OutputDense.Layer(input_tensor_shape, 10)
+print(test.get_name())
+test.print()
+test.mutate()
+test.print()
 
-# idea, constrain previous layer, it stop multiple flatten being created sequentially
-
-print("Done")
+# model = classificationblockarchitectures.ClassificationBlockArchitecture(
+#     input_tensor_shape, mnist_class_count
+# )
+#
+# model.print()
+#
+# model.evaluate(
+#     train_data=images_train,
+#     train_labels=labels_train,
+#     test_data=images_test,
+#     test_labels=labels_test,
+#     epochs=2,
+#     batch_size=100,
+#     optimizer="adam",
+#     loss="sparse_categorical_crossentropy",
+#     metrics=["accuracy"],
+# )
+#
+#
+# # idea, constrain previous layer, it stop multiple flatten being created sequentially
+#
+# print("Done")

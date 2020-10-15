@@ -1,4 +1,4 @@
-from tensornas.block import Block
+from tensornas.core.block import Block
 import numpy as np
 import tensorflow as tf
 

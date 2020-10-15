@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import demomodels
 import multiprocessing
 
-from tensornas.mutator import *
+from tensornas.core.util import *
 
 # Training MNIST data
 (
