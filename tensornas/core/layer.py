@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod
-import random, re
 import importlib
-import os
+import random
+import re
+from abc import ABC, abstractmethod
 
 
 class LayerShape:

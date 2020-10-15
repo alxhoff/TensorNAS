@@ -1,5 +1,6 @@
-from tensornas.blocktemplates.blockarchitectures import classificationblockarchitectures
 from tensorflow import keras
+
+from tensornas.blocktemplates.blockarchitectures import classificationblockarchitectures
 
 ##### Training MNIST data
 (
@@ -20,10 +21,6 @@ images_train /= 255
 images_test /= 255
 mnist_class_count = 10
 #######
-
-from tensornas.layers import Conv2D, Flatten, Dropout, Reshape
-from tensornas.layers.Dense import HiddenDense, OutputDense
-from tensornas.layers.MaxPool import MaxPool2D, MaxPool3D
 
 # test = Conv2D.Layer(input_tensor_shape)
 # print(test.get_name())
@@ -88,7 +85,6 @@ model.evaluate(
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
 )
-
 
 # # idea, constrain previous layer, it stop multiple flatten being created sequentially
 #

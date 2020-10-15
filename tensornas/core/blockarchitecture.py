@@ -1,6 +1,7 @@
-from tensornas.core.block import Block
 import numpy as np
 import tensorflow as tf
+
+from tensornas.core.block import Block
 
 
 class BlockArchitecture(Block):

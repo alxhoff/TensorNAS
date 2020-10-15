@@ -1,9 +1,10 @@
-from tensornas.core.blockarchitecture import BlockArchitecture
+from enum import Enum, auto
+
 from tensornas.blocktemplates.subblocks.classificationblock import ClassificationBlock
 from tensornas.blocktemplates.subblocks.featureextractionblock import (
     FeatureExtractionBlock,
 )
-from enum import Enum, auto
+from tensornas.core.blockarchitecture import BlockArchitecture
 
 
 class ClassificationArchitectureSubBlocks(Enum):
@@ -11,7 +12,6 @@ class ClassificationArchitectureSubBlocks(Enum):
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
-
     MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = ClassificationArchitectureSubBlocks
 

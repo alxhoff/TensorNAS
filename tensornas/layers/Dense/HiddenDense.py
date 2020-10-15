@@ -1,8 +1,8 @@
 import random
 
-from tensornas.layers.Dense import Layer
-from tensornas.core.util import mutate_int, mutate_enum
 import tensornas.core.layerargs as la
+from tensornas.core.util import mutate_int, mutate_enum
+from tensornas.layers.Dense import Layer
 
 
 class Layer(Layer):

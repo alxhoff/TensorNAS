@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import os, pkgutil
 from enum import Enum
+
 from setuptools import find_packages
+
 from tensornas.core.util import find_modules
 
 

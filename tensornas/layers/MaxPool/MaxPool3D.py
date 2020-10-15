@@ -1,4 +1,5 @@
 from math import ceil
+
 import tensorflow as tf
 
 from tensornas.core.layerargs import *

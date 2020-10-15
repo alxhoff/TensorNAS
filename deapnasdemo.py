@@ -1,10 +1,11 @@
-from tensornas.model import *
-from deap import base, creator, tools, algorithms
-import keras
-import matplotlib.pyplot as plt
-import demomodels
 import multiprocessing
 
+import keras
+import matplotlib.pyplot as plt
+from deap import base, creator, tools, algorithms
+from tensornas.model import *
+
+import demomodels
 from tensornas.core.util import *
 
 # Training MNIST data
@@ -33,6 +34,7 @@ batch_size = 600
 demomodels.generate_demo_model_jsons()
 demo_models = demomodels.generate_demo_model_array()
 demo_model_count = 1
+
 
 # Functions used for EA demo
 
@@ -110,11 +112,12 @@ history = tools.History()
 
 toolbox.decorate("mate", history.decorator)
 toolbox.decorate("mutate", history.decorator)
+
+
 # toolbox.decorate("evaluate", history.decorator)
 
 
 def main():
-
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)

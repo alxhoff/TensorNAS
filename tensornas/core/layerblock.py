@@ -1,5 +1,4 @@
 from tensornas.core.block import Block
-from tensornas.layers import Layers
 
 
 class LayerBlock(Block):

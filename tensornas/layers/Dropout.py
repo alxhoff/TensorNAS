@@ -1,10 +1,11 @@
-from enum import Enum, auto
+from enum import auto
+
 import tensorflow as tf
 
+import tensornas.core.layerargs as la
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.layerargs import *
 from tensornas.core.util import mutate_unit_interval
-import tensornas.core.layerargs as la
 
 
 class Args(Enum):

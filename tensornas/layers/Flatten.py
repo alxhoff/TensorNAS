@@ -1,5 +1,6 @@
-import tensorflow as tf
 from enum import Enum, auto
+
+import tensorflow as tf
 
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import dimension_mag

@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 import itertools
 import random
+from abc import ABC, abstractmethod
+
 from tensornas.core.util import mutate_enum_i
 
 

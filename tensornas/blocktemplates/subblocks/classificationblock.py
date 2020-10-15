@@ -28,7 +28,7 @@ class ClassificationBlock(Block):
 
     DROPOUT_RATE_MAX = 0.2
 
-    MAX_SUB_BLOCKS = 10
+    MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = ClassificationBlockLayerTypes
 
     def __init__(self, input_shape, parent_block, class_count):

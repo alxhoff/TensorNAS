@@ -1,5 +1,5 @@
-from tensornas.layers.Dense import Layer
 import tensornas.core.layerargs as la
+from tensornas.layers.Dense import Layer
 
 
 class Layer(Layer):

@@ -1,11 +1,12 @@
+import random
 from enum import Enum, auto
 from math import ceil
-import tensorflow as tf
-import random
 
+import tensorflow as tf
+
+import tensornas.core.layerargs as la
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import mutate_int, mutate_enum, mutate_tuple, MutationOperators
-import tensornas.core.layerargs as la
 
 
 class Args(Enum):

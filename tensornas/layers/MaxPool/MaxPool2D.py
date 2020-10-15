@@ -1,7 +1,7 @@
-import tensorflow as tf
 from math import ceil
 
-from tensornas.core.layer import NetworkLayer
+import tensorflow as tf
+
 from tensornas.core.layerargs import *
 from tensornas.layers.MaxPool import Layer
 

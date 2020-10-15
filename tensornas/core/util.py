@@ -1,6 +1,6 @@
-from enum import Enum, auto
-import random
 import math
+import random
+from enum import Enum, auto
 from functools import reduce
 from pkgutil import iter_modules
 
