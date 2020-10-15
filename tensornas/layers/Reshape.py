@@ -1,34 +1,26 @@
 from enum import Enum, auto
+import tensorflow as tf
 
-from tensornas.core.networklayer import NetworkLayer
+from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import dimension_mag, mutate_dimension
 
 
-def gen_Reshape_args(input_shape, target_shape):
-    return {ReshapeArgs.TARGET_SHAPE.value: target_shape}
-
-
-class ReshapeArgs(Enum):
+class Args(Enum):
     "Args needed for creating Reshape layer"
     TARGET_SHAPE = auto()
 
 
-class ReshapeLayer(NetworkLayer):
-    MUTATABLE_PARAMETERS = 0
-
-    def _target_shape(self):
-        return self.args.get(ReshapeArgs.TARGET_SHAPE.value, self.inputshape.get())
+class Layer(NetworkLayer):
+    def _gen_args(cls, input_shape, target_shape):
+        return {cls.get_args_enum().TARGET_SHAPE.value: target_shape}
 
     def _mutate_target_shape(self):
-        self.args[ReshapeArgs.TARGET_SHAPE.value] = mutate_dimension(
-            self._target_shape()
+        self.args[self.get_args_enum().TARGET_SHAPE.value] = mutate_dimension(
+            self.args[self.get_args_enum().TARGET_SHAPE.value]
         )
 
     def repair(self):
         self.inputshape.set(self.outputshape.get())
-        self._mutate_target_shape()
-
-    def mutate(self):
         self._mutate_target_shape()
 
     def validate(self, repair=True):
@@ -46,8 +38,9 @@ class ReshapeLayer(NetworkLayer):
         return True
 
     def get_output_shape(self):
-        return self._target_shape()
+        return self.args[self.get_args_enum().TARGET_SHAPE.value]
 
     def get_keras_layer(self):
-        target_shape = self.args.get(ReshapeArgs.TARGET_SHAPE.value)
-        return tf.keras.layers.Reshape(target_shape)
+        return tf.keras.layers.Reshape(
+            self.args.get(self.get_args_enum().TARGET_SHAPE.value)
+        )

@@ -21,8 +21,9 @@ images_test /= 255
 mnist_class_count = 10
 #######
 
-from tensornas.layers import Conv2D, Flatten, Dropout
+from tensornas.layers import Conv2D, Flatten, Dropout, Reshape
 from tensornas.layers.Dense import HiddenDense, OutputDense
+from tensornas.layers.MaxPool import MaxPool2D, MaxPool3D
 
 # test = Conv2D.Layer(input_tensor_shape)
 # print(test.get_name())
@@ -38,38 +39,57 @@ from tensornas.layers.Dense import HiddenDense, OutputDense
 # print(test.get_name())
 # test.print()
 # test.mutate()
+#
+# test = HiddenDense.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+# test.print()
+#
+# test = OutputDense.Layer(input_tensor_shape, 10)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+# test.print()
+#
+# test = Reshape.Layer(input_tensor_shape, [1, 784])
+# print(test.get_name())
+# test.print()
+# test.mutate()
+# test.print()
+#
+# test = MaxPool2D.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+# test.print()
+#
+# test = MaxPool3D.Layer(input_tensor_shape)
+# print(test.get_name())
+# test.print()
+# test.mutate()
+# test.print()
 
-test = HiddenDense.Layer(input_tensor_shape)
-print(test.get_name())
-test.print()
-test.mutate()
-test.print()
 
-test = OutputDense.Layer(input_tensor_shape, 10)
-print(test.get_name())
-test.print()
-test.mutate()
-test.print()
+model = classificationblockarchitectures.ClassificationBlockArchitecture(
+    input_tensor_shape, mnist_class_count
+)
 
-# model = classificationblockarchitectures.ClassificationBlockArchitecture(
-#     input_tensor_shape, mnist_class_count
-# )
-#
-# model.print()
-#
-# model.evaluate(
-#     train_data=images_train,
-#     train_labels=labels_train,
-#     test_data=images_test,
-#     test_labels=labels_test,
-#     epochs=2,
-#     batch_size=100,
-#     optimizer="adam",
-#     loss="sparse_categorical_crossentropy",
-#     metrics=["accuracy"],
-# )
-#
-#
+model.print()
+
+model.evaluate(
+    train_data=images_train,
+    train_labels=labels_train,
+    test_data=images_test,
+    test_labels=labels_test,
+    epochs=2,
+    batch_size=100,
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)
+
+
 # # idea, constrain previous layer, it stop multiple flatten being created sequentially
 #
-# print("Done")
+print("Done")

@@ -45,5 +45,5 @@ class FeatureExtractionBlock(Block):
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.MAX_POOL_2D,
+                layer_type=SupportedLayers.MAXPOOL2D,
             )

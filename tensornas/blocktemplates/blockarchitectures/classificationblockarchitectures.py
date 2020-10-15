@@ -6,15 +6,14 @@ from tensornas.blocktemplates.subblocks.featureextractionblock import (
 from enum import Enum, auto
 
 
-class TopLevelBlockTypes(Enum):
-    CLASSIFICATION_BLOCK = auto()
+class ClassificationArchitectureSubBlocks(Enum):
     FEATURE_EXTRACTION_BLOCK = auto()
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
 
     MAX_SUB_BLOCKS = 5
-    SUB_BLOCK_TYPES = TopLevelBlockTypes
+    SUB_BLOCK_TYPES = ClassificationArchitectureSubBlocks
 
     def __init__(self, input_shape, class_count):
         self.class_count = class_count
@@ -43,7 +42,5 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         pass
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        if layer_type == self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK.value:
-            return ClassificationBlock(input_shape=input_shape, parent_block=self)
-        elif layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK.value:
+        if layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK.value:
             return FeatureExtractionBlock(input_shape=input_shape, parent_block=self)

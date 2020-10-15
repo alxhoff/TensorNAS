@@ -14,7 +14,6 @@ class ArgActivations(str, Enum):
     SOFTMAX = "softmax"
     SOFTPLUS = "softplus"
     SOFTSIGN = "softsign"
-    SWISH = "swish"
     TANH = "tanh"
 
 
@@ -63,12 +62,13 @@ def gen_activation():
     return random.choice(list(ArgActivations)).value
 
 
-def create_layer_args(layer_type, input_shape, args):
-    """
-    Each layer type gets a function of the form 'gen_' + LayerType enum value, ie. string name of layer, + '_args'.
-    The function must take in two arguments, the input shape and args. Args is used to pass in layer specific values
-    eg. A classification dense layer will need to know how many classes to have while other layers have no need of this
-    argument. Since eval is used to call these functions the arguments must be provided in the function definition, even
-    if not required.
-    """
-    return eval("gen_" + layer_type.value + "_args")(input_shape, args)
+#
+# def create_layer_args(layer_type, input_shape, args):
+#     """
+#     Each layer type gets a function of the form 'gen_' + LayerType enum value, ie. string name of layer, + '_args'.
+#     The function must take in two arguments, the input shape and args. Args is used to pass in layer specific values
+#     eg. A classification dense layer will need to know how many classes to have while other layers have no need of this
+#     argument. Since eval is used to call these functions the arguments must be provided in the function definition, even
+#     if not required.
+#     """
+#     return eval("gen_" + layer_type.value + "_args")(input_shape, args)

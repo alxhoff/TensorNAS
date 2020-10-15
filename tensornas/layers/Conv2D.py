@@ -3,7 +3,7 @@ from math import ceil
 import tensorflow as tf
 import random
 
-from tensornas.core.networklayer import NetworkLayer
+from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import mutate_int, mutate_enum, mutate_tuple, MutationOperators
 import tensornas.core.layerargs as la
 
@@ -24,18 +24,18 @@ class Layer(NetworkLayer):
     MAX_STRIDE = 7
     MAX_DILATION = 5
 
-    def _gen_args(self, input_shape, args):
+    def _gen_args(cls, input_shape, args):
         return {
-            self.get_args_enum().FILTERS.value: random.randint(
+            cls.get_args_enum().FILTERS.value: random.randint(
                 1, ceil(input_shape[0] / 2)
             ),
-            self.get_args_enum().KERNEL_SIZE.value: la.gen_kernel_size(
+            cls.get_args_enum().KERNEL_SIZE.value: la.gen_kernel_size(
                 ceil(input_shape[0] / 2)
             ),
-            self.get_args_enum().STRIDES.value: [1, 1],
-            self.get_args_enum().PADDING.value: la.gen_padding(),
-            self.get_args_enum().DILATION_RATE.value: la.gen_dilation(),
-            self.get_args_enum().ACTIVATION.value: la.gen_activation(),
+            cls.get_args_enum().STRIDES.value: [1, 1],
+            cls.get_args_enum().PADDING.value: la.gen_padding(),
+            cls.get_args_enum().DILATION_RATE.value: la.gen_dilation(),
+            cls.get_args_enum().ACTIVATION.value: la.gen_activation(),
         }
 
     def _mutate_filters(self, operator=MutationOperators.STEP):

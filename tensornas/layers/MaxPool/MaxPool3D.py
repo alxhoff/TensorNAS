@@ -17,21 +17,6 @@ class Layer(Layer):
             self.get_args_enum().PADDING.value: gen_padding(),
         }
 
-    def validate(self, repair=True):
-        if (
-            not self._strides()[0] > 0
-            or not self._strides()[1] > 0
-            or not self._strides()[2] > 0
-        ):
-            return False
-        if (
-            not self._pool_size()[0] > 0
-            or not self._pool_size()[1] > 0
-            or not self._pool_size()[2] > 0
-        ):
-            return False
-        return True
-
     def get_output_shape(self):
         # TODO
         return self.inputshape.get()

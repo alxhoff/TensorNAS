@@ -74,7 +74,7 @@ class NetworkLayer(ABC):
 
     @classmethod
     def _get_m_name(cls):
-        ret = re.findall(r"^(.*)\.([a-zA-Z]*$)", cls._get_module())
+        ret = re.findall(r"^(.*)\.([a-zA-Z0-9]*$)", cls._get_module())
         if len(ret):
             return ret[0]
         else:
@@ -89,7 +89,7 @@ class NetworkLayer(ABC):
 
     @classmethod
     def get_parent_name(cls):
-        ret = re.findall(r".*\.([a-zA-Z]*$)", cls._get_parent_module())
+        ret = re.findall(r".*\.([a-zA-Z0-9]*$)", cls._get_parent_module())
         if len(ret):
             return ret[0]
         else:

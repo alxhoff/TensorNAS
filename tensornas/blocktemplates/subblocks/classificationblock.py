@@ -11,7 +11,7 @@ class ClassificationBlockLayerTypes(Enum):
     """
 
     FLATTEN = auto()
-    DENSE = auto()
+    HIDDENDENSE = auto()
     DROPOUT = auto()
 
 
@@ -31,14 +31,17 @@ class ClassificationBlock(Block):
     MAX_SUB_BLOCKS = 10
     SUB_BLOCK_TYPES = ClassificationBlockLayerTypes
 
-    def __init__(self, input_shape, parent_block, class_count=None):
+    def __init__(self, input_shape, parent_block, class_count):
         self.class_count = class_count
 
         super().__init__(input_shape, parent_block)
 
     def validate(self):
         ret = True
-        if not self.sub_blocks[-1].layer.layer_type == SupportedLayers.DENSE:
+        if (
+            not self.sub_blocks[-1].layer.get_name()
+            == SupportedLayers.OUTPUTDENSE.value
+        ):
             ret = False
         return ret
 
@@ -50,7 +53,7 @@ class ClassificationBlock(Block):
             LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.DENSE,
+                layer_type=SupportedLayers.OUTPUTDENSE,
                 args=self.class_count,
             )
         )
@@ -65,11 +68,11 @@ class ClassificationBlock(Block):
                 parent_block=self,
                 layer_type=SupportedLayers.FLATTEN,
             )
-        elif layer_type == self.SUB_BLOCK_TYPES.DENSE.value:
+        elif layer_type == self.SUB_BLOCK_TYPES.HIDDENDENSE.value:
             return LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.DENSE,
+                layer_type=SupportedLayers.HIDDENDENSE,
             )
         elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT.value:
             return LayerBlock(

@@ -1,7 +1,5 @@
-from enum import Enum
-
 from tensornas.core.block import Block
-from tensornas.core.layerargs import create_layer_args
+from tensornas.layers import Layers
 
 
 class LayerBlock(Block):
@@ -18,13 +16,8 @@ class LayerBlock(Block):
     SUB_BLOCK_TYPES = None
 
     def __init__(self, input_shape, parent_block, layer_type, args=None):
-        self.layer = eval(layer_type.value + "Layer")(
-            layer_type=layer_type,
-            input_shape=input_shape,
-            args=create_layer_args(
-                layer_type=layer_type, input_shape=input_shape, args=args
-            ),
-        )
+        layer = eval("Layers." + layer_type.name + ".value.Layer")
+        self.layer = layer(input_shape=input_shape, args=args)
 
         super().__init__(input_shape=input_shape, parent_block=parent_block)
 

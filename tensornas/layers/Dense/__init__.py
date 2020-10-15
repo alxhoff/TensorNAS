@@ -1,7 +1,7 @@
 from enum import Enum, auto
 import tensorflow as tf
 
-from tensornas.core.networklayer import NetworkLayer
+from tensornas.core.layer import NetworkLayer
 
 
 class Args(Enum):

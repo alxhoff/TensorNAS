@@ -1,7 +1,7 @@
 import tensorflow as tf
 from enum import Enum, auto
 
-from tensornas.core.networklayer import NetworkLayer
+from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import dimension_mag
 
 

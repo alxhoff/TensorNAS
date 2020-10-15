@@ -2,6 +2,7 @@ from enum import Enum, auto
 import random
 import math
 from functools import reduce
+from pkgutil import iter_modules
 
 
 class MutationOperators(Enum):
@@ -144,3 +145,14 @@ def mutate_enum(val, enum):
 # enum becomes a datatype and is used to access the static constants whose value is known at compile type
 def mutate_enum_i(enum):
     return random.choice(list(enum)).value
+
+
+def find_modules(pkg, dir):
+    from importlib import import_module
+
+    modules = []
+    for mod in iter_modules([dir]):
+        if not mod.ispkg:
+            mod_name = pkg + "." + mod.name
+            modules.append(import_module(mod_name))
+    return modules
