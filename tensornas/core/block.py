@@ -25,6 +25,7 @@ class Block(ABC):
         - Get keras model
         - Print self
         - Output shape
+        - Check new layer type
 
     Should not be overridden:
         - __init__
@@ -76,6 +77,14 @@ class Block(ABC):
         """
         return NotImplementedError
 
+    def check_new_layer_type(self, layer_type):
+        """
+        This function is called when the next layer type is randomly generated, inside the function the user can perform
+        checks to check if the next layer type is allowed, more likely will be checks to see if the next layer type is
+        invalid, eg. two sequential flatten layers.
+        """
+        return True
+
     def validate(self):
         """This function will check if the generated block sequence is valid. Default implementation can be used which
         always returns true, ie. the block is always considered valid.
@@ -86,16 +95,19 @@ class Block(ABC):
 
     def __generate_sub_blocks(self):
         """Subclasses of Block should not populate their sub-block lists but instead implement this function which
-        will handle this
+        will handle this. Generated blocks that are not valid
         """
         if self.MAX_SUB_BLOCKS:
             for i in range(random.randrange(1, self.MAX_SUB_BLOCKS)):
-                self.sub_blocks.append(
-                    self.generate_random_sub_block(
-                        self.__get_cur_output_shape(),
+                out_shape = self.__get_cur_output_shape()
+                while True:
+                    block = self.generate_random_sub_block(
+                        out_shape,
                         self.__get_random_sub_block_type(),
                     )
-                )
+                    if block:
+                        self.sub_blocks.append(block)
+                        break
 
     def get_output_shape(self):
         """
@@ -109,11 +121,13 @@ class Block(ABC):
         """
         return self.input_shape
 
-    @classmethod
-    def __get_random_sub_block_type(cls):
+    def __get_random_sub_block_type(self):
         """This method returns a random enum value of the block's possible sub-blocks"""
-        if cls.SUB_BLOCK_TYPES:
-            return mutate_enum_i(cls.SUB_BLOCK_TYPES)
+        if self.SUB_BLOCK_TYPES:
+            while True:
+                next_type = mutate_enum_i(self.SUB_BLOCK_TYPES)
+                if self.check_new_layer_type(next_type):
+                    return next_type
         else:
             return None
 
@@ -156,7 +170,7 @@ class Block(ABC):
     def print_self(self):
         pass
 
-    def __init__(self, input_shape, parent_block):
+    def __init__(self, input_shape, parent_block, layer_type):
         """
         The init sequence of the Block class should always be called at the end of a subclasse's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.
@@ -165,9 +179,12 @@ class Block(ABC):
         block needs to known the number of output classes that it must classify. Thus such an implementation will
         read in its required init arguments and then invoke the Block.__init__ such that the defined Block init
         sequence is performed.
+
+        The layer type is used by the parent block to identify the block's type from it's enum of valid sub-block types.
         """
         self.input_shape = input_shape
         self.parent_block = parent_block
+        self.layer_type = layer_type
 
         while True:
             self.sub_blocks = []

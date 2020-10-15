@@ -82,7 +82,7 @@ model.evaluate(
     epochs=2,
     batch_size=100,
     optimizer="adam",
-    loss="sparse_categorical_crossentropy",
+    loss="categorical_crossentropy",
     metrics=["accuracy"],
 )
 

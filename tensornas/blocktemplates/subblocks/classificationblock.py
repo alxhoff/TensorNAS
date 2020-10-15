@@ -31,10 +31,10 @@ class ClassificationBlock(Block):
     MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = ClassificationBlockLayerTypes
 
-    def __init__(self, input_shape, parent_block, class_count):
+    def __init__(self, input_shape, parent_block, layer_type, class_count):
         self.class_count = class_count
 
-        super().__init__(input_shape, parent_block)
+        super().__init__(input_shape, parent_block, layer_type)
 
     def validate(self):
         ret = True
@@ -61,6 +61,12 @@ class ClassificationBlock(Block):
     def mutate(self):
         pass
 
+    def check_new_layer_type(self, layer_type):
+        if len(self.sub_blocks) and layer_type == self.SUB_BLOCK_TYPES.FLATTEN.value:
+            if self.sub_blocks[-1].layer_type == SupportedLayers.FLATTEN:
+                return False
+        return True
+
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.FLATTEN.value:
             return LayerBlock(
@@ -81,3 +87,4 @@ class ClassificationBlock(Block):
                 layer_type=SupportedLayers.DROPOUT,
                 args=self.DROPOUT_RATE_MAX,
             )
+        return None

@@ -9,6 +9,7 @@ from tensornas.core.blockarchitecture import BlockArchitecture
 
 class ClassificationArchitectureSubBlocks(Enum):
     FEATURE_EXTRACTION_BLOCK = auto()
+    CLASSIFICATION_BLOCK = auto()
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -18,7 +19,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
     def __init__(self, input_shape, class_count):
         self.class_count = class_count
 
-        super().__init__(input_shape, parent_block=None)
+        super().__init__(input_shape, parent_block=None, layer_type=None)
 
     def validate(self):
         ret = True
@@ -35,6 +36,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 input_shape=self.input_shape,
                 parent_block=self,
                 class_count=self.class_count,
+                layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK.value,
             )
         )
 
@@ -43,4 +45,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK.value:
-            return FeatureExtractionBlock(input_shape=input_shape, parent_block=self)
+            return FeatureExtractionBlock(
+                input_shape=input_shape, parent_block=self, layer_type=layer_type
+            )
+        return None

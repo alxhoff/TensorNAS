@@ -1,5 +1,7 @@
 from tensornas.core.block import Block
 
+from tensornas.layers import Layers
+
 
 class LayerBlock(Block):
     """
@@ -18,7 +20,9 @@ class LayerBlock(Block):
         layer = eval("Layers." + layer_type.name + ".value.Layer")
         self.layer = layer(input_shape=input_shape, args=args)
 
-        super().__init__(input_shape=input_shape, parent_block=parent_block)
+        super().__init__(
+            input_shape=input_shape, parent_block=parent_block, layer_type=layer_type
+        )
 
     def mutate(self):
         return self.layer.mutate()
