@@ -28,6 +28,9 @@ mnist_class_count = 10
 # Tensorflow parameters
 epochs = 1
 batch_size = 600
+optimizer = "adam"
+loss = "sparse_categorical_crossentropy"
+metrics = ["accuracy"]
 pop_size = 10
 
 # Functions used for EA demo
@@ -50,7 +53,15 @@ def get_block_architecture():
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 def evaluate_individual(individual):
     return individual.evaluate(
-        images_train, labels_train, images_test, labels_test, epochs, batch_size
+        train_data=images_train,
+        train_labels=labels_train,
+        test_data=images_test,
+        test_labels=labels_test,
+        epochs=epochs,
+        batch_size=batch_size,
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
     )
 
 
@@ -112,7 +123,7 @@ toolbox.decorate("mutate", history.decorator)
 def main():
 
     test_ind = toolbox.individual()
-    ba = next(test_ind.block_architecture)
+    toolbox.evaluate(test_ind)
 
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)
