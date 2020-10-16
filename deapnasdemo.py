@@ -1,18 +1,16 @@
 import multiprocessing
-
-import keras
+import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
 from deap import base, creator, tools, algorithms
-from tensornas.model import *
 
-import demomodels
-from tensornas.core.util import *
+from tensornas.core.individual import Individual
 
 # Training MNIST data
 (
     (images_train, labels_train),
     (images_test, labels_test),
-) = keras.datasets.mnist.load_data()
+) = tf.keras.datasets.mnist.load_data()
 input_shape = images_train.shape
 images_train = images_train.reshape(
     images_train.shape[0], images_train.shape[1], images_train.shape[2], 1
@@ -20,37 +18,33 @@ images_train = images_train.reshape(
 images_test = images_test.reshape(
     images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
 )
-input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
+mnist_input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
 images_train = images_train.astype("float32")
 images_test = images_test.astype("float32")
 images_train /= 255
 images_test /= 255
+mnist_class_count = 10
 
 # Tensorflow parameters
 epochs = 1
 batch_size = 600
-
-# Demo hard-coded models
-demomodels.generate_demo_model_jsons()
-demo_models = demomodels.generate_demo_model_array()
-demo_model_count = 1
-
+pop_size = 10
 
 # Functions used for EA demo
 
 # Create a NAS model individual from one of the two demo models
 # Creating an iterable that is fed into initIterate
 
-# TODO generate random but valid starting model architectures
 
-
-def get_demo_model_iterator():
-    model = demo_models[random.randint(0, demo_model_count - 1)]  # hardcoded test model
-    iter = (
-        ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args"))
-        for layer in model.keys()
+def get_block_architecture():
+    from tensornas.blocktemplates.blockarchitectures.classificationblockarchitectures import (
+        ClassificationBlockArchitecture,
     )
-    return iter
+
+    """
+    This function is responsible for creating and returning the block architecture that an individual shuld embed
+    """
+    return ClassificationBlockArchitecture(mnist_input_tensor_shape, mnist_class_count)
 
 
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
@@ -67,8 +61,7 @@ def crossover_individuals(ind1, ind2):
 
 
 def mutate_individual(individual):
-    # TODO
-    return (individual,)
+    return (individual.mutate(),)
 
 
 def pareto_dominance(ind1, ind2):
@@ -79,7 +72,7 @@ def pareto_dominance(ind1, ind2):
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
 
 # Each individual will be an architecture model
-creator.create("Individual", Model, fitness=creator.FitnessMulti)
+creator.create("Individual", Individual, fitness=creator.FitnessMulti)
 
 toolbox = base.Toolbox()
 
@@ -88,18 +81,17 @@ pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
 ######
 
-toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
+toolbox.register("get_block_architecture", get_block_architecture)
 
 toolbox.register(
-    "individual_iterate",
-    tools.initIterate,
+    "individual",
+    tools.initRepeat,
     creator.Individual,
-    toolbox.attr_nas_model_itr,
+    toolbox.get_block_architecture,
+    n=1,
 )
 
-toolbox.register(
-    "population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count
-)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=pop_size)
 
 # Genetic operators
 toolbox.register("evaluate", evaluate_individual)
@@ -118,6 +110,10 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
+
+    test_ind = toolbox.individual()
+    ba = next(test_ind.block_architecture)
+
     pop = toolbox.population(n=3)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
