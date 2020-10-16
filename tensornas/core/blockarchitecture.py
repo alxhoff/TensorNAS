@@ -40,8 +40,8 @@ class BlockArchitecture(Block):
                 np.sum(
                     [tf.keras.backend.count_params(p) for p in model.trainable_weights]
                 )
-            ),
-            int(
+            )
+            + int(
                 np.sum(
                     [
                         tf.keras.backend.count_params(p)
@@ -51,3 +51,4 @@ class BlockArchitecture(Block):
             ),
             model.evaluate(test_data, test_labels)[1] * 100,
         ]
+        return ret
