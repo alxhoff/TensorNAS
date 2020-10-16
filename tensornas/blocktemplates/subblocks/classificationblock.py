@@ -52,10 +52,17 @@ class ClassificationBlock(Block):
             )
         )
 
-    def check_new_layer_type(self, layer_type):
-        if len(self.sub_blocks) and layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
-            if self.sub_blocks[-1].layer_type == SupportedLayers.FLATTEN:
-                return False
+    def check_next_layer_type(self, prev_layer_type, next_layer_type):
+        if (
+            prev_layer_type == SupportedLayers.FLATTEN
+            and next_layer_type == self.SUB_BLOCK_TYPES.FLATTEN
+        ):
+            return False
+        elif (
+            prev_layer_type == SupportedLayers.DROPOUT
+            and next_layer_type == self.SUB_BLOCK_TYPES.DROPOUT
+        ):
+            return False
         return True
 
     def generate_random_sub_block(self, input_shape, layer_type):
