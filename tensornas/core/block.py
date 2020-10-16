@@ -1,5 +1,6 @@
 import itertools
 import random
+import re
 from abc import ABC, abstractmethod
 
 from tensornas.core.util import mutate_enum_i
@@ -15,12 +16,12 @@ class Block(ABC):
         - MAX_SUB_BLOCKS
 
     Required (abstract) methods:
-        - Mutate
-        - Generate constrained output sub blocks
-        - Generate constrained input sub blocks
         - Generate random sub block
 
     Optional methods:
+        - Generate constrained output sub blocks
+        - Generate constrained input sub blocks
+        - Mutate self
         - Validate
         - Get keras model
         - Print self
@@ -28,8 +29,11 @@ class Block(ABC):
         - Check new layer type
 
     Should not be overridden:
+        - Mutate
         - __init__
     """
+
+    SELF_MUTATE_RATE = 0.2
 
     @property
     @classmethod
@@ -47,13 +51,37 @@ class Block(ABC):
         """Constraining attribute of each Block sub-class that must be set"""
         return NotImplementedError
 
-    @abstractmethod
-    def mutate(self):
-        """Mutates the block, this can be done by changing direct child blocks or by calling into the child blocks to
-        mutate them"""
-        return NotImplemented
+    def _mutate_self(self):
+        """
+        An optional function that allows for the block to mutate itself during mutation
+        """
+        return False
 
-    @abstractmethod
+    def _mutate_subblock(self):
+        if len(self.sub_blocks):
+            random.choice(self.sub_blocks).mutate()
+
+    def mutate(self):
+        """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
+        this includes the defaul `_mutate_subblock`.
+
+        The implementation of a block should as such then present the possible mutation possibilities as a collection
+        of `_mutate` functions. Generally mutation will call the default `_mutate_subblock` method to invoke mutation
+        in a randomly selected sub-block.
+
+        If specific mutation operations are thus required they can be implemented. Among the default mutation functions
+        is the `_mutate_self` function which directly mutates the block instead of calling mutate in a sub-block.
+        The function by default does nothing and returns False, in such a case another mutate function is called.
+        If one wishes to implement `_mutate_self` then it should return True to stop the subsequent
+        re-invoking of mutate.
+
+        The probability of mutating the block itself instead of it's sub-block is given by the class parameter
+        SELF_MUTATE_RATE which can be overridden when sub-classing"""
+        if random.random() < self.SELF_MUTATE_RATE:
+            if self._mutate_self():
+                return
+        eval("self." + random.choice(self.mutation_funcs))()
+
     def generate_constrained_output_sub_blocks(self, input_shape):
         """This method is called after the sub-blocks have been generated to generate the required blocks,
         creating blocks at the end of the sub-block sequence. An example of this would be the placement
@@ -61,7 +89,6 @@ class Block(ABC):
         """
         pass
 
-    @abstractmethod
     def generate_constrained_input_sub_blocks(self, input_shape):
         """This method is called before the sub-blocks have been generated to generate the required blocks,
         creating blocks at the beginning of the sub-block sequence. An example of this would be the placement
@@ -185,6 +212,11 @@ class Block(ABC):
         self.input_shape = input_shape
         self.parent_block = parent_block
         self.layer_type = layer_type
+        self.mutation_funcs = [
+            func
+            for func in dir(self)
+            if callable(getattr(self, func)) and re.search(r"^_mutate(?!_self)", func)
+        ]
 
         while True:
             self.sub_blocks = []

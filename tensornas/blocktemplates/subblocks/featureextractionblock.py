@@ -22,21 +22,6 @@ class FeatureExtractionBlock(Block):
     MAX_SUB_BLOCKS = 5
     SUB_BLOCK_TYPES = FeatureExtractionBlockLayerTypes
 
-    def validate(self):
-        return True
-
-    def generate_constrained_input_sub_blocks(self, input_shape):
-        pass
-
-    def generate_constrained_output_sub_blocks(self, input_shape):
-        pass
-
-    def mutate(self):
-        pass
-
-    def check_new_layer_type(self, layer_type):
-        return True
-
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D:
             return LayerBlock(

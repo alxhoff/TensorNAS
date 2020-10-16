@@ -81,6 +81,10 @@ model = classificationblockarchitectures.ClassificationBlockArchitecture(
 
 model.print()
 
+model.mutate()
+
+model.print()
+
 model.evaluate(
     train_data=images_train,
     train_labels=labels_train,

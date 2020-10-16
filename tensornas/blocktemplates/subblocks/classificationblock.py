@@ -42,9 +42,6 @@ class ClassificationBlock(Block):
             ret = False
         return ret
 
-    def generate_constrained_input_sub_blocks(self, input_shape):
-        pass
-
     def generate_constrained_output_sub_blocks(self, input_shape):
         self.sub_blocks.append(
             LayerBlock(
@@ -54,9 +51,6 @@ class ClassificationBlock(Block):
                 args=self.class_count,
             )
         )
-
-    def mutate(self):
-        pass
 
     def check_new_layer_type(self, layer_type):
         if len(self.sub_blocks) and layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
