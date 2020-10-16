@@ -33,8 +33,6 @@ class Block(ABC):
         - __init__
     """
 
-    SELF_MUTATE_RATE = 0.2
-
     @property
     @classmethod
     @abstractmethod
@@ -61,7 +59,7 @@ class Block(ABC):
         if len(self.sub_blocks):
             random.choice(self.sub_blocks).mutate()
 
-    def mutate(self):
+    def mutate(self, self_mutate_rate=0.0):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
         this includes the defaul `_mutate_subblock`.
 
@@ -75,9 +73,8 @@ class Block(ABC):
         If one wishes to implement `_mutate_self` then it should return True to stop the subsequent
         re-invoking of mutate.
 
-        The probability of mutating the block itself instead of it's sub-block is given by the class parameter
-        SELF_MUTATE_RATE which can be overridden when sub-classing"""
-        if random.random() < self.SELF_MUTATE_RATE:
+        The probability of mutating the block itself instead of it's sub-block is pass in as self_mutate_rate."""
+        if random.random() < self_mutate_rate:
             if self._mutate_self():
                 return
         eval("self." + random.choice(self.mutation_funcs))()
