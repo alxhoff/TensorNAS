@@ -156,3 +156,12 @@ def find_modules(pkg, dir):
             mod_name = pkg + "." + mod.name
             modules.append(import_module(mod_name))
     return modules
+
+
+def custom_sparse_categorical_accuracy(y_true, y_pred):
+    from tensorflow.keras import backend as K
+
+    return K.cast(
+        K.equal(K.max(y_true, axis=-1), K.cast(K.argmax(y_pred, axis=-1), K.floatx())),
+        K.floatx(),
+    )

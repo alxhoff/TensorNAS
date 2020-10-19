@@ -83,13 +83,14 @@ model = classificationblockarchitectures.ClassificationBlockArchitecture(
 
 model.print()
 
+
 metrics = model.evaluate(
     train_data=images_train,
     train_labels=labels_train,
     test_data=images_test,
     test_labels=labels_test,
     epochs=2,
-    batch_size=100,
+    batch_size=32,
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
@@ -107,7 +108,7 @@ metrics = model.evaluate(
     test_data=images_test,
     test_labels=labels_test,
     epochs=2,
-    batch_size=100,
+    batch_size=32,
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],

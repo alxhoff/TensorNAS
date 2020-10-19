@@ -17,6 +17,8 @@ class LayerBlock(Block):
     SUB_BLOCK_TYPES = None
 
     def __init__(self, input_shape, parent_block, layer_type, args=None):
+        if not input_shape:
+            input_shape = parent_block._get_cur_output_shape()
         layer = eval("Layers." + layer_type.name + ".value.Layer")
         self.layer = layer(input_shape=input_shape, args=args)
 
@@ -38,12 +40,6 @@ class LayerBlock(Block):
 
     def print_self(self):
         self.layer.print()
-
-    def generate_constrained_output_sub_blocks(self, input_shape):
-        pass
-
-    def generate_constrained_input_sub_blocks(self, input_shape):
-        pass
 
     def generate_random_sub_block(self, layer_type):
         pass

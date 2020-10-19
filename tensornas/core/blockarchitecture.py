@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensornas.core.block import Block
+from tensornas.core.util import custom_sparse_categorical_accuracy
 
 
 class BlockArchitecture(Block):
@@ -33,8 +34,8 @@ class BlockArchitecture(Block):
         metrics,
     ):
         model = self.get_keras_model(optimizer=optimizer, loss=loss, metrics=metrics)
-        model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
         model.summary()
+        model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
         ret = [
             int(
                 np.sum(

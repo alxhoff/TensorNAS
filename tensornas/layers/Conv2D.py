@@ -31,7 +31,7 @@ class Layer(NetworkLayer):
             cls.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
                 ceil(input_shape[0] / 2)
             ),
-            cls.get_args_enum().STRIDES: [1, 1],
+            cls.get_args_enum().STRIDES: (1, 1),
             cls.get_args_enum().PADDING: la.gen_padding(),
             cls.get_args_enum().DILATION_RATE: la.gen_dilation(),
             cls.get_args_enum().ACTIVATION: la.gen_activation(),

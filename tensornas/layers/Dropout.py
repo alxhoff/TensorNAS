@@ -30,4 +30,7 @@ class Layer(NetworkLayer):
         return self.inputshape.get()
 
     def get_keras_layer(self):
-        return tf.keras.layers.Dropout(rate=self.args.get(self.get_args_enum().RATE))
+        return tf.keras.layers.Dropout(
+            rate=self.args.get(self.get_args_enum().RATE),
+            input_shape=self.inputshape.get(),
+        )

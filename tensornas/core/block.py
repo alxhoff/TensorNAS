@@ -139,7 +139,7 @@ class Block(ABC):
         """
         if self.MAX_SUB_BLOCKS:
             for i in range(random.randrange(1, self.MAX_SUB_BLOCKS)):
-                out_shape = self.__get_cur_output_shape()
+                out_shape = self._get_cur_output_shape()
                 while True:
                     block = self.generate_random_sub_block(
                         out_shape,
@@ -187,7 +187,7 @@ class Block(ABC):
         else:
             return ret
 
-    def __get_cur_output_shape(self):
+    def _get_cur_output_shape(self):
         if len(self.sub_blocks):
             ret = self.sub_blocks[-1].get_output_shape()
         else:
@@ -237,7 +237,7 @@ class Block(ABC):
                 self.generate_constrained_input_sub_blocks(input_shape)
                 self.__generate_sub_blocks()
                 self.generate_constrained_output_sub_blocks(
-                    self.__get_cur_output_shape()
+                    self._get_cur_output_shape()
                 )
                 if self.validate():
                     return
