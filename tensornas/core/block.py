@@ -56,8 +56,8 @@ class Block(ABC):
         return False
 
     def _mutate_subblock(self):
-        if len(self.sub_blocks):
-            random.choice(self.sub_blocks).mutate()
+        if len(self.middle_blocks):
+            random.choice(self.middle_blocks).mutate()
 
     def mutate(self, self_mutate_rate=0.0):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
@@ -80,22 +80,22 @@ class Block(ABC):
         eval("self." + random.choice(self.mutation_funcs))()
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-        """This method is called after the sub-blocks have been generated to generate the required blocks,
-        creating blocks at the end of the sub-block sequence. An example of this would be the placement
+        """This method is called after the sub-blocks have been generated to generate the required blocks which are
+        appended to the output_blocks list. An example of this would be the placement
         of a classification layer at the end of a model.
         """
         pass
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        """This method is called before the sub-blocks have been generated to generate the required blocks,
-        creating blocks at the beginning of the sub-block sequence. An example of this would be the placement
+        """This method is called before the sub-blocks have been generated to generate the required blocks which are
+        appended to the input_blocks list. An example of this would be the placement
         of a convolution layer at the beginning of a model.
         """
         pass
 
     @abstractmethod
     def generate_random_sub_block(self, input_shape, layer_type):
-        """This method appends a randomly selected possible sub-block to the classes sub-block list, The block type is
+        """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
         """
@@ -119,9 +119,9 @@ class Block(ABC):
         An intermediate function that checks if there is a previous layer to be passed to the check_next_layer_type
         function.
         """
-        if len(self.sub_blocks):
+        if len(self.middle_blocks):
             return self.check_next_layer_type(
-                self.sub_blocks[-1].layer_type, next_layer_type
+                self.middle_blocks[-1].layer_type, next_layer_type
             )
         return True
 
@@ -146,14 +146,14 @@ class Block(ABC):
                         self.__get_random_sub_block_type(),
                     )
                     if block:
-                        self.sub_blocks.append(block)
+                        self.middle_blocks.append(block)
                         break
 
     def get_output_shape(self):
         """
         Returns the output shape of the block
         """
-        return self.sub_blocks[-1].get_output_shape()
+        return self.middle_blocks[-1].get_output_shape()
 
     def get_input_shape(self):
         """
@@ -171,15 +171,12 @@ class Block(ABC):
         else:
             return None
 
-    def get_iterator(self):
-        return itertools.chain(*[block.sub_blocks for block in self.sub_blocks])
-
     def get_keras_layers(self):
         """By default this method simply calls this method in all child blocks, it should be overriden for layer
         blocks, ie. blocks that are leaves within the block hierarchy and contain a keras layer, such blocks should
         return an appropriately instantiated keras layer object"""
         ret = []
-        for sb in self.sub_blocks:
+        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
             ret.append(sb.get_keras_layers())
 
         if hasattr(ret[0], "__iter__"):
@@ -188,8 +185,12 @@ class Block(ABC):
             return ret
 
     def _get_cur_output_shape(self):
-        if len(self.sub_blocks):
-            ret = self.sub_blocks[-1].get_output_shape()
+        if len(self.output_blocks):
+            ret = self.output_blocks[-1].get_output_shape()
+        elif len(self.middle_blocks):
+            ret = self.middle_blocks[-1].get_output_shape()
+        elif len(self.input_blocks):
+            ret = self.input_blocks[-1].get_output_shape()
         else:
             ret = self.get_input_shape()
         try:
@@ -204,7 +205,7 @@ class Block(ABC):
         child nodes. If you wish to print all children nodes then only override print_self and not print_self
         """
         self.print_self()
-        for sb in self.sub_blocks:
+        for sb in self.middle_blocks:
             sb.print()
 
     def print_self(self):
@@ -232,7 +233,9 @@ class Block(ABC):
         ]
 
         while True:
-            self.sub_blocks = []
+            self.input_blocks = []
+            self.middle_blocks = []
+            self.output_blocks = []
             if self.MAX_SUB_BLOCKS:
                 self.generate_constrained_input_sub_blocks(input_shape)
                 self.__generate_sub_blocks()

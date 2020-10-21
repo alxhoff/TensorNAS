@@ -38,18 +38,18 @@ class ClassificationBlock(Block):
 
     def validate(self):
         ret = True
-        if not self.sub_blocks[-1].layer_type == SupportedLayers.OUTPUTDENSE:
+        if not self.output_blocks[-1].layer_type == SupportedLayers.OUTPUTDENSE:
             ret = False
         return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
-        self.sub_blocks.append(
+        self.output_blocks.append(
             LayerBlock(
                 input_shape=None, parent_block=self, layer_type=SupportedLayers.FLATTEN
             )
         )
-        self.sub_blocks.append(
+        self.output_blocks.append(
             LayerBlock(
                 input_shape=None,
                 parent_block=self,

@@ -23,12 +23,12 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def validate(self):
         ret = True
-        if not isinstance(self.sub_blocks[-1], ClassificationBlock):
+        if not isinstance(self.output_blocks[-1], ClassificationBlock):
             ret = False
         return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-        self.sub_blocks.append(
+        self.output_blocks.append(
             ClassificationBlock(
                 input_shape=input_shape,
                 parent_block=self,
