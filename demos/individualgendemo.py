@@ -98,7 +98,7 @@ metrics = model.evaluate(
 
 print(metrics)
 
-model.mutate()
+model.mutate(verbose=True)
 
 model.print()
 

@@ -49,17 +49,20 @@ class Block(ABC):
         """Constraining attribute of each Block sub-class that must be set"""
         return NotImplementedError
 
-    def _mutate_self(self):
+    def _mutate_self(self, verbose=False):
         """
         An optional function that allows for the block to mutate itself during mutation
         """
         return False
 
-    def _mutate_subblock(self):
+    def _mutate_subblock(self, verbose=False):
         if len(self.middle_blocks):
-            random.choice(self.middle_blocks).mutate()
+            choice_index = random.choice(range(len(self.middle_blocks)))
+            if verbose:
+                print("[MUTATE] middle block #{}".format(choice_index))
+            self.middle_blocks[choice_index].mutate(verbose=verbose)
 
-    def mutate(self, self_mutate_rate=0.0):
+    def mutate(self, self_mutate_rate=0.0, verbose=False):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
         this includes the defaul `_mutate_subblock`.
 
@@ -75,9 +78,13 @@ class Block(ABC):
 
         The probability of mutating the block itself instead of it's sub-block is pass in as self_mutate_rate."""
         if random.random() < self_mutate_rate:
-            if self._mutate_self():
+            if self._mutate_self(verbose=verbose):
                 return
-        eval("self." + random.choice(self.mutation_funcs))()
+        if self.mutation_funcs:
+            mutate_eval = "self." + random.choice(self.mutation_funcs)
+            if verbose:
+                print("[MUTATE] invoking `{}`".format(mutate_eval))
+            eval(mutate_eval)(verbose=verbose)
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are
@@ -205,7 +212,7 @@ class Block(ABC):
         child nodes. If you wish to print all children nodes then only override print_self and not print_self
         """
         self.print_self()
-        for sb in self.middle_blocks:
+        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
             sb.print()
 
     def print_self(self):

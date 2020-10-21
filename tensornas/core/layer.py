@@ -145,9 +145,12 @@ class NetworkLayer(ABC):
     def validate(self, repair=True):
         return True
 
-    def mutate(self):
+    def mutate(self, verbose=False):
         if self.mutation_funcs:
-            eval("self." + random.choice(self.mutation_funcs))()
+            mutate_eval = "self." + random.choice(self.mutation_funcs)
+            if verbose:
+                print("[MUTATE] invoking `{}`".format(mutate_eval))
+            eval(mutate_eval)()
 
     @classmethod
     @abstractmethod
