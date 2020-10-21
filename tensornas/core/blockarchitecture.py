@@ -29,13 +29,20 @@ class BlockArchitecture(Block):
         test_labels,
         epochs,
         batch_size,
+        steps,
         optimizer,
         loss,
         metrics,
     ):
         model = self.get_keras_model(optimizer=optimizer, loss=loss, metrics=metrics)
-        model.summary()
-        model.fit(x=train_data, y=train_labels, epochs=epochs, batch_size=batch_size)
+        # model.summary()
+        model.fit(
+            x=train_data,
+            y=train_labels,
+            epochs=epochs,
+            batch_size=batch_size,
+            steps_per_epoch=steps,
+        )
         ret = [
             int(
                 np.sum(

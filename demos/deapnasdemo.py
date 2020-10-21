@@ -1,7 +1,16 @@
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 import multiprocessing
-import numpy as np
-import tensorflow as tf
+
 import matplotlib.pyplot as plt
+import numpy as np
+
+import tensorflow as tf
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
 from deap import base, creator, tools, algorithms
 
 from tensornas.core.individual import Individual
@@ -28,10 +37,12 @@ mnist_class_count = 10
 # Tensorflow parameters
 epochs = 1
 batch_size = 600
+steps = 5
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
 pop_size = 10
+
 
 # Functions used for EA demo
 
@@ -59,6 +70,7 @@ def evaluate_individual(individual):
         test_labels=labels_test,
         epochs=epochs,
         batch_size=batch_size,
+        steps=steps,
         optimizer=optimizer,
         loss=loss,
         metrics=metrics,
@@ -93,7 +105,6 @@ toolbox.register("map", pool.map)
 ######
 
 toolbox.register("get_block_architecture", get_block_architecture)
-
 toolbox.register(
     "individual",
     tools.initRepeat,
@@ -101,7 +112,6 @@ toolbox.register(
     toolbox.get_block_architecture,
     n=1,
 )
-
 toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=pop_size)
 
 # Genetic operators
@@ -112,20 +122,12 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 
 # Statistics
 history = tools.History()
-
 toolbox.decorate("mate", history.decorator)
 toolbox.decorate("mutate", history.decorator)
 
 
-# toolbox.decorate("evaluate", history.decorator)
-
-
 def main():
-
-    test_ind = toolbox.individual()
-    toolbox.evaluate(test_ind)
-
-    pop = toolbox.population(n=3)
+    pop = toolbox.population(n=4)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -187,8 +189,11 @@ if __name__ == "__main__":
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "r.", alpha=0.7)
     for ind in dominated:
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "g.", alpha=0.7)
-    for ind in others:
-        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3)
+    if len(others):
+        for ind in others:
+            plt.plot(
+                ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3
+            )
     plt.plot(
         best_individual.fitness.values[0], best_individual.fitness.values[1], "bo", ms=6
     )
@@ -212,4 +217,7 @@ if __name__ == "__main__":
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "bo", alpha=0.74, ms=5)
     plt.title("Pareto-optimal front")
 
-    plt.show()
+    plt.draw()
+    # plt.show()
+
+    print("Wait here")
