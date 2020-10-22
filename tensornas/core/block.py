@@ -218,24 +218,38 @@ class Block(ABC):
     def print_self(self):
         pass
 
-    def print_tree(self):
-        """"""
+    def _get_name(self):
+        return str(self.layer_type).split(".")[-1]
 
-    def display_tree(self):
+    def get_ascii_tree(self):
+        """
+        Returns an ASCII tree representation of the block heirarchy starting from the current block.
+        """
         from tensornas.core.util import block_width, stack_str_blocks
 
-        if not len(self.input_blocks + self.middle_blocks + self.output_blocks):
-            return str(self.layer_type).split(".")[-1]
+        if not self.parent_block:
+            name = "ROOT"
+        else:
+            name = self._get_name()
 
-        child_strs = [
-            child.display_tree()
-            for child in self.input_blocks + self.middle_blocks + self.output_blocks
-        ]
+        name = "{" + name + "}"
+
+        if not len(self.input_blocks + self.middle_blocks + self.output_blocks):
+            return name
+
+        child_strs = (
+            [" |"]
+            + [
+                child.get_ascii_tree()
+                for child in self.input_blocks + self.middle_blocks + self.output_blocks
+            ]
+            + ["| "]
+        )
         child_widths = [block_width(s) for s in child_strs]
 
         # How wide is this block?
         display_width = max(
-            len(str(self.layer_type).split(".")[-1]),
+            len(name),
             sum(child_widths) + len(child_widths) - 1,
         )
 
@@ -257,10 +271,42 @@ class Block(ABC):
                 brace_builder.append("-")
         brace = "".join(brace_builder)
 
-        name_str = "{:^{}}".format(str(self.layer_type).split(".")[-1], display_width)
+        name_str = "{:^{}}".format(name, display_width)
         below = stack_str_blocks(child_strs)
 
         return name_str + "\n" + brace + "\n" + below
+
+    def get_index_in_parent(self):
+        if self.parent_block:
+            return self.parent_block.get_block_index(self)
+        return None
+
+    def get_block_index(self, block):
+        for index, sb in enumerate(
+            self.input_blocks + self.middle_blocks + self.output_blocks
+        ):
+            if block == sb:
+                return index
+        return None
+
+    def set_block_at_index(self, index, block):
+        if self.input_blocks:
+            if index < len(self.input_blocks):
+                self.input_blocks[index] = block
+                return
+            else:
+                index -= len(self.input_blocks)
+
+        if self.middle_blocks:
+            if index < len(self.middle_blocks):
+                self.middle_blocks[index] = block
+                return
+            else:
+                index -= len(self.middle_blocks)
+
+        if self.output_blocks:
+            if index < len(self.output_blocks):
+                self.output_blocks[index] = block
 
     def __init__(self, input_shape, parent_block, layer_type):
         """
