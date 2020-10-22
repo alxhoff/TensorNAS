@@ -6,7 +6,19 @@ def crossover_single_point(b1, b2):
     """
     A single block between the two architectures is swapped.
     """
-    pass
+    random_node_1 = _select_random_node(b1)
+    random_node_2 = _select_random_node(b2)
+
+    index_1 = random_node_1.get_index_in_parent()
+    index_2 = random_node_2.get_index_in_parent()
+
+    parent_1 = random_node_1.parent_block
+    parent_2 = random_node_2.parent_block
+
+    parent_1.set_block_at_index(index_1, random_node_2)
+    parent_2.set_block_at_index(index_2, random_node_1)
+
+    return b1, b2
 
 
 def crossover_cutting_point(b1, b2):
