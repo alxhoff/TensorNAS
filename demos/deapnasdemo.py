@@ -14,25 +14,8 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 from deap import base, creator, tools, algorithms
 
 from tensornas.core.individual import Individual
+from demos.mnistdemoinput import *
 
-# Training MNIST data
-(
-    (images_train, labels_train),
-    (images_test, labels_test),
-) = tf.keras.datasets.mnist.load_data()
-input_shape = images_train.shape
-images_train = images_train.reshape(
-    images_train.shape[0], images_train.shape[1], images_train.shape[2], 1
-)
-images_test = images_test.reshape(
-    images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
-)
-mnist_input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
-images_train = images_train.astype("float32")
-images_test = images_test.astype("float32")
-images_train /= 255
-images_test /= 255
-mnist_class_count = 10
 
 # Tensorflow parameters
 epochs = 1
@@ -58,7 +41,7 @@ def get_block_architecture():
     """
     This function is responsible for creating and returning the block architecture that an individual shuld embed
     """
-    return ClassificationBlockArchitecture(mnist_input_tensor_shape, mnist_class_count)
+    return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
