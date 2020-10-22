@@ -8,4 +8,6 @@ model1 = classificationblockarchitectures.ClassificationBlockArchitecture(
 
 rn = _select_random_node(model1)
 
-rn.print()
+# rn.print()
+
+print(model1.display_tree())

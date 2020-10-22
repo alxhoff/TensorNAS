@@ -218,6 +218,50 @@ class Block(ABC):
     def print_self(self):
         pass
 
+    def print_tree(self):
+        """"""
+
+    def display_tree(self):
+        from tensornas.core.util import block_width, stack_str_blocks
+
+        if not len(self.input_blocks + self.middle_blocks + self.output_blocks):
+            return str(self.layer_type).split(".")[-1]
+
+        child_strs = [
+            child.display_tree()
+            for child in self.input_blocks + self.middle_blocks + self.output_blocks
+        ]
+        child_widths = [block_width(s) for s in child_strs]
+
+        # How wide is this block?
+        display_width = max(
+            len(str(self.layer_type).split(".")[-1]),
+            sum(child_widths) + len(child_widths) - 1,
+        )
+
+        # Determines midpoints of child blocks
+        child_midpoints = []
+        child_end = 0
+        for width in child_widths:
+            child_midpoints.append(child_end + (width // 2))
+            child_end += width + 1
+
+        # Builds up the brace, using the child midpoints
+        brace_builder = []
+        for i in range(display_width):
+            if i < child_midpoints[0] or i > child_midpoints[-1]:
+                brace_builder.append(" ")
+            elif i in child_midpoints:
+                brace_builder.append("+")
+            else:
+                brace_builder.append("-")
+        brace = "".join(brace_builder)
+
+        name_str = "{:^{}}".format(str(self.layer_type).split(".")[-1], display_width)
+        below = stack_str_blocks(child_strs)
+
+        return name_str + "\n" + brace + "\n" + below
+
     def __init__(self, input_shape, parent_block, layer_type):
         """
         The init sequence of the Block class should always be called at the end of a subclasse's __init__, via
