@@ -23,7 +23,7 @@ class LayerShape:
         self.dimensions = dimensions
 
     def get(self):
-        return list(self.dimensions)
+        return tuple(self.dimensions)
 
 
 class NetworkLayer(ABC):

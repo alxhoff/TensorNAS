@@ -27,8 +27,10 @@ class Block(ABC):
         - Print self
         - Output shape
         - Check new layer type
+        - Repair self
 
     Should not be overridden:
+        - Repair
         - Mutate
         - __init__
     """
@@ -132,13 +134,52 @@ class Block(ABC):
             )
         return True
 
-    def validate(self):
+    def refresh_io_shapes(self, input_shape=None):
+        """
+        Recursive function that walks a block architecture, refreshing the input and output shapes of the architecture.
+
+        @return True is no blocks were invalid
+        """
+        sbs = self.input_blocks + self.middle_blocks + self.output_blocks
+        if len(sbs):
+            if not input_shape:
+                input_shape = self.get_input_shape()
+            out_shape = input_shape
+            for sb in sbs:
+                sb.set_input_shape(out_shape)
+                if sb.get_sb_count():
+                    out_shape = sb.refresh_io_shapes(sb.input_shape)
+                else:
+                    out_shape = sb.get_output_shape()
+                sb.set_output_shape(out_shape)
+            self.set_output_shape(self.get_output_shape())
+            return out_shape
+        return self.get_output_shape()
+
+    def reset_ba_input_shapes(self):
+        """
+        The block architecture root is retrieved and the sub-block inputs and outputs are processed and repaired.
+
+        @return True if the change was successful, ie. no blocks became invalid
+        """
+        ba = self.get_block_architecture()
+        ba.refresh_io_shapes(input_shape=ba.get_input_shape())
+        return False
+
+    def validate(self, repair=True):
         """This function will check if the generated block sequence is valid. Default implementation can be used which
         always returns true, ie. the block is always considered valid.
 
         @return True if the sub-block sequence is valid else False
         """
         return True
+
+    def get_block_architecture(self):
+        block = self
+        while block.parent_block:
+            block = block.parent_block
+
+        return block
 
     def __generate_sub_blocks(self):
         """Subclasses of Block should not populate their sub-block lists but instead implement this function which
@@ -160,13 +201,21 @@ class Block(ABC):
         """
         Returns the output shape of the block
         """
-        return self.middle_blocks[-1].get_output_shape()
+        return (self.input_blocks + self.middle_blocks + self.output_blocks)[
+            -1
+        ].get_output_shape()
+
+    def set_output_shape(self, output_shape):
+        self.output_shape = output_shape
 
     def get_input_shape(self):
         """
         Returns in the input shape of the block
         """
         return self.input_shape
+
+    def set_input_shape(self, input_shape):
+        self.input_shape = input_shape
 
     def __get_random_sub_block_type(self):
         """This method returns a random enum value of the block's possible sub-blocks"""
@@ -232,7 +281,8 @@ class Block(ABC):
         else:
             name = self._get_name()
 
-        name = "{" + name + "}"
+        io_str = " {}->{}".format(self.get_input_shape(), self.get_output_shape())
+        name = "{" + name + io_str + "}"
 
         if not len(self.input_blocks + self.middle_blocks + self.output_blocks):
             return name
@@ -281,6 +331,13 @@ class Block(ABC):
             return self.parent_block.get_block_index(self)
         return None
 
+    def get_block_at_index(self, index):
+        if len(self.input_blocks + self.middle_blocks + self.output_blocks) > (
+            index + 1
+        ):
+            return None
+        return (self.input_blocks + self.middle_blocks + self.output_blocks)[index]
+
     def get_block_index(self, block):
         for index, sb in enumerate(
             self.input_blocks + self.middle_blocks + self.output_blocks
@@ -307,6 +364,9 @@ class Block(ABC):
         if self.output_blocks:
             if index < len(self.output_blocks):
                 self.output_blocks[index] = block
+
+    def get_sb_count(self):
+        return len(self.input_blocks + self.middle_blocks + self.output_blocks)
 
     def __init__(self, input_shape, parent_block, layer_type):
         """

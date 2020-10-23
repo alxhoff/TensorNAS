@@ -15,8 +15,14 @@ def crossover_single_point(b1, b2):
     parent_1 = random_node_1.parent_block
     parent_2 = random_node_2.parent_block
 
+    random_node_1.parent_block = parent_2
+    random_node_2.parent_block = parent_1
+
     parent_1.set_block_at_index(index_1, random_node_2)
     parent_2.set_block_at_index(index_2, random_node_1)
+
+    random_node_1.reset_ba_input_shapes()
+    random_node_2.reset_ba_input_shapes()
 
     return b1, b2
 

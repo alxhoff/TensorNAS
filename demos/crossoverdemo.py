@@ -61,6 +61,20 @@ print("Second model architecture\n")
 print(model2.get_ascii_tree() + "\n\n\n\n\n\n")
 
 print("###########################")
+print("Repairing IO shapes\n")
+rn1.reset_ba_input_shapes()
+rn2.reset_ba_input_shapes()
+
+print("###########################")
+print("First model architecture\n")
+
+print(model1.get_ascii_tree() + "\n\n")
+
+print("###########################")
+print("Second model architecture\n")
+print(model2.get_ascii_tree() + "\n\n\n\n\n\n")
+
+print("###########################")
 print("Auto example")
 print("###########################")
 
@@ -88,3 +102,5 @@ print("###########################")
 
 print("Second model architecture\n")
 print(model2.get_ascii_tree() + "\n\n")
+
+model2.print()

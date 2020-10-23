@@ -43,3 +43,7 @@ class LayerBlock(Block):
 
     def generate_random_sub_block(self, layer_type):
         pass
+
+    def set_input_shape(self, input_shape):
+        self.input_shape = input_shape
+        self.layer.inputshape.set(input_shape)
