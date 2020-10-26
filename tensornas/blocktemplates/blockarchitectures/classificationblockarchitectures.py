@@ -28,14 +28,14 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-        self.output_blocks.append(
+        return [
             ClassificationBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
                 layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
             )
-        )
+        ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK:

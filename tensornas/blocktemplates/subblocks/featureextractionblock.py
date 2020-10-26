@@ -23,13 +23,13 @@ class FeatureExtractionBlock(Block):
     SUB_BLOCK_TYPES = FeatureExtractionBlockLayerTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        self.input_blocks.append(
+        return [
             LayerBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=SupportedLayers.CONV2D,
             )
-        )
+        ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D:

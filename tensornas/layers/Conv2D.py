@@ -27,7 +27,7 @@ class Layer(NetworkLayer):
 
     def _gen_args(cls, input_shape, args):
         return {
-            cls.get_args_enum().FILTERS: random.randint(1, ceil(input_shape[0] / 2)),
+            cls.get_args_enum().FILTERS: random.randint(1, cls.MAX_FILTER_COUNT),
             cls.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
                 ceil(input_shape[0] / 2)
             ),

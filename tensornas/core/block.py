@@ -92,15 +92,19 @@ class Block(ABC):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are
         appended to the output_blocks list. An example of this would be the placement
         of a classification layer at the end of a model.
+
+        @return Must return a list of created LayerBlock objects
         """
-        pass
+        return None
 
     def generate_constrained_input_sub_blocks(self, input_shape):
         """This method is called before the sub-blocks have been generated to generate the required blocks which are
         appended to the input_blocks list. An example of this would be the placement
         of a convolution layer at the beginning of a model.
+
+        @return Must return a list of created LayerBlock objects
         """
-        pass
+        return None
 
     @abstractmethod
     def generate_random_sub_block(self, input_shape, layer_type):
@@ -394,11 +398,15 @@ class Block(ABC):
             self.middle_blocks = []
             self.output_blocks = []
             if self.MAX_SUB_BLOCKS:
-                self.generate_constrained_input_sub_blocks(input_shape)
+                ib = self.generate_constrained_input_sub_blocks(input_shape)
+                if ib:
+                    self.input_blocks.extend(ib)
                 self.__generate_sub_blocks()
-                self.generate_constrained_output_sub_blocks(
+                ob = self.generate_constrained_output_sub_blocks(
                     self._get_cur_output_shape()
                 )
+                if ob:
+                    self.output_blocks.extend(ob)
                 if self.validate():
                     return
             else:

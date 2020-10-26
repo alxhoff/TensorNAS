@@ -42,21 +42,24 @@ class ClassificationBlock(Block):
             ret = False
         return ret
 
-    def generate_constrained_output_sub_blocks(self, input_shape):
-        """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
-        self.output_blocks.append(
+    def generate_constrained_input_sub_blocks(self, input_shape):
+        # TODO do not make it manually append but instead return a list of blocks
+        return [
             LayerBlock(
                 input_shape=None, parent_block=self, layer_type=SupportedLayers.FLATTEN
             )
-        )
-        self.output_blocks.append(
+        ]
+
+    def generate_constrained_output_sub_blocks(self, input_shape):
+        """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
+        return [
             LayerBlock(
                 input_shape=None,
                 parent_block=self,
                 layer_type=SupportedLayers.OUTPUTDENSE,
                 args=self.class_count,
             )
-        )
+        ]
 
     def check_next_layer_type(self, prev_layer_type, next_layer_type):
         if (
