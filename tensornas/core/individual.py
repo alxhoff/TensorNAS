@@ -46,3 +46,6 @@ class Individual:
 
     def print(self):
         self.block_architecture.print()
+
+    def print_tree(self):
+        print(self.block_architecture.get_ascii_tree())

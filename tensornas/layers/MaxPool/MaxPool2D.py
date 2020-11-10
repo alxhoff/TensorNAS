@@ -41,11 +41,17 @@ class Layer(Layer):
         if pad == ArgPadding.SAME:
             x = _same_pad_output_shape(inp[0], pool[0], stri[0])
             y = _same_pad_output_shape(inp[1], pool[1], stri[1])
-            return (x, y, inp[2])
+            try:
+                return (x, y, inp[2])
+            except Exception as e:
+                print("wait")
         elif pad == ArgPadding.VALID:
             x = _valid_pad_output_shape(inp[0], pool[0], stri[0])
             y = _valid_pad_output_shape(inp[1], pool[1], stri[1])
-            return (x, y, inp[2])
+            try:
+                return (x, y, inp[2])
+            except Exception as e:
+                print("wait")
         return (0, 0, 0)
 
     def get_keras_layer(self):

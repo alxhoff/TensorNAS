@@ -132,6 +132,7 @@ def _recurse_select(block, count):
     if random.randint(0, count) == count:
         ret = block
     count += 1
+
     for sb in block.input_blocks + block.middle_blocks + block.output_blocks:
         tmp, count = _recurse_select(sb, count)
         if tmp:
