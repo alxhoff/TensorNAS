@@ -301,20 +301,17 @@ class Block(ABC):
         )
         child_widths = [block_width(s) for s in child_strs]
 
-        # How wide is this block?
         display_width = max(
             len(name),
             sum(child_widths) + len(child_widths) - 1,
         )
 
-        # Determines midpoints of child blocks
         child_midpoints = []
         child_end = 0
         for width in child_widths:
             child_midpoints.append(child_end + (width // 2))
             child_end += width + 1
 
-        # Builds up the brace, using the child midpoints
         brace_builder = []
         for i in range(display_width):
             if i < child_midpoints[0] or i > child_midpoints[-1]:
@@ -335,6 +332,11 @@ class Block(ABC):
             return self.parent_block.get_block_index(self)
         return None
 
+    def get_middle_index_in_parent(self):
+        if self.parent_block:
+            return self.parent_block.get_block_index_middle(self)
+        return None
+
     def get_block_at_index(self, index):
         if len(self.input_blocks + self.middle_blocks + self.output_blocks) > (
             index + 1
@@ -346,6 +348,12 @@ class Block(ABC):
         for index, sb in enumerate(
             self.input_blocks + self.middle_blocks + self.output_blocks
         ):
+            if block == sb:
+                return index
+        return None
+
+    def get_block_index_middle(self, block):
+        for index, sb in enumerate(self.middle_blocks):
             if block == sb:
                 return index
         return None

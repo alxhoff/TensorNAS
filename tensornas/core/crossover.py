@@ -1,7 +1,3 @@
-def crossover_blocks(b1, b2):
-    pass
-
-
 def crossover_single_point(b1, b2):
     """
     A single block between the two architectures is swapped.
@@ -27,11 +23,93 @@ def crossover_single_point(b1, b2):
     return b1, b2
 
 
-def crossover_cutting_point(b1, b2):
+def _get_max_depth(ba):
+    from tensornas.core.layerblock import LayerBlock
+
+    if isinstance(ba, LayerBlock):
+        return 0
+
+    if ba.input_blocks or ba.middle_blocks or ba.output_blocks:
+
+        for sb in ba.input_blocks + ba.middle_blocks + ba.output_blocks:
+            return _get_max_depth(sb) + 1
+
+
+def _get_middle_nodes(ba, depth):
     """
-    Find a random point in both block architectures.
+    Returns a list of the nodes at a certain hierarchical depth of a block architecture.
+
+    @param ba Input block architecture
+    @param depth Hierarchical depth to be retrieved
+    @param block_list List that is to store the result, necessary for recursion
+
+    @return List of blocks
     """
-    pass
+    depth -= 1
+
+    if not depth:
+        return ba.middle_blocks
+    else:
+        nodes = []
+        for sb in ba.middle_blocks:
+            nodes.extend(_get_middle_nodes(sb, depth))
+    return nodes
+
+
+def crossover_cutting_point(b1, b2, depth=1):
+    """
+    Find a random point in both block architectures and cut the block architecture, swapping the halves. This is
+    done in respect to a specified depth, meaning that the block architectures are cut on a specified hierarchical
+    depth.
+
+    Block architectures are only ever cut in their middle blocks, such that input and output constraints are never
+    violated.
+    """
+    from random import randint
+
+    assert depth > 0
+
+    depth_1 = _get_max_depth(b1)
+    depth_2 = _get_max_depth(b2)
+
+    if depth > depth_1 or depth > depth_2:
+        return b1, b2
+
+    tier_nodes_1 = _get_middle_nodes(b1, depth)
+    tier_nodes_2 = _get_middle_nodes(b2, depth)
+
+    cut_point_1 = randint(0, len(tier_nodes_1) - 1)
+    cut_point_2 = randint(0, len(tier_nodes_2) - 1)
+
+    # merge contents of parent nodes
+    node_1 = tier_nodes_1[cut_point_1]
+    print("Cutting after")
+    node_1.print()
+    node_2 = tier_nodes_2[cut_point_2]
+    print("Cutting after")
+    node_2.print()
+    parent_1 = node_1.parent_block
+    parent_2 = node_2.parent_block
+    node_1_index = node_1.get_middle_index_in_parent()
+    node_2_index = node_2.get_middle_index_in_parent()
+
+    # Nodes from before the cut are swapped
+    nodes_from_1_to_move = parent_1.middle_blocks[: node_1_index + 1]
+    nodes_from_2_to_move = parent_2.middle_blocks[: node_2_index + 1]
+
+    del parent_1.middle_blocks[: node_1_index + 1]
+    del parent_2.middle_blocks[: node_2_index + 1]
+
+    parent_1.middle_blocks = nodes_from_2_to_move + parent_1.middle_blocks
+    for node in nodes_from_2_to_move:
+        node.parent_block = parent_1
+    parent_2.middle_blocks = nodes_from_1_to_move + parent_2.middle_blocks
+    for node in nodes_from_1_to_move:
+        node.parent_block = parent_2
+    parent_1.reset_ba_input_shapes()
+    parent_2.reset_ba_input_shapes()
+
+    return b1, b2
 
 
 def _cross_point(b1, b2, b1_i, b2_i):
@@ -45,7 +123,8 @@ def _cross_point(b1, b2, b1_i, b2_i):
 
     @return Tuple containing b1 and b2
     """
-    return (b1, b2)
+    # TODO
+    return b1, b2
 
 
 def _recurse_select(block, count):

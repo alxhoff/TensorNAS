@@ -10,6 +10,7 @@ print("First model architecture\n")
 model1 = classificationblockarchitectures.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
+
 print(model1.get_ascii_tree() + "\n\n")
 print("###########################")
 
