@@ -83,11 +83,7 @@ def crossover_cutting_point(b1, b2, depth=1):
 
     # merge contents of parent nodes
     node_1 = tier_nodes_1[cut_point_1]
-    print("Cutting after")
-    node_1.print()
     node_2 = tier_nodes_2[cut_point_2]
-    print("Cutting after")
-    node_2.print()
     parent_1 = node_1.parent_block
     parent_2 = node_2.parent_block
     node_1_index = node_1.get_middle_index_in_parent()
@@ -103,9 +99,11 @@ def crossover_cutting_point(b1, b2, depth=1):
     parent_1.middle_blocks = nodes_from_2_to_move + parent_1.middle_blocks
     for node in nodes_from_2_to_move:
         node.parent_block = parent_1
+
     parent_2.middle_blocks = nodes_from_1_to_move + parent_2.middle_blocks
     for node in nodes_from_1_to_move:
         node.parent_block = parent_2
+
     parent_1.reset_ba_input_shapes()
     parent_2.reset_ba_input_shapes()
 
