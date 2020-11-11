@@ -76,22 +76,28 @@ class ClassificationBlock(Block):
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
-            return LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.FLATTEN,
-            )
+            return [
+                LayerBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    layer_type=SupportedLayers.FLATTEN,
+                )
+            ]
         elif layer_type == self.SUB_BLOCK_TYPES.HIDDENDENSE:
-            return LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.HIDDENDENSE,
-            )
+            return [
+                LayerBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    layer_type=SupportedLayers.HIDDENDENSE,
+                )
+            ]
         elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT:
-            return LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.DROPOUT,
-                args=self.DROPOUT_RATE_MAX,
-            )
-        return None
+            return [
+                LayerBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    layer_type=SupportedLayers.DROPOUT,
+                    args=self.DROPOUT_RATE_MAX,
+                )
+            ]
+        return []

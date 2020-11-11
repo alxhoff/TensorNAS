@@ -39,7 +39,9 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.FEATURE_EXTRACTION_BLOCK:
-            return FeatureExtractionBlock(
-                input_shape=input_shape, parent_block=self, layer_type=layer_type
-            )
-        return None
+            return [
+                FeatureExtractionBlock(
+                    input_shape=input_shape, parent_block=self, layer_type=layer_type
+                )
+            ]
+        return []

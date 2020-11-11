@@ -193,12 +193,12 @@ class Block(ABC):
             for i in range(random.randrange(1, self.MAX_SUB_BLOCKS)):
                 out_shape = self._get_cur_output_shape()
                 while True:
-                    block = self.generate_random_sub_block(
+                    blocks = self.generate_random_sub_block(
                         out_shape,
                         self.__get_random_sub_block_type(),
                     )
-                    if block:
-                        self.middle_blocks.append(block)
+                    if blocks:
+                        self.middle_blocks.extend(blocks)
                         break
 
     def get_output_shape(self):
