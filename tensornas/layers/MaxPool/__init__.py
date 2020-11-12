@@ -38,6 +38,8 @@ class Layer(NetworkLayer):
         )
 
     def validate(self, repair=True):
+        if not len(self.inputshape.get()) >= 3:
+            return False
         if not all(i > 0 for i in self.args[self.get_args_enum().STRIDES]):
             if repair:
                 while not self.validate(repair):
@@ -47,4 +49,6 @@ class Layer(NetworkLayer):
             if repair:
                 while not self.validate(repair):
                     self.repair()
+                return True
             return False
+        return True

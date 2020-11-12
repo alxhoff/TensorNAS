@@ -14,8 +14,8 @@ class Individual:
     def __init__(self, block_architecture):
         self.block_architecture = next(block_architecture)
 
-    def mutate(self):
-        self.block_architecture.mutate()
+    def mutate(self, verbose=False):
+        self.block_architecture.mutate(verbose=verbose)
         return self
 
     def evaluate(

@@ -1,6 +1,10 @@
 def crossover_single_point(b1, b2):
     """
-    A single block between the two architectures is swapped.
+    A single block between the two architectures is swapped. Care should be taken as the crossover can raise exceptions
+    if an invalid architecture is generated.
+
+    @param b1 First block architecture to be crossed-over
+    @param b2 Second block architecture to be crossed-over
     """
     random_node_1 = _select_random_node(b1)
     random_node_2 = _select_random_node(b2)

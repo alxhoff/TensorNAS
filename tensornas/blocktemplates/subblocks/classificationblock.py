@@ -36,7 +36,7 @@ class ClassificationBlock(Block):
 
         super().__init__(input_shape, parent_block, layer_type)
 
-    def validate(self):
+    def validate(self, repair):
         ret = True
         if not self.output_blocks[-1].layer_type == SupportedLayers.OUTPUTDENSE:
             ret = False

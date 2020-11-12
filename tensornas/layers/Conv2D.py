@@ -39,10 +39,7 @@ class Layer(NetworkLayer):
 
     def _mutate_filters(self, operator=MutationOperators.STEP):
         self.args[self.get_args_enum().FILTERS] = mutate_int(
-            self.args[self.get_args_enum().FILTERS],
-            1,
-            self.MAX_FILTER_COUNT,
-            operator,
+            self.args[self.get_args_enum().FILTERS], 1, self.MAX_FILTER_COUNT, operator,
         )
 
     def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
@@ -55,10 +52,7 @@ class Layer(NetworkLayer):
 
     def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
-            self.args[self.get_args_enum().STRIDES],
-            1,
-            self.MAX_STRIDE,
-            operator,
+            self.args[self.get_args_enum().STRIDES], 1, self.MAX_STRIDE, operator,
         )
 
     def _mutate_padding(self):

@@ -14,7 +14,7 @@ class Args(Enum):
 class Layer(NetworkLayer):
     def validate(self, repair=True):
         # Dense layers take in a 1D tensor array, ie. previous layer should be a flatten layer
-        if not len(self.inputshape.get()) == 1:
+        if not len(self.inputshape.get()) == 2:
             return False
 
         return True

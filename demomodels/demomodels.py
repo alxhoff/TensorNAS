@@ -41,12 +41,7 @@ Model_Configuration2 = {
         },
     },
     1: {"name": "Reshape", "args": {ReshapeArgs.TARGET_SHAPE.name: [13, 13, 12, 1]}},
-    2: {
-        "name": "MaxPool3D",
-        "args": {
-            MaxPool2DArgs.POOL_SIZE.name: [6, 3, 3],
-        },
-    },
+    2: {"name": "MaxPool3D", "args": {MaxPool2DArgs.POOL_SIZE.name: [6, 3, 3],},},
     3: {"name": "Flatten"},
     4: {
         "name": "Dense",

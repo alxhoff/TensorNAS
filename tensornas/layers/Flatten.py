@@ -18,6 +18,4 @@ class Layer(NetworkLayer):
         return (1, dimension_mag(self.inputshape.get()))
 
     def get_keras_layer(self):
-        return tf.keras.layers.Flatten(
-            input_shape=self.inputshape.get(),
-        )
+        return tf.keras.layers.Flatten(input_shape=self.inputshape.get(),)

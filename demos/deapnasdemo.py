@@ -62,13 +62,9 @@ def evaluate_individual(individual):
 
 # Note: please take note of arguments and return forms!
 def crossover_individuals(ind1, ind2):
-    from copy import deepcopy
     from tensornas.core.crossover import crossover_single_point
 
-    ind3, ind4 = deepcopy(ind1), deepcopy(ind2)
-    ind3.block_architecture, ind4.block_architecture = crossover_single_point(
-        ind3.block_architecture, ind4.block_architecture
-    )
+    ind3, ind4 = crossover_single_point(ind1, ind2)
     return ind3, ind4
 
 

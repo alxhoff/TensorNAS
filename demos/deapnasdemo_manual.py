@@ -59,13 +59,22 @@ def evaluate_individual(individual):
 
 # Note: please take note of arguments and return forms!
 def crossover_individuals(ind1, ind2):
+    """
+    A pythonic approach to crossing over, as invalid architectures are created by some crossovers, crossing over is
+    repeated until a valid architecture is produced.
+    """
     from copy import deepcopy
     from tensornas.core.crossover import crossover_single_point
 
-    ind3, ind4 = deepcopy(ind1), deepcopy(ind2)
-    ind3.block_architecture, ind4.block_architecture = crossover_single_point(
-        ind3.block_architecture, ind4.block_architecture
-    )
+    while True:
+        try:
+            ind3, ind4 = deepcopy(ind1), deepcopy(ind2)
+            ind3.block_architecture, ind4.block_architecture = crossover_single_point(
+                ind3.block_architecture, ind4.block_architecture
+            )
+        except Exception:
+            continue
+        break
     return ind3, ind4
 
 
@@ -73,7 +82,7 @@ def mutate_individual(individual):
     from copy import deepcopy
 
     ind2 = deepcopy(individual)
-    ind2.mutate
+    ind2.mutate(verbose=True)
     return (ind2,)
 
 

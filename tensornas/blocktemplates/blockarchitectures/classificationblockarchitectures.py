@@ -21,7 +21,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         super().__init__(input_shape, parent_block=None, layer_type=None)
 
-    def validate(self):
+    def validate(self, repair):
         ret = True
         if not isinstance(self.output_blocks[-1], ClassificationBlock):
             ret = False

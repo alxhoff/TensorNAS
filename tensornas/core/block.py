@@ -87,6 +87,7 @@ class Block(ABC):
             if verbose:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
             eval(mutate_eval)(verbose=verbose)
+        self.reset_ba_input_shapes()
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are
@@ -170,13 +171,22 @@ class Block(ABC):
         ba.refresh_io_shapes(input_shape=ba.get_input_shape())
         return False
 
-    def validate(self, repair=True):
+    def validate(self, repair):
         """This function will check if the generated block sequence is valid. Default implementation can be used which
         always returns true, ie. the block is always considered valid.
 
         @return True if the sub-block sequence is valid else False
         """
         return True
+
+    def _validate(self, repair=True):
+        """ This private function calls validate on all sub-blocks as well as the abstract validate method that
+        validates the block itself
+        """
+        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
+            if not sb.validate(repair=repair):
+                return False
+        return self.validate(repair=repair)
 
     def get_block_architecture(self):
         block = self
@@ -185,7 +195,7 @@ class Block(ABC):
 
         return block
 
-    def __generate_sub_blocks(self):
+    def _generate_sub_blocks(self):
         """Subclasses of Block should not populate their sub-block lists but instead implement this function which
         will handle this. Generated blocks that are not valid
         """
@@ -194,12 +204,14 @@ class Block(ABC):
                 out_shape = self._get_cur_output_shape()
                 while True:
                     blocks = self.generate_random_sub_block(
-                        out_shape,
-                        self.__get_random_sub_block_type(),
+                        out_shape, self._get_random_sub_block_type(),
                     )
                     if blocks:
-                        self.middle_blocks.extend(blocks)
-                        break
+                        if any(
+                            x for x in list(map(lambda x: x.validate(True), blocks))
+                        ):
+                            self.middle_blocks.extend(blocks)
+                            break
 
     def get_output_shape(self):
         """
@@ -221,7 +233,7 @@ class Block(ABC):
     def set_input_shape(self, input_shape):
         self.input_shape = input_shape
 
-    def __get_random_sub_block_type(self):
+    def _get_random_sub_block_type(self):
         """This method returns a random enum value of the block's possible sub-blocks"""
         if self.SUB_BLOCK_TYPES:
             while True:
@@ -301,10 +313,7 @@ class Block(ABC):
         )
         child_widths = [block_width(s) for s in child_strs]
 
-        display_width = max(
-            len(name),
-            sum(child_widths) + len(child_widths) - 1,
-        )
+        display_width = max(len(name), sum(child_widths) + len(child_widths) - 1,)
 
         child_midpoints = []
         child_end = 0
@@ -406,16 +415,21 @@ class Block(ABC):
             self.middle_blocks = []
             self.output_blocks = []
             if self.MAX_SUB_BLOCKS:
-                ib = self.generate_constrained_input_sub_blocks(input_shape)
-                if ib:
-                    self.input_blocks.extend(ib)
-                self.__generate_sub_blocks()
-                ob = self.generate_constrained_output_sub_blocks(
-                    self._get_cur_output_shape()
-                )
-                if ob:
-                    self.output_blocks.extend(ob)
-                if self.validate():
-                    return
+                while True:
+                    ib = self.generate_constrained_input_sub_blocks(input_shape)
+                    if ib:
+                        self.input_blocks.extend(ib)
+                    self._generate_sub_blocks()
+                    ob = self.generate_constrained_output_sub_blocks(
+                        self._get_cur_output_shape()
+                    )
+                    if ob:
+                        self.output_blocks.extend(ob)
+                    if self._validate():
+                        return
+                    else:
+                        self.input_blocks = []
+                        self.middle_blocks = []
+                        self.output_blocks = []
             else:
                 return
