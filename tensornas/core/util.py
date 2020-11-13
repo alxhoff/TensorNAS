@@ -1,7 +1,8 @@
-from enum import Enum, auto
-import random
 import math
+import random
+from enum import Enum, auto
 from functools import reduce
+from pkgutil import iter_modules
 
 
 class MutationOperators(Enum):
@@ -136,6 +137,58 @@ def mutate_tuple(val, min_bound, max_bound, operator=MutationOperators.SYNC_STEP
 
 def mutate_enum(val, enum):
     while True:
-        new_val = random.choice(list(enum)).value
+        new_val = random.choice(list(enum))
         if new_val != val:
             return new_val
+
+
+# enum becomes a datatype and is used to access the static constants whose value is known at compile type
+def mutate_enum_i(enum):
+    return random.choice(list(enum))
+
+
+def find_modules(pkg, dir):
+    from importlib import import_module
+
+    modules = []
+    for mod in iter_modules([dir]):
+        if not mod.ispkg:
+            mod_name = pkg + "." + mod.name
+            modules.append(import_module(mod_name))
+    return modules
+
+
+def custom_sparse_categorical_accuracy(y_true, y_pred):
+    from tensorflow.keras import backend as K
+
+    return K.cast(
+        K.equal(K.max(y_true, axis=-1), K.cast(K.argmax(y_pred, axis=-1), K.floatx())),
+        K.floatx(),
+    )
+
+
+def block_width(block):
+    try:
+        return block.index("\n")
+    except ValueError:
+        return len(block)
+
+
+def stack_str_blocks(blocks):
+    import itertools
+
+    builder = []
+    block_lens = [block_width(bl) for bl in blocks]
+    split_blocks = [bl.split("\n") for bl in blocks]
+
+    for line_list in itertools.zip_longest(*split_blocks, fillvalue=None):
+        for i, line in enumerate(line_list):
+            if line is None:
+                builder.append(" " * block_lens[i])
+            else:
+                builder.append(line)
+            if i != len(line_list) - 1:
+                builder.append(" ")  # Padding
+        builder.append("\n")
+
+    return "".join(builder[:-1])

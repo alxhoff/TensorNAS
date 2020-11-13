@@ -1,75 +1,75 @@
-from tensornasmodel import *
-from deap import base, creator, tools, algorithms
-import random
-import tensorflow as tf
-import keras
-import matplotlib.pyplot as plt
-import demomodels
-import multiprocessing
-import tensornasmutator
-import math
-from tensornasmutator import *
+import os
 
-# Training MNIST data
-(
-    (images_train, labels_train),
-    (images_test, labels_test),
-) = keras.datasets.mnist.load_data()
-input_shape = images_train.shape
-images_train = images_train.reshape(
-    images_train.shape[0], images_train.shape[1], images_train.shape[2], 1
-)
-images_test = images_test.reshape(
-    images_test.shape[0], images_test.shape[1], images_test.shape[2], 1
-)
-input_tensor_shape = (images_test.shape[1], images_test.shape[2], 1)
-images_train = images_train.astype("float32")
-images_test = images_test.astype("float32")
-images_train /= 255
-images_test /= 255
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+import multiprocessing
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import tensorflow as tf
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
+from deap import base, creator, tools, algorithms
+
+from tensornas.core.individual import Individual
+from demos.mnistdemoinput import *
+
 
 # Tensorflow parameters
 epochs = 1
 batch_size = 600
+steps = 5
+optimizer = "adam"
+loss = "sparse_categorical_crossentropy"
+metrics = ["accuracy"]
+pop_size = 10
 
-# Demo hard-coded models
-demomodels.generate_demo_model_jsons()
-demo_models = demomodels.generate_demo_model_array()
-demo_model_count = 1
 
 # Functions used for EA demo
 
 # Create a NAS model individual from one of the two demo models
 # Creating an iterable that is fed into initIterate
 
-# TODO generate random but valid starting model architectures
 
-
-def get_demo_model_iterator():
-    model = demo_models[random.randint(0, demo_model_count - 1)]  # hardcoded test model
-    iter = (
-        ModelLayer(model.get(str(layer)).get("name"), model.get(str(layer)).get("args"))
-        for layer in model.keys()
+def get_block_architecture():
+    from tensornas.blocktemplates.blockarchitectures.classificationblockarchitectures import (
+        ClassificationBlockArchitecture,
     )
-    return iter
+
+    """
+    This function is responsible for creating and returning the block architecture that an individual shuld embed
+    """
+    return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 def evaluate_individual(individual):
     return individual.evaluate(
-        images_train, labels_train, images_test, labels_test, epochs, batch_size
+        train_data=images_train,
+        train_labels=labels_train,
+        test_data=images_test,
+        test_labels=labels_test,
+        epochs=epochs,
+        batch_size=batch_size,
+        steps=steps,
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
     )
 
 
 # Note: please take note of arguments and return forms!
 def crossover_individuals(ind1, ind2):
-    # TODO
-    return ind1, ind2
+    from tensornas.core.crossover import crossover_single_point
+
+    ind3, ind4 = crossover_single_point(ind1, ind2)
+    return ind3, ind4
 
 
 def mutate_individual(individual):
-    # TODO
-    return (individual,)
+    return (individual.mutate(),)
 
 
 def pareto_dominance(ind1, ind2):
@@ -80,7 +80,7 @@ def pareto_dominance(ind1, ind2):
 creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
 
 # Each individual will be an architecture model
-creator.create("Individual", TensorNASModel, fitness=creator.FitnessMulti)
+creator.create("Individual", Individual, fitness=creator.FitnessMulti)
 
 toolbox = base.Toolbox()
 
@@ -89,18 +89,15 @@ pool = multiprocessing.Pool()
 toolbox.register("map", pool.map)
 ######
 
-toolbox.register("attr_nas_model_itr", get_demo_model_iterator)
-
+toolbox.register("get_block_architecture", get_block_architecture)
 toolbox.register(
-    "individual_iterate",
-    tools.initIterate,
+    "individual",
+    tools.initRepeat,
     creator.Individual,
-    toolbox.attr_nas_model_itr,
+    toolbox.get_block_architecture,
+    n=1,
 )
-
-toolbox.register(
-    "population", tools.initRepeat, list, toolbox.individual_iterate, n=demo_model_count
-)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=pop_size)
 
 # Genetic operators
 toolbox.register("evaluate", evaluate_individual)
@@ -110,15 +107,12 @@ toolbox.register("select", tools.selTournament, tournsize=3)
 
 # Statistics
 history = tools.History()
-
 toolbox.decorate("mate", history.decorator)
 toolbox.decorate("mutate", history.decorator)
-# toolbox.decorate("evaluate", history.decorator)
 
 
 def main():
-
-    pop = toolbox.population(n=3)
+    pop = toolbox.population(n=4)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -180,8 +174,11 @@ if __name__ == "__main__":
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "r.", alpha=0.7)
     for ind in dominated:
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "g.", alpha=0.7)
-    for ind in others:
-        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3)
+    if len(others):
+        for ind in others:
+            plt.plot(
+                ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3
+            )
     plt.plot(
         best_individual.fitness.values[0], best_individual.fitness.values[1], "bo", ms=6
     )
@@ -205,4 +202,7 @@ if __name__ == "__main__":
         plt.plot(ind.fitness.values[0], ind.fitness.values[1], "bo", alpha=0.74, ms=5)
     plt.title("Pareto-optimal front")
 
-    plt.show()
+    plt.draw()
+    # plt.show()
+
+    print("Wait here")

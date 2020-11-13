@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 
 def write_nas_model_json(json_model, filename):
