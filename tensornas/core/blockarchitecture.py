@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensornas.core.block import Block
-from tensornas.core.util import custom_sparse_categorical_accuracy
 
 
 class BlockArchitecture(Block):
@@ -28,21 +27,28 @@ class BlockArchitecture(Block):
         test_data,
         test_labels,
         epochs,
-        batch_size,
         steps,
+        batch_size,
         optimizer,
         loss,
         metrics,
     ):
         model = self.get_keras_model(optimizer=optimizer, loss=loss, metrics=metrics)
         # model.summary()
-        model.fit(
-            x=train_data,
-            y=train_labels,
-            epochs=epochs,
-            batch_size=batch_size,
-            steps_per_epoch=steps,
-        )
+        try:
+            model.fit(
+                x=train_data,
+                y=train_labels,
+                epochs=epochs,
+                batch_size=batch_size,
+                steps_per_epoch=steps,
+                verbose=1,
+            )
+        except Exception as e:
+            import math
+
+            print("Error fitting model, {}".format(e))
+            return [math.inf, math.inf, 0]
         ret = [
             int(
                 np.sum(

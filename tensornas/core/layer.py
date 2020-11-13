@@ -12,7 +12,7 @@ class LayerShape:
         if self.dimensions:
             return str(self.dimensions)
         else:
-            return "?"
+            raise Exception("Unable to get layer's shape")
 
     def __eq__(self, other):
         if isinstance(other, LayerShape):

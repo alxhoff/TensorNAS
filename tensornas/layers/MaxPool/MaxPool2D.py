@@ -17,10 +17,17 @@ def _same_pad_output_shape(input, pool, stride):
 
 
 class Layer(Layer):
+    MAX_POOL_SIZE = 5
+    MAX_STRIDE_SIZE = 5
+
     def _gen_args(cls, input_shape, args):
         return {
-            cls.get_args_enum().POOL_SIZE: gen_poolsize(ceil(input_shape[0] / 2)),
-            cls.get_args_enum().STRIDES: gen_2d_strides(ceil(input_shape[0] / 2)),
+            cls.get_args_enum().POOL_SIZE: gen_poolsize(
+                random.randint(1, cls.MAX_POOL_SIZE)
+            ),
+            cls.get_args_enum().STRIDES: gen_2d_strides(
+                random.randint(1, cls.MAX_STRIDE_SIZE)
+            ),
             cls.get_args_enum().PADDING: gen_padding(),
         }
 
@@ -55,9 +62,11 @@ class Layer(Layer):
         return (0, 0, 0)
 
     def get_keras_layer(self):
-        return tf.keras.layers.MaxPool2D(
-            input_shape=self.inputshape.get(),
-            pool_size=self.args.get(self.get_args_enum().POOL_SIZE),
-            strides=self.args.get(self.get_args_enum().STRIDES),
-            padding=self.args.get(self.get_args_enum().PADDING).value,
-        )
+        return [
+            tf.keras.layers.MaxPool2D(
+                input_shape=self.inputshape.get(),
+                pool_size=self.args.get(self.get_args_enum().POOL_SIZE),
+                strides=self.args.get(self.get_args_enum().STRIDES),
+                padding=self.args.get(self.get_args_enum().PADDING).value,
+            )
+        ]

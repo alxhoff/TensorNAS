@@ -101,7 +101,9 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=pop
 
 # Genetic operators
 toolbox.register("evaluate", evaluate_individual)
-toolbox.register("mate", crossover_individuals)
+from tensornas.core.crossover import crossover_individuals_sp
+
+toolbox.register("mate", crossover_individuals_sp)
 toolbox.register("mutate", mutate_individual)
 toolbox.register("select", tools.selTournament, tournsize=3)
 

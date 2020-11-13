@@ -8,16 +8,20 @@ import tensorflow as tf
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-from deap import base, creator, tools, algorithms
+from deap import base, creator, tools
+
+from math import ceil
 
 from tensornas.core.individual import Individual
 from demos.mnistdemoinput import *
 
 
 # Tensorflow parameters
-epochs = 1
-batch_size = 600
-steps = 5
+epochs = 10
+batch_size = 1
+training_size = len(images_train)
+step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
+
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
@@ -50,32 +54,11 @@ def evaluate_individual(individual):
         test_labels=labels_test,
         epochs=epochs,
         batch_size=batch_size,
-        steps=steps,
+        steps=step_size,
         optimizer=optimizer,
         loss=loss,
         metrics=metrics,
     )
-
-
-# Note: please take note of arguments and return forms!
-def crossover_individuals(ind1, ind2):
-    """
-    A pythonic approach to crossing over, as invalid architectures are created by some crossovers, crossing over is
-    repeated until a valid architecture is produced.
-    """
-    from copy import deepcopy
-    from tensornas.core.crossover import crossover_single_point
-
-    while True:
-        try:
-            ind3, ind4 = deepcopy(ind1), deepcopy(ind2)
-            ind3.block_architecture, ind4.block_architecture = crossover_single_point(
-                ind3.block_architecture, ind4.block_architecture
-            )
-        except Exception:
-            continue
-        break
-    return ind3, ind4
 
 
 def mutate_individual(individual):
@@ -119,7 +102,9 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual, n=pop
 
 # Genetic operators
 toolbox.register("evaluate", evaluate_individual)
-toolbox.register("mate", crossover_individuals)
+from tensornas.core.crossover import crossover_individuals_sp
+
+toolbox.register("mate", crossover_individuals_sp)
 toolbox.register("mutate", mutate_individual)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("print", print_ind)
@@ -149,6 +134,10 @@ def main():
     print("####################################################################")
     ind5.print_tree()
     print("####################################################################")
+
+    print(toolbox.evaluate(ind4))
+
+    print(toolbox.evaluate(ind5))
 
     print("Done")
 

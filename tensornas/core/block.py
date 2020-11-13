@@ -86,7 +86,10 @@ class Block(ABC):
             mutate_eval = "self." + random.choice(self.mutation_funcs)
             if verbose:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
-            eval(mutate_eval)(verbose=verbose)
+            while True:
+                eval(mutate_eval)(verbose=verbose)
+                if self.validate(repair=True):
+                    break
         self.reset_ba_input_shapes()
 
     def generate_constrained_output_sub_blocks(self, input_shape):
@@ -249,10 +252,13 @@ class Block(ABC):
         return an appropriately instantiated keras layer object"""
         ret = []
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            ret.append(sb.get_keras_layers())
+            ret.extend(sb.get_keras_layers())
 
         if hasattr(ret[0], "__iter__"):
-            return list(itertools.chain(*ret))
+            try:
+                return list(itertools.chain(*ret))
+            except Exception:
+                print("wait")
         else:
             return ret
 

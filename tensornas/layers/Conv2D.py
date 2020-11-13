@@ -29,7 +29,7 @@ class Layer(NetworkLayer):
         return {
             cls.get_args_enum().FILTERS: random.randint(1, cls.MAX_FILTER_COUNT),
             cls.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
-                ceil(input_shape[0] / 2)
+                cls.MAX_KERNEL_DIMENSION
             ),
             cls.get_args_enum().STRIDES: (1, 1),
             cls.get_args_enum().PADDING: la.gen_padding(),
@@ -93,6 +93,15 @@ class Layer(NetworkLayer):
             return False
 
         if (
+            (self.inputshape.get()[0] - self.args[self.get_args_enum().KERNEL_SIZE][0])
+            < 1
+        ) or (
+            (self.inputshape.get()[1] - self.args[self.get_args_enum().KERNEL_SIZE][1])
+            < 1
+        ):
+            return False
+
+        if (
             not self.args[self.get_args_enum().STRIDES][0] > 0
             or not self.args[self.get_args_enum().STRIDES][1] > 0
         ):
@@ -131,12 +140,14 @@ class Layer(NetworkLayer):
         )
 
     def get_keras_layer(self):
-        return tf.keras.layers.Conv2D(
-            filters=self.args.get(self.get_args_enum().FILTERS),
-            kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),
-            strides=self.args.get(self.get_args_enum().STRIDES),
-            input_shape=self.inputshape.get(),
-            activation=self.args.get(self.get_args_enum().ACTIVATION).value,
-            padding=self.args.get(self.get_args_enum().PADDING).value,
-            dilation_rate=self.args.get(self.get_args_enum().DILATION_RATE),
-        )
+        return [
+            tf.keras.layers.Conv2D(
+                filters=self.args.get(self.get_args_enum().FILTERS),
+                kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),
+                strides=self.args.get(self.get_args_enum().STRIDES),
+                input_shape=self.inputshape.get(),
+                activation=self.args.get(self.get_args_enum().ACTIVATION).value,
+                padding=self.args.get(self.get_args_enum().PADDING).value,
+                dilation_rate=self.args.get(self.get_args_enum().DILATION_RATE),
+            )
+        ]

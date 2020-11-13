@@ -1,3 +1,24 @@
+# Note: please take note of arguments and return forms!
+def crossover_individuals_sp(ind1, ind2):
+    """
+    A pythonic approach to crossing over, as invalid architectures are created by some crossovers, crossing over is
+    repeated until a valid architecture is produced.
+    """
+    from copy import deepcopy
+    from tensornas.core.crossover import crossover_single_point
+
+    while True:
+        try:
+            ind3, ind4 = deepcopy(ind1), deepcopy(ind2)
+            ind3.block_architecture, ind4.block_architecture = crossover_single_point(
+                ind3.block_architecture, ind4.block_architecture
+            )
+        except Exception:
+            continue
+        break
+    return ind3, ind4
+
+
 def crossover_single_point(b1, b2):
     """
     A single block between the two architectures is swapped. Care should be taken as the crossover can raise exceptions

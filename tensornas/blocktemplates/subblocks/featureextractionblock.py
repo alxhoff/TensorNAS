@@ -19,7 +19,7 @@ class FeatureExtractionBlock(Block):
     Layers that can be used in the extraction of features
     """
 
-    MAX_SUB_BLOCKS = 5
+    MAX_SUB_BLOCKS = 2
     SUB_BLOCK_TYPES = FeatureExtractionBlockLayerTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):

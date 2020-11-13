@@ -42,7 +42,9 @@ class Layer(NetworkLayer):
         return self.args[self.get_args_enum().TARGET_SHAPE]
 
     def get_keras_layer(self):
-        return tf.keras.layers.Reshape(
-            self.args.get(self.get_args_enum().TARGET_SHAPE),
-            input_shape=self.inputshape.get(),
-        )
+        return [
+            tf.keras.layers.Reshape(
+                self.args.get(self.get_args_enum().TARGET_SHAPE),
+                input_shape=self.inputshape.get(),
+            )
+        ]
