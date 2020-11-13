@@ -16,16 +16,19 @@ from deap import base, creator, tools, algorithms
 from tensornas.core.individual import Individual
 from demos.mnistdemoinput import *
 
+from math import ceil
 
 # Tensorflow parameters
 epochs = 1
-batch_size = 600
-steps = 5
+batch_size = 1
+training_size = len(images_train)
+step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
+
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 10
-
+pop_size = 1
+gen_count = 2
 
 # Functions used for EA demo
 
@@ -53,7 +56,7 @@ def evaluate_individual(individual):
         test_labels=labels_test,
         epochs=epochs,
         batch_size=batch_size,
-        steps=steps,
+        steps=step_size,
         optimizer=optimizer,
         loss=loss,
         metrics=metrics,
@@ -85,8 +88,8 @@ creator.create("Individual", Individual, fitness=creator.FitnessMulti)
 toolbox = base.Toolbox()
 
 ### Multithreading ###
-pool = multiprocessing.Pool()
-toolbox.register("map", pool.map)
+# pool = multiprocessing.Pool()
+# toolbox.register("map", pool.map)
 ######
 
 toolbox.register("get_block_architecture", get_block_architecture)
@@ -114,7 +117,7 @@ toolbox.decorate("mutate", history.decorator)
 
 
 def main():
-    pop = toolbox.population(n=4)
+    pop = toolbox.population(n=pop_size)
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -126,7 +129,7 @@ def main():
         toolbox,
         cxpb=0.5,
         mutpb=0.2,
-        ngen=2,
+        ngen=gen_count,
         stats=stats,
         halloffame=hof,
         verbose=True,
