@@ -14,7 +14,7 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 from deap import base, creator, tools, algorithms
 
 from tensornas.core.individual import Individual
-from demos.mnistdemoinput import *
+from demos.DemoMNISTInput import *
 
 from math import ceil
 
@@ -37,7 +37,7 @@ gen_count = 2
 
 
 def get_block_architecture():
-    from tensornas.blocktemplates.blockarchitectures.classificationblockarchitectures import (
+    from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
         ClassificationBlockArchitecture,
     )
 

@@ -5,7 +5,7 @@ from tensornas.core.layerblock import LayerBlock
 from tensornas.layers import SupportedLayers
 
 
-class FeatureExtractionBlockLayerTypes(Enum):
+class SubBlockTypes(Enum):
     """
     Layers that can be used in the generation of a feature extraction block are enumerated here for random selection
     """
@@ -20,7 +20,7 @@ class FeatureExtractionBlock(Block):
     """
 
     MAX_SUB_BLOCKS = 2
-    SUB_BLOCK_TYPES = FeatureExtractionBlockLayerTypes
+    SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):
         return [

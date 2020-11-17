@@ -1,5 +1,5 @@
-from demos.mnistdemoinput import input_tensor_shape, mnist_class_count
-from tensornas.blocktemplates.blockarchitectures import classificationblockarchitectures
+from demos.DemoMNISTInput import input_tensor_shape, mnist_class_count
+from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
 from tensornas.core.crossover import _select_random_node, crossover_single_point
 
 print("###########################")
@@ -7,7 +7,7 @@ print("Manual example")
 print("###########################")
 
 print("First model architecture\n")
-model1 = classificationblockarchitectures.ClassificationBlockArchitecture(
+model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -15,7 +15,7 @@ print(model1.get_ascii_tree() + "\n\n")
 print("###########################")
 
 print("Second model architecture\n")
-model2 = classificationblockarchitectures.ClassificationBlockArchitecture(
+model2 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -80,14 +80,14 @@ print("Auto example")
 print("###########################")
 
 print("First model architecture\n")
-model1 = classificationblockarchitectures.ClassificationBlockArchitecture(
+model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 print(model1.get_ascii_tree() + "\n\n")
 
 print("###########################")
 print("Second model architecture\n")
-model2 = classificationblockarchitectures.ClassificationBlockArchitecture(
+model2 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 print(model2.get_ascii_tree() + "\n\n")

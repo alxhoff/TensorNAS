@@ -13,7 +13,7 @@ from deap import base, creator, tools
 from math import ceil
 
 from tensornas.core.individual import Individual
-from demos.mnistdemoinput import *
+from demos.DemoMNISTInput import *
 
 
 # Tensorflow parameters
@@ -35,7 +35,7 @@ pop_size = 10
 
 
 def get_block_architecture():
-    from tensornas.blocktemplates.blockarchitectures.classificationblockarchitectures import (
+    from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
         ClassificationBlockArchitecture,
     )
 

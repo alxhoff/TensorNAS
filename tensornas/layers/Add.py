@@ -3,20 +3,20 @@ from enum import Enum, auto
 import tensorflow as tf
 
 from tensornas.core.layer import NetworkLayer
-from tensornas.core.util import dimension_mag
 
 
 class Args(Enum):
-    NONE = auto()
+    LAYERS = auto()
 
 
 class Layer(NetworkLayer):
     @classmethod
     def _gen_args(cls, input_shape, args):
-        return {}
+        assert args
+        return {cls.get_args_enum().LAYERS: args}
 
     def get_output_shape(self):
-        return (1, dimension_mag(self.inputshape.get()))
+        return self.inputshape.get()
 
     def get_keras_layer(self):
-        return [tf.keras.layers.Flatten(input_shape=self.inputshape.get())]
+        return [tf.keras.layers.Add(self.args.get(self.get_args_enum().LAYERS))]

@@ -1,7 +1,9 @@
 from enum import Enum, auto
 
-from tensornas.blocktemplates.subblocks.classificationblock import ClassificationBlock
-from tensornas.blocktemplates.subblocks.featureextractionblock import (
+from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
+    TwoDClassificationBlock,
+)
+from tensornas.blocktemplates.subblocks.FeatureExtractionBlock import (
     FeatureExtractionBlock,
 )
 from tensornas.core.blockarchitecture import BlockArchitecture
@@ -23,13 +25,13 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def validate(self, repair):
         ret = True
-        if not isinstance(self.output_blocks[-1], ClassificationBlock):
+        if not isinstance(self.output_blocks[-1], TwoDClassificationBlock):
             ret = False
         return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         return [
-            ClassificationBlock(
+            TwoDClassificationBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,

@@ -255,10 +255,7 @@ class Block(ABC):
             ret.extend(sb.get_keras_layers())
 
         if hasattr(ret[0], "__iter__"):
-            try:
-                return list(itertools.chain(*ret))
-            except Exception:
-                print("wait")
+            return list(itertools.chain(*ret))
         else:
             return ret
 

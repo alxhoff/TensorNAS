@@ -1,11 +1,11 @@
-from tensornas.blocktemplates.blockarchitectures import classificationblockarchitectures
-from demos.mnistdemoinput import *
+from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
+from demos.DemoMNISTInput import *
 
 print("##########################################")
 print("Testing classification block architecture")
 print("##########################################")
 
-model = classificationblockarchitectures.ClassificationBlockArchitecture(
+model = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 

@@ -5,7 +5,7 @@ from tensornas.core.layerblock import LayerBlock
 from tensornas.layers import SupportedLayers
 
 
-class ClassificationBlockLayerTypes(Enum):
+class TwoDClassificationBlockLayerTypes(Enum):
     """
     Layers that can be used in the generation of a feature extraction block are enumerated here for random selection
     """
@@ -15,7 +15,7 @@ class ClassificationBlockLayerTypes(Enum):
     DROPOUT = auto()
 
 
-class ClassificationBlock(Block):
+class TwoDClassificationBlock(Block):
     """
     Block used for performing classification
 
@@ -29,7 +29,7 @@ class ClassificationBlock(Block):
     DROPOUT_RATE_MAX = 0.2
 
     MAX_SUB_BLOCKS = 2
-    SUB_BLOCK_TYPES = ClassificationBlockLayerTypes
+    SUB_BLOCK_TYPES = TwoDClassificationBlockLayerTypes
 
     def __init__(self, input_shape, parent_block, layer_type, class_count):
         self.class_count = class_count

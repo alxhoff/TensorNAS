@@ -192,3 +192,17 @@ def stack_str_blocks(blocks):
         builder.append("\n")
 
     return "".join(builder[:-1])
+
+
+def list_available_blocks():
+    from tensornas.blocktemplates import SupportedBlocks
+
+    for block in SupportedBlocks:
+        print(block.value)
+
+
+def list_available_block_architectures():
+    from tensornas.blocktemplates import SupportedArchitectureBlocks
+
+    for arch in SupportedArchitectureBlocks:
+        print(arch.value)
