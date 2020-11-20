@@ -162,5 +162,5 @@ class NetworkLayer(ABC):
         return NotImplementedError
 
     @abstractmethod
-    def get_keras_layer(self):
+    def get_keras_layer(self, input_tensor):
         return NotImplementedError

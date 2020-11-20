@@ -34,11 +34,8 @@ class FilterBankBlock(Block):
             ]
         return []
 
-    def get_keras_layers(self):
-        array = None
+    def get_keras_layers(self, input_tensor):
+        tmp = input_tensor
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            if not array:
-                array = sb.get_keras_layers()
-            else:
-                array = sb.get_keras_layers()(array)
-        return array
+            tmp = sb.get_keras_layers(tmp)
+        return tmp

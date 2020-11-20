@@ -35,7 +35,7 @@ class ExpandBlock(Block):
             ]
         return []
 
-    def get_keras_layers(self):
+    def get_keras_layers(self, input_tensor):
         """
         As an expand block creates a number of parallel 2D Conv layers the functional Tensorflow API must be used.
         The use of a concatenation operation allows for the layers to be parallelized, the one requirement of using
@@ -43,13 +43,8 @@ class ExpandBlock(Block):
         from which the input should be input in parallel. If this block is being called from a Fire Block this would
         mean that the squeeze layer must be passed in.
         """
-        inp = keras.Input(shape=self.get_input_shape())
-        layers = []
-        for sb in self.middle_blocks:
-            layer = sb.get_keras_layers()[0](inp)
-            layers.append(layer)
-        # layers = [sb.get_keras_layers()[0](prev_layer) for sb in self.middle_blocks]
+        layers = [sb.get_keras_layers(input_tensor) for sb in self.middle_blocks]
         if len(layers) > 1:
-            return [keras.Model(inp, keras.layers.Concatenate(axis=-1)(layers))]
+            return keras.layers.Concatenate()(layers)
         else:
-            return layers
+            return layers[0]

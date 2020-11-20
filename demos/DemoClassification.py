@@ -1,5 +1,6 @@
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
 from demos.DemoMNISTInput import *
+from tensornas.core.util import save_model
 
 print("##########################################")
 print("Testing classification block architecture")
@@ -8,6 +9,8 @@ print("##########################################")
 model = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
+
+save_model(model, "classification.tflite")
 
 model.print()
 

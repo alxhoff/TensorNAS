@@ -251,22 +251,19 @@ class Block(ABC):
         else:
             return None
 
-    def get_keras_layers(self):
-        """By default this method simply calls this method in all child blocks, it should be overriden for layer
+    def get_keras_layers(self, input_tensor):
+        """By default this method simply calls this method in all child blocks, it should be overridden for layer
         blocks, ie. blocks that are leaves within the block hierarchy and contain a keras layer, such blocks should
-        return an appropriately instantiated keras layer object"""
-        ret = []
-        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            layers = sb.get_keras_layers()
-            if isinstance(layers, list):
-                ret.extend(layers)
-            else:
-                ret.append(layers)
+        return an appropriately instantiated keras layer object
 
-        if hasattr(ret[0], "__iter__"):
-            return list(itertools.chain(*ret))
-        else:
-            return ret
+        TensorNAS uses the Tensorflow functional API so each keras layer requires an input tensor, this shuold be
+        passed from the previous layer.
+        """
+        tmp = input_tensor
+        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
+            tmp = sb.get_keras_layers(tmp)
+
+        return tmp
 
     def _get_cur_output_shape(self):
         if len(self.output_blocks):

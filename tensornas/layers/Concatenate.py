@@ -39,7 +39,8 @@ class Layer(NetworkLayer):
 
         return dim
 
-    def get_keras_layer(self):
+    def get_keras_layer(self, input_tensor):
+        # TODO
         keras_layers = [
             layer.get_keras_layer()
             for layer in self.args.get(self.get_args_enum().LAYERS)

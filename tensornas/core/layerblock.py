@@ -35,8 +35,8 @@ class LayerBlock(Block):
     def validate(self, repair):
         return self.layer.validate(repair=repair)
 
-    def get_keras_layers(self):
-        return self.layer.get_keras_layer()
+    def get_keras_layers(self, input_tensor):
+        return self.layer.get_keras_layer(input_tensor)
 
     def print_self(self):
         self.layer.print()
