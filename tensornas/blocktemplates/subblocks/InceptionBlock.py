@@ -37,6 +37,9 @@ class InceptionBlock(Block):
                 )
             ]
 
-    def get_keras_layers(self):
-        filter_banks = [sb.get_keras_layers() for sb in self.middle_blocks]
-        return tf.keras.layers.Concatenate(filter_banks)
+    def get_keras_layers(self, input_tensor):
+        filter_banks = [sb.get_keras_layers(input_tensor) for sb in self.middle_blocks]
+        if len(filter_banks) > 1:
+            return tf.keras.layers.Concatenate()(filter_banks)
+        else:
+            return filter_banks[0]

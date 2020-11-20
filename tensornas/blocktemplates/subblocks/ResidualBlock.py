@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from tensorflow import keras
 
+from demos.DemoMNISTInput import input_shape
 from tensornas.core.block import Block
 from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
     TwoDClassificationBlock,
@@ -24,9 +25,8 @@ class ResidualBlock(Block):
             ]
         return []
 
-    def get_keras_layers(self):
-        inp = keras.Input(shape=self.input_shape)
-        tmp = inp
+    def get_keras_layers(self, input_tensor):
+        tmp = input_tensor
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            tmp = sb.get_keras_layers()(tmp)
-        return keras.layers.Add([inp, tmp])
+            tmp = sb.get_keras_layers(tmp)
+        return keras.layers.Add()([input_tensor, tmp])
