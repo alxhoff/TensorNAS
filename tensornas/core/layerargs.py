@@ -23,7 +23,7 @@ class ArgPadding(str, Enum):
 
 
 def gen_kernel_size(input_size):
-    kernel_size = random.randint(1, input_size)
+    kernel_size = random.choice(range(1, input_size, 2))
     return (kernel_size, kernel_size)
 
 

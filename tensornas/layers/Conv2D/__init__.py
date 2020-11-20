@@ -107,12 +107,12 @@ class Layer(NetworkLayer):
         return True
 
     @staticmethod
-    def _valid_pad_output_shape(input, kernel, stride):
-        return ((input - kernel) // stride) + 1
-
-    @staticmethod
     def _same_pad_output_shape(input, stride):
         return ((input - 1) // stride) + 1
+
+    @staticmethod
+    def _valid_pad_output_shape(input, kernel, stride):
+        return ((input - kernel) // stride) + 1
 
     @staticmethod
     def conv2Doutputshape(input_size, stride, kernel_size, filter_count, padding):

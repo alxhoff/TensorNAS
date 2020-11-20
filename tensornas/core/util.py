@@ -206,3 +206,22 @@ def list_available_block_architectures():
 
     for arch in SupportedArchitectureBlocks:
         print(arch.value)
+
+
+def save_model(model, filename="out_model.tflite"):
+    import tensorflow as tf
+
+    inp = tf.keras.Input(shape=model.input_shape)
+    tmp = inp
+    layers = model.get_keras_layers()
+    for layer in layers:
+        tmp = layer(tmp)
+
+    model = tf.keras.Model(inp, tmp)
+
+    model.save("/home/alxhoff/Downloads")
+
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
+    tflite_model = converter.convert()
+    open(filename, "wb").write(tflite_model)

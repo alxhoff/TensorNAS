@@ -35,6 +35,11 @@ class Block(ABC):
         - __init__
     """
 
+    """
+    A property to specify a minimum block count, is not required by each sub-class.
+    """
+    MIN_SUB_BLOCK = 1
+
     @property
     @classmethod
     @abstractmethod
@@ -203,7 +208,7 @@ class Block(ABC):
         will handle this. Generated blocks that are not valid
         """
         if self.MAX_SUB_BLOCKS:
-            for i in range(random.randrange(1, self.MAX_SUB_BLOCKS)):
+            for i in range(random.randrange(self.MIN_SUB_BLOCK, self.MAX_SUB_BLOCKS)):
                 out_shape = self._get_cur_output_shape()
                 while True:
                     blocks = self.generate_random_sub_block(
@@ -252,7 +257,11 @@ class Block(ABC):
         return an appropriately instantiated keras layer object"""
         ret = []
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            ret.extend(sb.get_keras_layers())
+            layers = sb.get_keras_layers()
+            if isinstance(layers, list):
+                ret.extend(layers)
+            else:
+                ret.append(layers)
 
         if hasattr(ret[0], "__iter__"):
             return list(itertools.chain(*ret))

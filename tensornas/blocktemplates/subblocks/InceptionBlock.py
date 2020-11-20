@@ -5,22 +5,20 @@ from enum import Enum, auto
 import tensorflow as tf
 
 from tensornas.core.block import Block
-from tensornas.core.layerblock import LayerBlock
-from tensornas.layers import SupportedLayers
+from tensornas.blocktemplates.subblocks.FilterBankBlock import FilterBankBlock
 
 """
 An inception block is designed to make the model wider instead of deeper. Thus an inception block is responsible
 for taking it's subblocks and making them parallel to each other.
 """
 
-class InceptionBlockLayerTypes(Enum):
+
+class SubBlockTypes(Enum):
     """
     Layers that can be used in the generation of a feature extraction block are enumerated here for random selection
     """
 
-    CONV2D = auto()
-    POINTWISECONV= auto()
-    MAXPOOL2D = auto()
+    FILTER_BANK = auto()
 
 
 class InceptionBlock(Block):
@@ -29,57 +27,16 @@ class InceptionBlock(Block):
     """
 
     MAX_SUB_BLOCKS = 3
-    SUB_BLOCK_TYPES = InceptionBlockLayerTypes
-
+    SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        #if layer_type == self.SUB_BLOCK_TYPES.POINTWISECONV:
-        Conv_0= LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.CONV2D,
-            )
-        Conv_0_branch_0= Conv_0.get_keras_layers()
-        #elif layer_type == self.SUB_BLOCK_TYPES.CONV2D:
-        Conv_1= LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.CONV2D,
-            )
-        Conv_1_branch_1=Conv_1.get_keras_layers()
-        Conv_2=LayerBlock(
-            input_shape=Conv_1.get_output_shape(),
-            parent_block=self,
-            layer_type=SupportedLayers.CONV2D,
-        )
-        Conv_2_branch_1=Conv_2.get_keras_layers()
-        Conv_3=LayerBlock(
-            input_shape=input_shape,
-            parent_block=self,
-            layer_type=SupportedLayers.CONV2D,
-        )
-        Conv_3_branch_2=Conv_3.get_keras_layers()
-        Conv_4 = LayerBlock(
-            input_shape=Conv_3.get_output_shape(),
-            parent_block=self,
-            layer_type=SupportedLayers.CONV2D,
-        )
-        Conv_4_branch_2 = Conv_4.get_keras_layers()
-        Pool_1= LayerBlock(
-            input_shape=input_shape,
-            parent_block=self,
-            layer_type=SupportedLayers.MAXPOOL2D,
-        )
-        Pool_1_branch_3=Pool_1.get_keras_layers()
-        Conv_5=LayerBlock(
-            input_shape=Pool_1.get_output_shape(),
-            parent_block=self,
-            layer_type=SupportedLayers.CONV2D,
-        )
-        Conv_5_branch_3 = Conv_5.get_keras_layers()
+        if layer_type == self.SUB_BLOCK_TYPES.FILTER_BANK:
+            return [
+                FilterBankBlock(
+                    input_shape=input_shape, parent_block=self, layer_type=layer_type
+                )
+            ]
 
-        Block= tf.keras.layers.Concatenate([Conv_0_branch_0, Conv_1_branch_1, Conv_4_branch_2, Conv_5_branch_3])
-
-        #should return a layer block object whose output shape is calculated in Layer_Block-->Block class
-        return [Block]
-
+    def get_keras_layers(self):
+        filter_banks = [sb.get_keras_layers() for sb in self.middle_blocks]
+        return tf.keras.layers.Concatenate(filter_banks)

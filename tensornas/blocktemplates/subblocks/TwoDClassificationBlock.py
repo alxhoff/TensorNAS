@@ -31,7 +31,7 @@ class TwoDClassificationBlock(Block):
     MAX_SUB_BLOCKS = 2
     SUB_BLOCK_TYPES = TwoDClassificationBlockLayerTypes
 
-    def __init__(self, input_shape, parent_block, layer_type, class_count):
+    def __init__(self, input_shape, parent_block, class_count, layer_type=-1):
         self.class_count = class_count
 
         super().__init__(input_shape, parent_block, layer_type)

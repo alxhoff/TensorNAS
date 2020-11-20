@@ -1,6 +1,6 @@
 from tensornas.blocktemplates.blockarchitectures import SqueezeNetBlockArchitecture
 from demos.DemoMNISTInput import *
-from tensornas.core.util import list_available_blocks
+from tensornas.core.util import list_available_blocks, save_model
 
 print("##########################################")
 print("Testing Squeeze Net block architecture")
@@ -11,6 +11,8 @@ list_available_blocks()
 model = SqueezeNetBlockArchitecture.SqueezeNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
+
+save_model(model, "squeezenet.tflite")
 
 model.print()
 
