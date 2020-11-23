@@ -1,18 +1,20 @@
 from tensornas.blocktemplates.blockarchitectures import SqueezeNetBlockArchitecture
 from demos.DemoMNISTInput import *
-from tensornas.core.util import list_available_blocks, save_model
+from tensornas.core.util import list_available_blocks
+
+import tensorflow as tf
 
 print("##########################################")
 print("Testing Squeeze Net block architecture")
 print("##########################################")
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 list_available_blocks()
 
 model = SqueezeNetBlockArchitecture.SqueezeNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
-
-save_model(model, "squeezenet.tflite")
 
 model.print()
 
@@ -27,6 +29,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
+    filename="squeezenet.tflite",
 )
 
 print(metrics)

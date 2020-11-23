@@ -13,10 +13,9 @@ class BlockArchitecture(Block):
     """
 
     def get_keras_model(self, optimizer, loss, metrics):
-        layers = self.get_keras_layers()
-        model = tf.keras.Sequential()
-        for layer in layers:
-            model.add(layer)
+        inp = tf.keras.Input(shape=self.input_shape)
+        out = self.get_keras_layers(inp)
+        model = tf.keras.Model(inp, out)
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
         return model
 
@@ -32,9 +31,14 @@ class BlockArchitecture(Block):
         optimizer,
         loss,
         metrics,
+        filename=None,
     ):
         model = self.get_keras_model(optimizer=optimizer, loss=loss, metrics=metrics)
         # model.summary()
+        if filename:
+            from tensornas.core.util import save_model
+
+            save_model(model, filename)
         try:
             model.fit(
                 x=train_data,
@@ -65,4 +69,5 @@ class BlockArchitecture(Block):
             ),
             model.evaluate(test_data, test_labels)[1] * 100,
         ]
+
         return ret
