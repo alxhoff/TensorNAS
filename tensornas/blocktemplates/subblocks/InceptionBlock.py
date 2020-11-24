@@ -26,7 +26,8 @@ class InceptionBlock(Block):
     Layers that can be used in the extraction of features
     """
 
-    MAX_SUB_BLOCKS = 3
+    MAX_SUB_BLOCKS = 4
+    MIN_SUB_BLOCK = 2
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):

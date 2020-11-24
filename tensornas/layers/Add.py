@@ -10,7 +10,6 @@ class Args(Enum):
 
 
 class Layer(NetworkLayer):
-    @classmethod
     def _gen_args(cls, input_shape, args):
         assert args
         return {cls.get_args_enum().LAYERS: args}

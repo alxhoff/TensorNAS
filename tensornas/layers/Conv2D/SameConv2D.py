@@ -8,16 +8,16 @@ from tensornas.core.util import MutationOperators
 
 
 class Layer(Layer):
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return {
-            cls.get_args_enum().FILTERS: random.randint(1, ceil(input_shape[0] / 2)),
-            cls.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
-                cls.MAX_KERNEL_DIMENSION
+            self.get_args_enum().FILTERS: random.randint(1, ceil(input_shape[0] / 2)),
+            self.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
+                self.MAX_KERNEL_DIMENSION
             ),
-            cls.get_args_enum().STRIDES: (1, 1),
-            cls.get_args_enum().PADDING: la.ArgPadding.SAME,
-            cls.get_args_enum().DILATION_RATE: la.gen_dilation(),
-            cls.get_args_enum().ACTIVATION: la.gen_activation(),
+            self.get_args_enum().STRIDES: (1, 1),
+            self.get_args_enum().PADDING: la.ArgPadding.SAME,
+            self.get_args_enum().DILATION_RATE: la.gen_dilation(),
+            self.get_args_enum().ACTIVATION: la.gen_activation(),
         }
 
     def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):

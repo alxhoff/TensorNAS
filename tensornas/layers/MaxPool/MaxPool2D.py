@@ -20,15 +20,15 @@ class Layer(Layer):
     MAX_POOL_SIZE = 5
     MAX_STRIDE_SIZE = 5
 
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return {
-            cls.get_args_enum().POOL_SIZE: gen_poolsize(
-                random.randint(1, cls.MAX_POOL_SIZE)
+            self.get_args_enum().POOL_SIZE: gen_poolsize(
+                random.randint(1, self.MAX_POOL_SIZE)
             ),
-            cls.get_args_enum().STRIDES: gen_2d_strides(
-                random.randint(1, cls.MAX_STRIDE_SIZE)
+            self.get_args_enum().STRIDES: gen_2d_strides(
+                random.randint(1, self.MAX_STRIDE_SIZE)
             ),
-            cls.get_args_enum().PADDING: gen_padding(),
+            self.get_args_enum().PADDING: gen_padding(),
         }
 
     def repair(self):

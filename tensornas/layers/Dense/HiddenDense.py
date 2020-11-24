@@ -8,10 +8,10 @@ from tensornas.layers.Dense import Layer
 class Layer(Layer):
     MAX_UNITS = 256
 
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return {
-            cls.get_args_enum().UNITS: random.randint(1, cls.MAX_UNITS),
-            cls.get_args_enum().ACTIVATION: la.gen_activation(),
+            self.get_args_enum().UNITS: random.randint(1, self.MAX_UNITS),
+            self.get_args_enum().ACTIVATION: la.gen_activation(),
         }
 
     def _mutate_units(self):

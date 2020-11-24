@@ -152,9 +152,8 @@ class NetworkLayer(ABC):
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
             eval(mutate_eval)()
 
-    @classmethod
     @abstractmethod
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return NotImplementedError
 
     @abstractmethod

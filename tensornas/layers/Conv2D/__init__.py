@@ -22,16 +22,16 @@ class Layer(NetworkLayer):
     MAX_STRIDE = 7
     MAX_DILATION = 5
 
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return {
-            cls.get_args_enum().FILTERS: random.randint(1, cls.MAX_FILTER_COUNT),
-            cls.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
-                cls.MAX_KERNEL_DIMENSION
+            self.get_args_enum().FILTERS: random.randint(1, self.MAX_FILTER_COUNT),
+            self.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
+                self.MAX_KERNEL_DIMENSION
             ),
-            cls.get_args_enum().STRIDES: (1, 1),
-            cls.get_args_enum().PADDING: la.gen_padding(),
-            cls.get_args_enum().DILATION_RATE: la.gen_dilation(),
-            cls.get_args_enum().ACTIVATION: la.gen_activation(),
+            self.get_args_enum().STRIDES: (1, 1),
+            self.get_args_enum().PADDING: la.gen_padding(),
+            self.get_args_enum().DILATION_RATE: la.gen_dilation(),
+            self.get_args_enum().ACTIVATION: la.gen_activation(),
         }
 
     def _mutate_filters(self, operator=MutationOperators.STEP):

@@ -15,13 +15,34 @@ class FilterBankBlock(Block):
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        return [
-            LayerBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                layer_type=SupportedLayers.POINTWISECONV,
+        import random
+
+        layers = []
+        if random.randint(0, 1):
+            layers = [
+                LayerBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    layer_type=SupportedLayers.SAMEMAXPOOL2D,
+                )
+            ]
+        if len(layers):
+            layers.append(
+                LayerBlock(
+                    input_shape=layers[0].get_output_shape(),
+                    parent_block=self,
+                    layer_type=SupportedLayers.POINTWISECONV,
+                )
             )
-        ]
+        else:
+            layers.append(
+                LayerBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    layer_type=SupportedLayers.POINTWISECONV,
+                )
+            )
+        return layers
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D:
@@ -29,7 +50,7 @@ class FilterBankBlock(Block):
                 LayerBlock(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.CONV2D,
+                    layer_type=SupportedLayers.SAMECONV2D,
                 )
             ]
         return []

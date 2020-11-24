@@ -16,10 +16,10 @@ class Args(Enum):
 class Layer(NetworkLayer):
     MAX_RATE = 0.5
 
-    def _gen_args(cls, input_shape, max):
+    def _gen_args(self, input_shape, max):
         if not max:
             max = 1.0
-        return {cls.get_args_enum().RATE: la.gen_dropout(min(max, cls.MAX_RATE))}
+        return {self.get_args_enum().RATE: la.gen_dropout(min(max, self.MAX_RATE))}
 
     def _mutate_rate(self):
         self.args[self.get_args_enum().RATE] = mutate_unit_interval(

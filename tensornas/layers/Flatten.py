@@ -11,8 +11,7 @@ class Args(Enum):
 
 
 class Layer(NetworkLayer):
-    @classmethod
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         return {}
 
     def get_output_shape(self):

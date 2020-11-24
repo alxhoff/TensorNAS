@@ -11,15 +11,14 @@ class Args(Enum):
 
 
 class Layer(NetworkLayer):
-    @classmethod
-    def _gen_args(cls, input_shape, args):
+    def _gen_args(self, input_shape, args):
         axis = -1
         layers = None
-        if cls.get_args_enum().AXIS in args:
-            axis = args.get(cls.get_args_enum().AXIS)
-        if cls.get_args_enum().LAYERS in args:
-            layers = args.get(cls.get_args_enum().AXIS)
-        return {cls.get_args_enum().AXIS: axis, cls.get_args_enum().LAYERS: layers}
+        if self.get_args_enum().AXIS in args:
+            axis = args.get(self.get_args_enum().AXIS)
+        if self.get_args_enum().LAYERS in args:
+            layers = args.get(self.get_args_enum().AXIS)
+        return {self.get_args_enum().AXIS: axis, self.get_args_enum().LAYERS: layers}
 
     def get_output_shape(self):
         layers = self.args.get(self.get_args_enum().LAYERS)

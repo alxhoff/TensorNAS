@@ -12,8 +12,8 @@ class Args(Enum):
 
 
 class Layer(NetworkLayer):
-    def _gen_args(cls, input_shape, target_shape):
-        return {cls.get_args_enum().TARGET_SHAPE: target_shape}
+    def _gen_args(self, input_shape, target_shape):
+        return {self.get_args_enum().TARGET_SHAPE: target_shape}
 
     def _mutate_target_shape(self):
         self.args[self.get_args_enum().TARGET_SHAPE] = mutate_dimension(
