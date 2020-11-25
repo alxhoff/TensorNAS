@@ -1,9 +1,6 @@
 from enum import Enum, auto
 
-from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
-    TwoDClassificationBlock,
-)
-from tensornas.blocktemplates.subblocks.ResNetOutputBlock import ResNetOutputBlock
+from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import TwoDClassificationBlock
 from tensornas.blocktemplates.subblocks.ResidualBlock import ResidualBlock
 from tensornas.core.blockarchitecture import BlockArchitecture
 
@@ -24,7 +21,7 @@ class ResNetBlockArchitecture(BlockArchitecture):
 
     def validate(self, repair):
         ret = True
-        if not isinstance(self.output_blocks[-1], ResNetOutputBlock):
+        if not isinstance(self.output_blocks[-1], TwoDClassificationBlock):
             ret = False
         return ret
 

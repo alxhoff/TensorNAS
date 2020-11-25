@@ -400,7 +400,7 @@ class Block(ABC):
 
     def __init__(self, input_shape, parent_block, layer_type):
         """
-        The init sequence of the Block class should always be called at the end of a subclasse's __init__, via
+        The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.
 
         This can be required if the block needs to take in additional parameters when being created, eg. a classification
