@@ -3,7 +3,7 @@ from enum import Enum, auto
 from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
     TwoDClassificationBlock,
 )
-from tensornas.blocktemplates.subblocks.MobilNetBlock import MobileBlock
+from tensornas.blocktemplates.subblocks.MobilNetBlock import MobileNetBlock
 from tensornas.core.blockarchitecture import BlockArchitecture
 
 
@@ -24,14 +24,14 @@ class MobileNetBlockArchitecture(BlockArchitecture):
     def validate(self, repair):
         ret = True
         """should add a squeezeBlock for auto selection to tensornas.blocktemplates.subblocks """
-        if not isinstance(self.input_blocks[0], MobileBlock):
+        if not isinstance(self.input_blocks[0], MobileNetBlock):
             ret = False
 
         return ret
 
     def generate_constrained_input_sub_blocks(self, input_shape):
         return [
-            MobileBlock(
+            MobileNetBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=self.SUB_BLOCK_TYPES.MOBILE_BLOCK,
@@ -50,7 +50,7 @@ class MobileNetBlockArchitecture(BlockArchitecture):
 
     def generate_random_sub_block(self, input_shape, layer_type):
         return [
-            MobileBlock(
+            MobileNetBlock(
                 input_shape=input_shape, parent_block=self, layer_type=layer_type
             )
         ]

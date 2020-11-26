@@ -25,6 +25,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
+    filename="mobilenet.tflite",
 )
 
 print(metrics)
