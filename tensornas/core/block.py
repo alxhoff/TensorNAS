@@ -208,7 +208,8 @@ class Block(ABC):
         will handle this. Generated blocks that are not valid
         """
         if self.MAX_SUB_BLOCKS:
-            for i in range(random.randrange(self.MIN_SUB_BLOCK, self.MAX_SUB_BLOCKS)):
+            rng = random.choice(range(self.MIN_SUB_BLOCK, self.MAX_SUB_BLOCKS + 1))
+            for i in range(rng):
                 out_shape = self._get_cur_output_shape()
                 while True:
                     blocks = self.generate_random_sub_block(

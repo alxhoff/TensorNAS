@@ -25,7 +25,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="resnet.tflite"
+    filename="resnet.tflite",
 )
 
 print(metrics)

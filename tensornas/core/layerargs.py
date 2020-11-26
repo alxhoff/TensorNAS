@@ -9,11 +9,10 @@ class ArgActivations(str, Enum):
     HARD_SIGMOID = "hard_sigmoid"
     LINEAR = "linear"
     RELU = "relu"
-    # SELU = "selu"
     SIGMOID = "sigmoid"
     SOFTMAX = "softmax"
     SOFTPLUS = "softplus"
-    SOFTSIGN = "softsign"
+    # SOFTSIGN = "softsign"
     TANH = "tanh"
 
 

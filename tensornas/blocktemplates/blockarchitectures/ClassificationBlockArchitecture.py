@@ -1,8 +1,12 @@
 from enum import Enum, auto
 
-from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import TwoDClassificationBlock
+from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
+    TwoDClassificationBlock,
+)
 
-from tensornas.blocktemplates.subblocks.FeatureExtractionBlock import FeatureExtractionBlock
+from tensornas.blocktemplates.subblocks.FeatureExtractionBlock import (
+    FeatureExtractionBlock,
+)
 
 from tensornas.core.blockarchitecture import BlockArchitecture
 
