@@ -13,7 +13,7 @@ from tensorflow.keras.layers import GlobalAveragePooling2D
 
 
 def SqueezeNet(nb_classes, inputs=(3, 224, 224)):
-    """ Keras Implementation of SqueezeNet(arXiv 1602.07360)
+    """Keras Implementation of SqueezeNet(arXiv 1602.07360)
     @param nb_classes: total number of final categories
     Arguments:
     inputs -- shape of the input images (channel, cols, rows)

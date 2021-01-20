@@ -5,6 +5,16 @@ from tensornas.core.util import MutationOperators, mutate_tuple, mutate_enum
 import tensornas.core.layerargs as la
 
 
+def valid_pad_output_shape(input, pool, stride):
+    return ((input - pool) // stride) + 1
+
+
+def same_pad_output_shape(input, pool, stride):
+    return valid_pad_output_shape(input, pool, stride) + (
+        1 if ((input - pool) % stride) else 0
+    )
+
+
 class Args(Enum):
     "Args needed for creating MaxPool2D layer, list not complete"
     POOL_SIZE = auto()
@@ -42,13 +52,12 @@ class Layer(NetworkLayer):
             return False
         if not all(i > 0 for i in self.args[self.get_args_enum().STRIDES]):
             if repair:
-                while not self.validate(repair):
-                    self.repair()
+                self._mutate_strides(operator=MutationOperators.RANDOM)
+                return self.validate()
             return False
         if not all(i > 0 for i in self.args[self.get_args_enum().POOL_SIZE]):
             if repair:
-                while not self.validate(repair):
-                    self.repair()
-                return True
+                self._mutate_pool_size(operator=MutationOperators.RANDOM)
+                return self.validate()
             return False
         return True

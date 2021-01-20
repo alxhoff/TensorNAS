@@ -20,10 +20,6 @@ class Layer(NetworkLayer):
             self.args[self.get_args_enum().TARGET_SHAPE]
         )
 
-    def repair(self):
-        self.inputshape.set(self.outputshape.get())
-        self._mutate_target_shape()
-
     def validate(self, repair=True):
         input_mag = dimension_mag(list(self.inputshape.get()))
         output_mag = dimension_mag(list(self.get_output_shape()))
@@ -31,7 +27,8 @@ class Layer(NetworkLayer):
         if not input_mag == output_mag:
             if repair:
                 while not input_mag == output_mag:
-                    self.repair()
+                    self.inputshape.set(self.outputshape.get())
+                    self._mutate_target_shape()
                     input_mag = dimension_mag(list(self.inputshape.get()))
                     output_mag = dimension_mag(list(self.get_output_shape()))
             else:

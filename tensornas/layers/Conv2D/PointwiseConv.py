@@ -8,13 +8,19 @@ from tensornas.core.util import MutationOperators
 
 
 class Layer(Layer):
-    def _gen_args(self, input_shape, args):
+    def _gen_args(self, input_shape, args=None):
+        filter_count = random.randint(1, self.MAX_FILTER_COUNT)
+
+        if args:
+            if self.get_args_enum().FILTERS in args:
+                filter_count = args.get(self.get_args_enum().FILTERS)
+
         return {
-            self.get_args_enum().FILTERS: random.randint(1, ceil(input_shape[0] / 2)),
+            self.get_args_enum().FILTERS: filter_count,
             self.get_args_enum().KERNEL_SIZE: (1, 1),
             self.get_args_enum().STRIDES: (1, 1),
             self.get_args_enum().PADDING: la.gen_padding(),
-            self.get_args_enum().DILATION_RATE: la.gen_dilation(),
+            self.get_args_enum().DILATION_RATE: la.gen_2d_dilation(),
             self.get_args_enum().ACTIVATION: la.gen_activation(),
         }
 

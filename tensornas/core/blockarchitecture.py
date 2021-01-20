@@ -33,41 +33,46 @@ class BlockArchitecture(Block):
         metrics,
         filename=None,
     ):
-        model = self.get_keras_model(optimizer=optimizer, loss=loss, metrics=metrics)
-        # model.summary()
-        if filename:
-            from tensornas.core.util import save_model
-
-            save_model(model, filename)
         try:
-            model.fit(
-                x=train_data,
-                y=train_labels,
-                epochs=epochs,
-                batch_size=batch_size,
-                steps_per_epoch=steps,
-                verbose=1,
+            model = self.get_keras_model(
+                optimizer=optimizer, loss=loss, metrics=metrics
             )
+            # model.summary()
+            if filename:
+                from tensornas.core.util import save_model
+
+                save_model(model, filename)
+
+            if batch_size == -1:
+                model.fit(
+                    x=train_data,
+                    y=train_labels,
+                    epochs=epochs,
+                    steps_per_epoch=steps,
+                    verbose=1,
+                )
+            else:
+                model.fit(
+                    x=train_data,
+                    y=train_labels,
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    steps_per_epoch=steps,
+                    verbose=1,
+                )
         except Exception as e:
             import math
 
             print("Error fitting model, {}".format(e))
-            return [math.inf, math.inf, 0]
-        ret = [
-            int(
-                np.sum(
-                    [tf.keras.backend.count_params(p) for p in model.trainable_weights]
-                )
+            return [math.inf, 0]
+        params = int(
+            np.sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
+        ) + int(
+            np.sum(
+                [tf.keras.backend.count_params(p) for p in model.non_trainable_weights]
             )
-            + int(
-                np.sum(
-                    [
-                        tf.keras.backend.count_params(p)
-                        for p in model.non_trainable_weights
-                    ]
-                )
-            ),
-            model.evaluate(test_data, test_labels)[1] * 100,
-        ]
+        )
 
-        return ret
+        accuracy = model.evaluate(test_data, test_labels)[1] * 100
+
+        return params, accuracy

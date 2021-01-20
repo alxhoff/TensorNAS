@@ -23,20 +23,30 @@ class Layer(NetworkLayer):
     MAX_DILATION = 5
 
     def _gen_args(self, input_shape, args):
+        filter_count = random.randint(1, self.MAX_FILTER_COUNT)
+        kernel_size = la.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
+
+        if args:
+            if self.get_args_enum().FILTERS in args:
+                filter_count = args.get(self.get_args_enum().FILTERS)
+            if self.get_args_enum().KERNEL_SIZE in args:
+                kernel_size = args.get(self.get_args_enum().KERNEL_SIZE)
+
         return {
-            self.get_args_enum().FILTERS: random.randint(1, self.MAX_FILTER_COUNT),
-            self.get_args_enum().KERNEL_SIZE: la.gen_kernel_size(
-                self.MAX_KERNEL_DIMENSION
-            ),
+            self.get_args_enum().FILTERS: filter_count,
+            self.get_args_enum().KERNEL_SIZE: kernel_size,
             self.get_args_enum().STRIDES: (1, 1),
             self.get_args_enum().PADDING: la.gen_padding(),
-            self.get_args_enum().DILATION_RATE: la.gen_dilation(),
+            self.get_args_enum().DILATION_RATE: la.gen_2d_dilation(),
             self.get_args_enum().ACTIVATION: la.gen_activation(),
         }
 
     def _mutate_filters(self, operator=MutationOperators.STEP):
         self.args[self.get_args_enum().FILTERS] = mutate_int(
-            self.args[self.get_args_enum().FILTERS], 1, self.MAX_FILTER_COUNT, operator,
+            self.args[self.get_args_enum().FILTERS],
+            1,
+            self.MAX_FILTER_COUNT,
+            operator,
         )
 
     def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
@@ -49,7 +59,10 @@ class Layer(NetworkLayer):
 
     def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
-            self.args[self.get_args_enum().STRIDES], 1, self.MAX_STRIDE, operator,
+            self.args[self.get_args_enum().STRIDES],
+            1,
+            self.MAX_STRIDE,
+            operator,
         )
 
     def _mutate_padding(self):

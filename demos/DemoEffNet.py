@@ -1,12 +1,11 @@
-from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
+from tensornas.blocktemplates.blockarchitectures import EffNetBlockArchitecture
 from demos.DemoMNISTInput import *
-from tensornas.core.util import save_model
 
 print("##########################################")
 print("Testing classification block architecture")
 print("##########################################")
 
-model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
+model1 = EffNetBlockArchitecture.EffNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -23,7 +22,7 @@ metrics = model1.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="conv2d.tflite",
+    filename="effnet.tflite",
 )
 
 print(metrics)
@@ -47,7 +46,7 @@ metrics = model1.evaluate(
 
 print(metrics)
 
-model2 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
+model2 = EffNetBlockArchitecture.EffNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 

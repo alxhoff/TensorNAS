@@ -4,6 +4,9 @@ from tensornas.core.block import Block
 from tensornas.core.layerblock import LayerBlock
 from tensornas.layers import SupportedLayers
 
+from tensornas.layers.Dropout import Args as dropout_args
+from tensornas.layers.Dense import Args as dense_args
+
 
 class TwoDClassificationBlockLayerTypes(Enum):
     """
@@ -38,8 +41,13 @@ class TwoDClassificationBlock(Block):
 
     def validate(self, repair):
         ret = True
-        if not self.output_blocks[-1].layer_type == SupportedLayers.OUTPUTDENSE:
-            ret = False
+        if (
+            not (self.input_blocks + self.middle_blocks + self.output_blocks)[
+                -1
+            ].layer_type
+            == SupportedLayers.OUTPUTDENSE
+        ):
+            self.generate_constrained_output_sub_blocks(self.get_output_shape())
         return ret
 
     def generate_constrained_input_sub_blocks(self, input_shape):
@@ -57,7 +65,7 @@ class TwoDClassificationBlock(Block):
                 input_shape=None,
                 parent_block=self,
                 layer_type=SupportedLayers.OUTPUTDENSE,
-                args=self.class_count,
+                args={dense_args.UNITS: self.class_count},
             )
         ]
 
@@ -97,7 +105,7 @@ class TwoDClassificationBlock(Block):
                     input_shape=input_shape,
                     parent_block=self,
                     layer_type=SupportedLayers.DROPOUT,
-                    args=self.DROPOUT_RATE_MAX,
+                    args={dropout_args.RATE: self.DROPOUT_RATE_MAX},
                 )
             ]
         return []

@@ -21,14 +21,9 @@ class ArgPadding(str, Enum):
     SAME = "same"
 
 
-def gen_kernel_size(input_size):
+def gen_2d_kernel_size(input_size):
     kernel_size = random.choice(range(1, input_size, 2))
     return (kernel_size, kernel_size)
-
-
-def gen_2d_strides(max_bound):
-    stride_size = random.randint(1, max_bound)
-    return (stride_size, stride_size)
 
 
 def gen_3d_strides(max_bound):
@@ -36,12 +31,30 @@ def gen_3d_strides(max_bound):
     return (stride_size, stride_size, stride_size)
 
 
-def gen_poolsize(max_bound):
+def gen_2d_strides(max_bound):
+    stride_size = random.randint(1, max_bound)
+    return (stride_size, stride_size)
+
+
+def gen_1d_strides(max_bound):
+    return random.randint(1, max_bound)
+
+
+def gen_3d_poolsize(max_bound):
+    size = random.randint(1, max_bound)
+    return (size, size, size)
+
+
+def gen_2d_poolsize(max_bound):
     size = random.randint(1, max_bound)
     return (size, size)
 
 
-def gen_dilation():
+def gen_1d_poolsize(max_bound):
+    return random.randint(1, max_bound)
+
+
+def gen_2d_dilation():
     # TODO
     return (1, 1)
 

@@ -181,14 +181,16 @@ class Block(ABC):
 
     def validate(self, repair):
         """This function will check if the generated block sequence is valid. Default implementation can be used which
-        always returns true, ie. the block is always considered valid.
+        always returns true, ie. the block is always considered valid. The repair argument is used to allow the user
+        to attempt to repair invalid properties of the block.
 
+        @param repair Boolean used to enable repairing of invalid block properties
         @return True if the sub-block sequence is valid else False
         """
         return True
 
     def _validate(self, repair=True):
-        """ This private function calls validate on all sub-blocks as well as the abstract validate method that
+        """This private function calls validate on all sub-blocks as well as the abstract validate method that
         validates the block itself
         """
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
@@ -213,7 +215,8 @@ class Block(ABC):
                 out_shape = self._get_cur_output_shape()
                 while True:
                     blocks = self.generate_random_sub_block(
-                        out_shape, self._get_random_sub_block_type(),
+                        out_shape,
+                        self._get_random_sub_block_type(),
                     )
                     if blocks:
                         if any(
@@ -226,9 +229,12 @@ class Block(ABC):
         """
         Returns the output shape of the block
         """
-        return (self.input_blocks + self.middle_blocks + self.output_blocks)[
-            -1
-        ].get_output_shape()
+        try:
+            return (self.input_blocks + self.middle_blocks + self.output_blocks)[
+                -1
+            ].get_output_shape()
+        except Exception as e:
+            print(e)
 
     def set_output_shape(self, output_shape):
         self.output_shape = output_shape
@@ -323,7 +329,10 @@ class Block(ABC):
         )
         child_widths = [block_width(s) for s in child_strs]
 
-        display_width = max(len(name), sum(child_widths) + len(child_widths) - 1,)
+        display_width = max(
+            len(name),
+            sum(child_widths) + len(child_widths) - 1,
+        )
 
         child_midpoints = []
         child_end = 0
@@ -424,22 +433,23 @@ class Block(ABC):
             self.input_blocks = []
             self.middle_blocks = []
             self.output_blocks = []
+
+            ib = self.generate_constrained_input_sub_blocks(input_shape)
+            if ib:
+                self.input_blocks.extend(ib)
+
             if self.MAX_SUB_BLOCKS:
                 while True:
-                    ib = self.generate_constrained_input_sub_blocks(input_shape)
-                    if ib:
-                        self.input_blocks.extend(ib)
                     self._generate_sub_blocks()
-                    ob = self.generate_constrained_output_sub_blocks(
-                        self._get_cur_output_shape()
-                    )
-                    if ob:
-                        self.output_blocks.extend(ob)
                     if self._validate():
-                        return
+                        break
                     else:
-                        self.input_blocks = []
                         self.middle_blocks = []
-                        self.output_blocks = []
-            else:
-                return
+
+            ob = self.generate_constrained_output_sub_blocks(
+                self._get_cur_output_shape()
+            )
+            if ob:
+                self.output_blocks.extend(ob)
+
+            return

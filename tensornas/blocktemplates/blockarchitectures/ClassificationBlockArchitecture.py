@@ -27,8 +27,21 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def validate(self, repair):
         ret = True
-        if not isinstance(self.output_blocks[-1], TwoDClassificationBlock):
-            ret = False
+        if not isinstance(
+            (self.input_blocks + self.middle_blocks + self.output_blocks)[-1],
+            TwoDClassificationBlock,
+        ):
+            if repair:
+                self.output_blocks.append(
+                    TwoDClassificationBlock(
+                        input_shape=self.get_output_shape(),
+                        parent_block=self,
+                        class_count=self.class_count,
+                        layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
+                    )
+                )
+            else:
+                ret = False
         return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):

@@ -11,6 +11,8 @@ from tensornas.core.block import Block
 from tensornas.core.layerblock import LayerBlock
 from tensornas.layers import SupportedLayers
 
+from tensornas.layers.Dense import Args as dense_args
+
 
 class SqueezeExpansionBlockLayerTypes(Enum):
 
@@ -54,7 +56,7 @@ class SqueezeExpansionBlock(Block):
                 input_shape=None,
                 parent_block=self,
                 layer_type=SupportedLayers.OUTPUTDENSE,
-                args=self.class_count,
+                args={dense_args.UNITS: self.class_count},
             )
         ]
 
@@ -64,6 +66,6 @@ class SqueezeExpansionBlock(Block):
                 input_shape=None,
                 parent_block=self,
                 layer_type=SupportedLayers.HIDDENDENSE,
-                args=self.class_count,
+                args={dense_args.UNITS: self.class_count},
             )
         ]

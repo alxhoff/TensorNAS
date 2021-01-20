@@ -3,17 +3,11 @@ from math import ceil
 import tensorflow as tf
 
 from tensornas.core.layerargs import *
-from tensornas.layers.MaxPool import Layer
-
-
-def _valid_pad_output_shape(input, pool, stride):
-    return ((input - pool) // stride) + 1
-
-
-def _same_pad_output_shape(input, pool, stride):
-    return _valid_pad_output_shape(input, pool, stride) + (
-        1 if ((input - pool) % stride) else 0
-    )
+from tensornas.layers.MaxPool import (
+    Layer,
+    valid_pad_output_shape,
+    same_pad_output_shape,
+)
 
 
 class Layer(Layer):
@@ -21,14 +15,22 @@ class Layer(Layer):
     MAX_STRIDE_SIZE = 5
 
     def _gen_args(self, input_shape, args):
+        pool_size = gen_2d_poolsize(random.randint(1, self.MAX_POOL_SIZE))
+        stride_size = gen_2d_strides(random.randint(1, self.MAX_STRIDE_SIZE))
+        padding = gen_padding()
+
+        if args:
+            if self.get_args_enum().PADDING in args:
+                padding = args.get(self.get_args_enum().PADDING)
+            if self.get_args_enum().STRIDES in args:
+                stride_size = args.get(self.get_args_enum().STRIDES)
+            if self.get_args_enum().POOL_SIZE in args:
+                pool_size = args.get(self.get_args_enum().POOL_SIZE)
+
         return {
-            self.get_args_enum().POOL_SIZE: gen_poolsize(
-                random.randint(1, self.MAX_POOL_SIZE)
-            ),
-            self.get_args_enum().STRIDES: gen_2d_strides(
-                random.randint(1, self.MAX_STRIDE_SIZE)
-            ),
-            self.get_args_enum().PADDING: gen_padding(),
+            self.get_args_enum().POOL_SIZE: pool_size,
+            self.get_args_enum().STRIDES: stride_size,
+            self.get_args_enum().PADDING: padding,
         }
 
     def repair(self):
@@ -46,15 +48,15 @@ class Layer(Layer):
         stri = self.args[self.get_args_enum().STRIDES]
         pad = self.args[self.get_args_enum().PADDING]
         if pad == ArgPadding.SAME:
-            x = _same_pad_output_shape(inp[0], pool[0], stri[0])
-            y = _same_pad_output_shape(inp[1], pool[1], stri[1])
+            x = same_pad_output_shape(inp[0], pool[0], stri[0])
+            y = same_pad_output_shape(inp[1], pool[1], stri[1])
             try:
                 return (x, y, inp[2])
             except Exception as e:
                 raise Exception("I/O shapes not able to be made compatible")
         elif pad == ArgPadding.VALID:
-            x = _valid_pad_output_shape(inp[0], pool[0], stri[0])
-            y = _valid_pad_output_shape(inp[1], pool[1], stri[1])
+            x = valid_pad_output_shape(inp[0], pool[0], stri[0])
+            y = valid_pad_output_shape(inp[1], pool[1], stri[1])
             try:
                 return (x, y, inp[2])
             except Exception as e:

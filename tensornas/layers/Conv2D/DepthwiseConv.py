@@ -2,7 +2,8 @@ import tensorflow as tf
 
 from tensornas.layers.Conv2D import Layer
 
-"""The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution output channels will be equal to filters_in * depth_multiplier."""
+"""The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution 
+output channels will be equal to filters_in * depth_multiplier."""
 """
 Given a 4D input tensor ('NHWC' or 'NCHW' data formats) and a filter
  tensor of shape [filter_height, filter_width, in_channels, channel_multiplier] 
@@ -17,7 +18,6 @@ Given a 4D input tensor ('NHWC' or 'NCHW' data formats) and a filter
 class Layer(Layer):
     def get_keras_layer(self, input_tensor):
         return tf.keras.layers.DepthwiseConv2D(
-            # filters=self.args.get(self.get_args_enum().FILTERS),
             kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),
             strides=self.args.get(self.get_args_enum().STRIDES),
             padding=self.args.get(self.get_args_enum().PADDING).value,
