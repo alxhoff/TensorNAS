@@ -439,12 +439,7 @@ class Block(ABC):
                 self.input_blocks.extend(ib)
 
             if self.MAX_SUB_BLOCKS:
-                while True:
-                    self._generate_sub_blocks()
-                    if self._validate():
-                        break
-                    else:
-                        self.middle_blocks = []
+                self._generate_sub_blocks()
 
             ob = self.generate_constrained_output_sub_blocks(
                 self._get_cur_output_shape()
@@ -452,4 +447,5 @@ class Block(ABC):
             if ob:
                 self.output_blocks.extend(ob)
 
-            return
+            if self._validate():
+                return

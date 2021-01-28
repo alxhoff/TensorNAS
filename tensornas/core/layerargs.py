@@ -72,3 +72,7 @@ def gen_padding():
 
 def gen_activation():
     return random.choice(list(ArgActivations))
+
+
+def gen_groups(max_bound):
+    return random.randint(1, max_bound)

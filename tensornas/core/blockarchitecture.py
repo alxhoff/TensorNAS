@@ -37,7 +37,7 @@ class BlockArchitecture(Block):
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics
             )
-            # model.summary()
+            model.summary()
             if filename:
                 from tensornas.core.util import save_model
 

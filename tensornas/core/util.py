@@ -211,8 +211,6 @@ def list_available_block_architectures():
 def save_model(model, filename="out_model.tflite"):
     import tensorflow as tf
 
-    model.summary()
-
     model.save("/home/alxhoff/Downloads")
 
     converter = tf.lite.TFLiteConverter.from_keras_model(model)

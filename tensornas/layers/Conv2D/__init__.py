@@ -14,6 +14,7 @@ class Args(Enum):
     PADDING = auto()
     DILATION_RATE = auto()
     ACTIVATION = auto()
+    GROUPS = auto()
 
 
 class Layer(NetworkLayer):
@@ -25,18 +26,21 @@ class Layer(NetworkLayer):
     def _gen_args(self, input_shape, args):
         filter_count = random.randint(1, self.MAX_FILTER_COUNT)
         kernel_size = la.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
+        padding = la.gen_padding()
 
         if args:
             if self.get_args_enum().FILTERS in args:
                 filter_count = args.get(self.get_args_enum().FILTERS)
             if self.get_args_enum().KERNEL_SIZE in args:
                 kernel_size = args.get(self.get_args_enum().KERNEL_SIZE)
+            if self.get_args_enum().PADDING in args:
+                padding = args.get(self.get_args_enum().PADDING)
 
         return {
             self.get_args_enum().FILTERS: filter_count,
             self.get_args_enum().KERNEL_SIZE: kernel_size,
             self.get_args_enum().STRIDES: (1, 1),
-            self.get_args_enum().PADDING: la.gen_padding(),
+            self.get_args_enum().PADDING: padding,
             self.get_args_enum().DILATION_RATE: la.gen_2d_dilation(),
             self.get_args_enum().ACTIVATION: la.gen_activation(),
         }

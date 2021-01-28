@@ -45,7 +45,7 @@ class EffNetBlock(Block):
                 if bottleneck_factor != 1
                 else input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.DEPTHWISECONV,
+                layer_type=SupportedLayers.DEPTHWISECONV2D,
                 args={conv_args.KERNEL_SIZE: (1, 3)},
             )
         )
@@ -65,7 +65,7 @@ class EffNetBlock(Block):
             LayerBlock(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.DEPTHWISECONV,
+                layer_type=SupportedLayers.DEPTHWISECONV2D,
                 args={conv_args.KERNEL_SIZE: (3, 1)},
             )
         )

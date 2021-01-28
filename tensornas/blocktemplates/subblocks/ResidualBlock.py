@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from tensorflow import keras
 
-from demos.DemoMNISTInput import input_shape
+from tensornas.core.modelutil import shortcut
 from tensornas.core.block import Block
 from tensornas.blocktemplates.subblocks.FeatureExtractionBlock import (
     FeatureExtractionBlock,
@@ -52,5 +52,4 @@ class ResidualBlock(Block):
         tmp = input_tensor
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
             tmp = sb.get_keras_layers(tmp)
-        # return keras.layers.Add()([input_tensor, tmp])
-        return _shortcut(input_tensor, tmp)
+        return shortcut(input_tensor, tmp)
