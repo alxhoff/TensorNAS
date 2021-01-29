@@ -27,6 +27,9 @@ class ShuffleNetBlock(Block):
     Layers that can be used in the extraction of features
     """
 
+    # TODO the input to the layer must be divisible by 4. Maybe some thought should be put
+    # into making this more robust and removing the placeholder input conv2d block.
+
     MAX_SUB_BLOCKS = 0
     SUB_BLOCK_TYPES = SubBlockTypes
 
@@ -36,7 +39,7 @@ class ShuffleNetBlock(Block):
                 input_shape=input_shape,
                 parent_block=self,
                 layer_type=SupportedLayers.CONV2D,
-                args={conv_args.FILTERS: 16},
+                args={conv_args.FILTERS: 16, conv_args.PADDING: ArgPadding.SAME},
             )
         ]
 
@@ -56,6 +59,7 @@ class ShuffleNetBlock(Block):
                 args={
                     conv_args.FILTERS: bottleneck_filters,
                     conv_args.ACTIVATION: ArgActivations.RELU,
+                    conv_args.PADDING: ArgPadding.SAME,
                 },
             )
         )
