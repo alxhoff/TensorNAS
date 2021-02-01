@@ -4,7 +4,7 @@ from tensorflow import keras
 (
     (images_train, labels_train),
     (images_test, labels_test),
-) = keras.datasets.mnist.load_data()
+) = keras.datasets.mnist.load_data('/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/tensorflow/python/keras/datasets/mnist.npz')
 input_shape = images_train.shape
 images_train = images_train.reshape(
     images_train.shape[0], images_train.shape[1], images_train.shape[2], 1
