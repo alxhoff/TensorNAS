@@ -19,6 +19,11 @@ from demos.DemoMNISTInput import *
 
 from math import ceil
 
+### ENABLE GPU ###
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
+##################
+
 # Tensorflow parameters
 epochs = 1
 batch_size = 1
@@ -28,8 +33,8 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 5
-gen_count = 1
+pop_size = 10
+gen_count = 20
 
 # Functions used for EA demo
 
