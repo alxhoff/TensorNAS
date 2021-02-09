@@ -22,7 +22,6 @@ class Block(ABC):
         - Generate constrained output sub blocks
         - Generate constrained input sub blocks
         - Mutate self
-        - Validate
         - Get keras model
         - Print self
         - Output shape
@@ -91,10 +90,7 @@ class Block(ABC):
             mutate_eval = "self." + random.choice(self.mutation_funcs)
             if verbose:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
-            while True:
-                eval(mutate_eval)(verbose=verbose)
-                if self.validate(repair=True):
-                    break
+            eval(mutate_eval)(verbose=verbose)
         self.reset_ba_input_shapes()
 
     def generate_constrained_output_sub_blocks(self, input_shape):
@@ -179,25 +175,6 @@ class Block(ABC):
         ba.refresh_io_shapes(input_shape=ba.get_input_shape())
         return False
 
-    def validate(self, repair):
-        """This function will check if the generated block sequence is valid. Default implementation can be used which
-        always returns true, ie. the block is always considered valid. The repair argument is used to allow the user
-        to attempt to repair invalid properties of the block.
-
-        @param repair Boolean used to enable repairing of invalid block properties
-        @return True if the sub-block sequence is valid else False
-        """
-        return True
-
-    def _validate(self, repair=True):
-        """This private function calls validate on all sub-blocks as well as the abstract validate method that
-        validates the block itself
-        """
-        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            if not sb.validate(repair=repair):
-                return False
-        return self.validate(repair=repair)
-
     def get_block_architecture(self):
         block = self
         while block.parent_block:
@@ -219,11 +196,8 @@ class Block(ABC):
                         self._get_random_sub_block_type(),
                     )
                     if blocks:
-                        if any(
-                            x for x in list(map(lambda x: x.validate(True), blocks))
-                        ):
-                            self.middle_blocks.extend(blocks)
-                            break
+                        self.middle_blocks.extend(blocks)
+                        break
 
     def get_output_shape(self):
         """
@@ -429,23 +403,20 @@ class Block(ABC):
             if callable(getattr(self, func)) and re.search(r"^_mutate(?!_self)", func)
         ]
 
-        while True:
-            self.input_blocks = []
-            self.middle_blocks = []
-            self.output_blocks = []
+        self.input_blocks = []
+        self.middle_blocks = []
+        self.output_blocks = []
 
-            ib = self.generate_constrained_input_sub_blocks(input_shape)
-            if ib:
-                self.input_blocks.extend(ib)
+        ib = self.generate_constrained_input_sub_blocks(input_shape)
+        if ib:
+            self.input_blocks.extend(ib)
 
-            if self.MAX_SUB_BLOCKS:
-                self._generate_sub_blocks()
+        if self.MAX_SUB_BLOCKS:
+            self._generate_sub_blocks()
 
-            ob = self.generate_constrained_output_sub_blocks(
-                self._get_cur_output_shape()
-            )
-            if ob:
-                self.output_blocks.extend(ob)
+        ob = self.generate_constrained_output_sub_blocks(
+            self._get_cur_output_shape()
+        )
+        if ob:
+            self.output_blocks.extend(ob)
 
-            if self._validate():
-                return

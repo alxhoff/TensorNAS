@@ -99,30 +99,6 @@ class Layer(NetworkLayer):
             return True
         return False
 
-    def validate(self, repair=True):
-        if not self.args[self.get_args_enum().FILTERS] > 0:
-            return False
-
-        if not self._single_stride() and not self._single_dilation_rate():
-            return False
-
-        if (
-            (self.inputshape.get()[0] - self.args[self.get_args_enum().KERNEL_SIZE][0])
-            < 1
-        ) or (
-            (self.inputshape.get()[1] - self.args[self.get_args_enum().KERNEL_SIZE][1])
-            < 1
-        ):
-            return False
-
-        if (
-            not self.args[self.get_args_enum().STRIDES][0] > 0
-            or not self.args[self.get_args_enum().STRIDES][1] > 0
-        ):
-            return False
-
-        return True
-
     @staticmethod
     def _same_pad_output_shape(input, stride):
         return ((input - 1) // stride) + 1

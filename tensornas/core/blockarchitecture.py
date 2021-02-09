@@ -64,7 +64,7 @@ class BlockArchitecture(Block):
             import math
 
             print("Error fitting model, {}".format(e))
-            return [math.inf, 0]
+            return [np.inf, 0]
         params = int(
             np.sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
         ) + int(
@@ -72,7 +72,8 @@ class BlockArchitecture(Block):
                 [tf.keras.backend.count_params(p) for p in model.non_trainable_weights]
             )
         )
-
+        if params == 0:
+            params = np.inf
         accuracy = model.evaluate(test_data, test_labels)[1] * 100
 
         return params, accuracy

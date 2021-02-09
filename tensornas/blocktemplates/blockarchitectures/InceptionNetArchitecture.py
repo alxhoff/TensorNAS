@@ -21,21 +21,6 @@ class InceptionNetBlockArchitecture(BlockArchitecture):
 
         super().__init__(input_shape, parent_block=None, layer_type=None)
 
-    def validate(self, repair):
-        ret = True
-        if not isinstance(self.output_blocks[-1], TwoDClassificationBlock):
-            ret = False
-        return ret
-
-    # def generate_constrained_input_sub_blocks(self, input_shape):
-    #     return [
-    #         InceptionBlock(
-    #             input_shape=input_shape,
-    #             parent_block=self,
-    #             layer_type=self.SUB_BLOCK_TYPES.INCEPTION_BLOCK,
-    #         )
-    #     ]
-
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.INCEPTION_BLOCK:
             return [

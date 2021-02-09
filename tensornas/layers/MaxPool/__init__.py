@@ -46,18 +46,3 @@ class Layer(NetworkLayer):
         self.args[self.get_args_enum().PADDING] = mutate_enum(
             self.args[self.get_args_enum().PADDING], la.ArgPadding
         )
-
-    def validate(self, repair=True):
-        if not len(self.inputshape.get()) >= 3:
-            return False
-        if not all(i > 0 for i in self.args[self.get_args_enum().STRIDES]):
-            if repair:
-                self._mutate_strides(operator=MutationOperators.RANDOM)
-                return self.validate()
-            return False
-        if not all(i > 0 for i in self.args[self.get_args_enum().POOL_SIZE]):
-            if repair:
-                self._mutate_pool_size(operator=MutationOperators.RANDOM)
-                return self.validate()
-            return False
-        return True

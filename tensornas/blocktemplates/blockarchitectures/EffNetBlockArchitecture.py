@@ -21,14 +21,6 @@ class EffNetBlockArchitecture(BlockArchitecture):
 
         super().__init__(input_shape, parent_block=None, layer_type=None)
 
-    def validate(self, repair):
-        ret = True
-        """should add a squeezeBlock for auto selection to tensornas.blocktemplates.subblocks """
-        if not isinstance(self.input_blocks[0], EffNetBlock):
-            ret = False
-
-        return ret
-
     def generate_constrained_input_sub_blocks(self, input_shape):
         return [
             EffNetBlock(
