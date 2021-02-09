@@ -9,11 +9,7 @@ from tensornas.core.util import MutationOperators
 
 class Layer(Layer):
     def _gen_args(self, input_shape, args=None):
-        filter_count = random.randint(1, self.MAX_FILTER_COUNT)
-
-        if args:
-            if self.get_args_enum().FILTERS in args:
-                filter_count = args.get(self.get_args_enum().FILTERS)
+        filter_count = input_shape[-1]
 
         return {
             self.get_args_enum().FILTERS: filter_count,

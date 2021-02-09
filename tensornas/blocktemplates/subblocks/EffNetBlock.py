@@ -8,7 +8,11 @@ from tensornas.layers.Conv2D import Args as conv_args
 from tensornas.layers.MaxPool import Args as pool_args
 
 # TODO what happens with an EffNet block when the input channel is odd or 1?
-
+import tensorflow as tf
+### ENABLE GPU ###
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
+##################
 
 class SubBlockTypes(Enum):
     NONE = auto()
@@ -35,7 +39,7 @@ class EffNetBlock(Block):
                 LayerBlock(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV,
+                    layer_type=SupportedLayers.POINTWISECONV2D,
                     args={conv_args.FILTERS: int(input_shape[-1] / bottleneck_factor)},
                 )
             )
@@ -74,7 +78,7 @@ class EffNetBlock(Block):
                 LayerBlock(
                     input_shape=layers[-1].get_output_shape(),
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV,
+                    layer_type=SupportedLayers.POINTWISECONV2D,
                     args={
                         conv_args.KERNEL_SIZE: (bottleneck_factor, 1),
                         conv_args.FILTERS: input_shape[-1],

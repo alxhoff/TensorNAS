@@ -1,4 +1,4 @@
-from enum import auto
+from enum import Enum, auto
 
 import tensorflow as tf
 
