@@ -39,17 +39,6 @@ class TwoDClassificationBlock(Block):
 
         super().__init__(input_shape, parent_block, layer_type)
 
-    def validate(self, repair):
-        ret = True
-        if (
-            not (self.input_blocks + self.middle_blocks + self.output_blocks)[
-                -1
-            ].layer_type
-            == SupportedLayers.OUTPUTDENSE
-        ):
-            self.generate_constrained_output_sub_blocks(self.get_output_shape())
-        return ret
-
     def generate_constrained_input_sub_blocks(self, input_shape):
         # TODO do not make it manually append but instead return a list of blocks
         return [

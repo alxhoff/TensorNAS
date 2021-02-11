@@ -66,7 +66,6 @@ class NetworkLayer(ABC):
 
         self.inputshape.set(input_shape)
         self.outputshape.set(self.get_output_shape())
-        self.validate(repair=True)
 
     @classmethod
     def _get_module(cls):
@@ -138,18 +137,6 @@ class NetworkLayer(ABC):
         except Exception:
             pass
         print("")
-
-    def validate(self, repair=True):
-        """
-        The validate function is used to perform checks on the layers after any modification to see if it is still
-        valid, eg. will a changed convolutional filter size produce a valid output shape. The repair argument can be
-        used to allow for the user to optionally try to repair the problem, eg. change the filter size to something
-        valid.
-
-        @param repair Boolean argument specifying if the user should attempt to repair invalid properties of the layer
-        @return True is the layer is valid
-        """
-        return True
 
     def mutate(self, verbose=False):
         if self.mutation_funcs:

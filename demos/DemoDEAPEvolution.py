@@ -19,6 +19,11 @@ from demos.DemoMNISTInput import *
 
 from math import ceil
 
+### ENABLE GPU ###
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
+##################
+
 # Tensorflow parameters
 epochs = 1
 batch_size = 1
@@ -28,8 +33,8 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 5
-gen_count = 1
+pop_size = 100
+gen_count = 20
 
 # Functions used for EA demo
 
@@ -154,7 +159,7 @@ def main():
     pop, logbook = algorithms.eaSimple(
         pop,
         toolbox,
-        cxpb=0.5,
+        cxpb=0.05,
         mutpb=0.2,
         ngen=gen_count,
         stats=stats,
@@ -172,13 +177,10 @@ if __name__ == "__main__":
     gen, std, avg, min_, max_ = log.select("gen", "std", "avg", "min", "max")
     print(log)
 
-    print(
-        "Best individual is: %s\nwith fitness: %s"
-        % (best_individual, best_individual.fitness)
-    )
-
-    best_individual.print()
-    best_individual.print_tree()
+    print("### Pareto individuals ###")
+    for i in hof.items:
+        print("Params: {}, Accuracy: {}".format(i.fitness.values[0], i.fitness.values[1]))
+        i.print_tree()
 
     x = [i.fitness.values[0] for i in hof.items]
     y = [i.fitness.values[1] for i in hof.items]
@@ -284,12 +286,19 @@ if __name__ == "__main__":
     from sklearn.linear_model import LinearRegression
 
     regressor = LinearRegression()
+    # results = regressor.fit(
+    #     np.array([0] + x).reshape(-1, 1), np.array([0] + y).reshape(-1, 1)
+    # )
     results = regressor.fit(
         np.array([0] + x).reshape(-1, 1), np.array([0] + y).reshape(-1, 1)
     )
     model = regressor.predict
     y_fit = model(np.array(x).reshape(-1, 1))
     ax.plot(x, y_fit, "k--", label="Fit")
+
+
+    np.polyfit(np.log(x), y, 1)
+
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
 

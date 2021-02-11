@@ -2,6 +2,13 @@ from tensornas.blocktemplates.blockarchitectures import ResNetBlockArchitecture
 from demos.DemoMNISTInput import *
 from tensornas.core.util import list_available_blocks
 
+import tensorflow as tf
+
+### ENABLE GPU ###
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
+##################
+
 print("##########################################")
 print("Testing Res Net block architecture")
 print("##########################################")

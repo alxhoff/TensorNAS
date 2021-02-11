@@ -21,11 +21,6 @@ class ResNetBlockArchitecture(BlockArchitecture):
 
         super().__init__(input_shape, parent_block=None, layer_type=None)
 
-    def validate(self, repair):
-        ret = True
-        if not isinstance(self.output_blocks[-1], TwoDClassificationBlock):
-            ret = False
-        return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         return [

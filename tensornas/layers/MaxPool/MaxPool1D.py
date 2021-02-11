@@ -52,18 +52,3 @@ class Layer(Layer):
             strides=self.args.get(self.get_args_enum().STRIDES),
             padding=self.args.get(self.get_args_enum().PADDING).value,
         )(input_tensor)
-
-    def validate(self, repair=True):
-        if not len(self.inputshape.get()) >= 3:
-            return False
-        if not self.args[self.get_args_enum().STRIDES]:
-            if repair:
-                self._mutate_strides(operator=MutationOperators.RANDOM)
-                return self.validate()
-            return False
-        if not self.args[self.get_args_enum().POOL_SIZE]:
-            if repair:
-                self._mutate_pool_size(operator=MutationOperators.RANDOM)
-                return self.validate()
-            return False
-        return True
