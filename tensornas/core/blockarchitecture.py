@@ -2,7 +2,13 @@ import numpy as np
 import tensorflow as tf
 
 from tensornas.core.block import Block
+from tensornas.core.layer import NetworkLayer
+from ann_visualizer.visualize import ann_viz	#import pydot
+import pydotplus	#from ann_visualizer.visualize import ann_viz
+from pydotplus import graphviz	#import pydotplus
+from keras_sequential_ascii import keras2ascii	#from pydotplus import graphviz
 
+#from keras_sequential_ascii import
 
 class BlockArchitecture(Block):
     """
