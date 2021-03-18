@@ -15,6 +15,12 @@ model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
+from tensornas.tools.latexwriter import LatexWriter
+
+lw = LatexWriter()
+
+latex_arch = lw.create_arch(model1)
+
 model1.print()
 
 metrics = model1.evaluate(

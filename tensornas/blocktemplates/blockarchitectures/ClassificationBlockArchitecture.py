@@ -18,7 +18,7 @@ class ClassificationArchitectureSubBlocks(Enum):
 
 class ClassificationBlockArchitecture(BlockArchitecture):
     MAX_SUB_BLOCKS = 1
-    
+
     SUB_BLOCK_TYPES = ClassificationArchitectureSubBlocks
 
     def __init__(self, input_shape, class_count):

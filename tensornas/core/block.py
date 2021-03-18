@@ -61,6 +61,13 @@ class Block(ABC):
         """
         return False
 
+    def _mutate_drop_subblock(self, verbose=False):
+        """
+        Randomly drops a middle sub-block
+        """
+        if len(self.middle_blocks):
+            choice_index = random.choice(range(len(self.middle_blocks)))
+
     def _mutate_subblock(self, verbose=False):
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
@@ -414,9 +421,6 @@ class Block(ABC):
         if self.MAX_SUB_BLOCKS:
             self._generate_sub_blocks()
 
-        ob = self.generate_constrained_output_sub_blocks(
-            self._get_cur_output_shape()
-        )
+        ob = self.generate_constrained_output_sub_blocks(self._get_cur_output_shape())
         if ob:
             self.output_blocks.extend(ob)
-
