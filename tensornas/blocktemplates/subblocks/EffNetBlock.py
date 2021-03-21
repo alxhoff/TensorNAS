@@ -9,10 +9,12 @@ from tensornas.layers.MaxPool import Args as pool_args
 
 # TODO what happens with an EffNet block when the input channel is odd or 1?
 import tensorflow as tf
+
 ### ENABLE GPU ###
 gpus = tf.config.experimental.list_physical_devices("GPU")
 tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
+
 
 class SubBlockTypes(Enum):
     NONE = auto()

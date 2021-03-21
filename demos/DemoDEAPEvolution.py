@@ -24,6 +24,10 @@ gpus = tf.config.experimental.list_physical_devices("GPU")
 tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
 
+from tensornas.tools.latexwriter import LatexWriter
+
+lw = LatexWriter()
+
 # Tensorflow parameters
 epochs = 1
 batch_size = 1
@@ -33,7 +37,7 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 100
+pop_size = 20
 gen_count = 20
 
 # Functions used for EA demo
@@ -146,6 +150,10 @@ def compare_individual(ind1, ind2):
 
 
 def main():
+    from tensornas.algorithms.eaSimple import eaSimple
+    from tensornas.tools.visualization import IndividualRecord
+
+    ir = IndividualRecord()
     pop = toolbox.population(n=pop_size)
     history.update(pop)
     # hof = tools.HallOfFame(1)
@@ -156,7 +164,7 @@ def main():
     stats.register("min", np.min, axis=0)
     stats.register("max", np.max)
 
-    pop, logbook = algorithms.eaSimple(
+    pop, logbook = eaSimple(
         pop,
         toolbox,
         cxpb=0.05,
@@ -165,7 +173,10 @@ def main():
         stats=stats,
         halloffame=hof,
         verbose=True,
+        individualrecord=ir,
     )
+
+    ir.show(2)
 
     return pop, logbook, hof
 
@@ -179,7 +190,9 @@ if __name__ == "__main__":
 
     print("### Pareto individuals ###")
     for i in hof.items:
-        print("Params: {}, Accuracy: {}".format(i.fitness.values[0], i.fitness.values[1]))
+        print(
+            "Params: {}, Accuracy: {}".format(i.fitness.values[0], i.fitness.values[1])
+        )
         i.print_tree()
 
     x = [i.fitness.values[0] for i in hof.items]
@@ -193,9 +206,6 @@ if __name__ == "__main__":
     agg.FigureCanvasAgg(fig)
     plt.figure(figsize=(15, 5))
 
-    # y = [0.009999999747378752, 57.71999955177307, 67.12999939918518, 68.09999942779541]
-    # x = [0.0, 1010.0, 1970.0, 559712.0]
-
     divs = 20
     padding = 1.1
 
@@ -204,66 +214,6 @@ if __name__ == "__main__":
 
     x_divs = max_x / divs
     y_divs = max_y / divs
-
-    # plt.subplot(1, 3, 1)
-    # plt.plot(gen, avg, label="average")
-    # plt.plot(gen, min_, label="minimum")
-    # plt.plot(gen, max_, label="maximum")
-    # plt.xlabel("Generation")
-    # plt.ylabel("Fitness")
-    # plt.legend(loc="lower right")
-
-    # # Pareto
-    # dominated = [
-    #     ind
-    #     for ind in history.genealogy_history.values()
-    #     if pareto_dominance(best_individual, ind)
-    # ]
-    # dominators = [
-    #     ind
-    #     for ind in history.genealogy_history.values()
-    #     if pareto_dominance(ind, best_individual)
-    # ]
-    # others = [
-    #     ind
-    #     for ind in history.genealogy_history.values()
-    #     if not ind in dominated and not ind in dominators
-    # ]
-
-    # plt.subplot(1, 3, 2)
-    # for ind in dominators:
-    #     plt.plot(ind.fitness.values[0], ind.fitness.values[1], "r.", alpha=0.7)
-    # for ind in dominated:
-    #     plt.plot(ind.fitness.values[0], ind.fitness.values[1], "g.", alpha=0.7)
-    # if len(others):
-    #     for ind in others:
-    #         plt.plot(
-    #             ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3
-    #         )
-    # plt.plot(
-    #     best_individual.fitness.values[0], best_individual.fitness.values[1], "bo", ms=6
-    # )
-    # for ind in hof.items:
-    #     plt.plot(ind.fitness.values[0], ind.fitness.values[1],  "r.", alpha=0.7)
-    # plt.xlabel("Parameters")
-    # plt.ylabel("Accuracy")
-    # plt.title("Objective space")
-    # plt.tight_layout()
-    #
-    # non_dom = tools.sortNondominated(
-    #     history.genealogy_history.values(),
-    #     k=len(history.genealogy_history.values()),
-    #     first_front_only=True,
-    # )[0]
-    #
-    # plt.subplot(1, 3, 3)
-    # for ind in history.genealogy_history.values():
-    #     plt.plot(ind.fitness.values[0], ind.fitness.values[1], "k.", ms=3, alpha=0.5)
-    # for ind in non_dom:
-    #     plt.plot(ind.fitness.values[0], ind.fitness.values[1], "bo", alpha=0.74, ms=5)
-    # plt.title("Pareto-optimal front")
-
-    # plt.subplot(1,3,3)
 
     ax = fig.add_subplot(1, 2, 1)
     ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
@@ -283,33 +233,7 @@ if __name__ == "__main__":
             )
         )
 
-    from sklearn.linear_model import LinearRegression
-
-    regressor = LinearRegression()
-    # results = regressor.fit(
-    #     np.array([0] + x).reshape(-1, 1), np.array([0] + y).reshape(-1, 1)
-    # )
-    results = regressor.fit(
-        np.array([0] + x).reshape(-1, 1), np.array([0] + y).reshape(-1, 1)
-    )
-    model = regressor.predict
-    y_fit = model(np.array(x).reshape(-1, 1))
-    ax.plot(x, y_fit, "k--", label="Fit")
-
-
-    np.polyfit(np.log(x), y, 1)
-
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
 
-    # import networkx
-    # ax=fig.add_subplot(1,2,2)
-    # graph = networkx.DiGraph(history.genealogy_history)
-    # graph=graph.reverse()
-    # colors = [toolbox.evaluate(history.genealogy_history[i])[0] for i in graph]
-    # ax = networkx.draw(graph, node_color=colors)
-
-    # plt.draw()
     fig.savefig("pareto")
-
-    print("Wait here")
