@@ -1,3 +1,4 @@
+import os
 class IndividualRecord:
     def __init__(self):
 
@@ -16,6 +17,8 @@ class IndividualRecord:
 
         plot_cols = math.ceil(len(self.gens) / gen_interval / 2)
         fig, axes = plt.subplots(2, plot_cols, sharex=True, sharey=True)
+        fig.text(0.65, 0.04, 'Param Count')
+        fig.text(0.04, 0.5, 'Accuracy', va='center', rotation='vertical')
         for i in range(1, self.gen_count + 1, gen_interval):
             try:
                 for j in range(2):
@@ -24,10 +27,23 @@ class IndividualRecord:
                     sx = subplot_num % 2
                     datax, datay = map(list, zip(*self.gens[i - 1]))
                     axes[sx, sy].scatter(datax, datay)
-                    axes[sx, sy].set_title("Gen {}".format(i))
-                    axes[sx, sy].set(xlabel="Param Count", ylabel="Accuracy")
+                    #axes[sx, sy].set_title("Gen {}".format(i))
+
                     axes[sx, sy].label_outer()
             except Exception as e:
                 pass
+        #axes[sx, sy].set(xlabel="Param Count", ylabel="Accuracy")
+        folder='C:\\Users\\mehta\\Desktop\\TensorNAS\\Results'
+        i=0
+        while 1:
+            if os.path.isfile(f'{folder}\\Generations_Visulaization_{i}.eps'):
+                i+=1
+            else:
+                plt.savefig(f'{folder}\\Generations_Visulaization_{i}.eps', format='eps')
+                break
+
+        #plt.savefig(f'{filename}{i}.eps', format='eps')
+
+
 
         plt.show()

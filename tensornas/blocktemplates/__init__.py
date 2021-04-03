@@ -3,9 +3,16 @@ from pkgutil import iter_modules
 import os
 from enum import Enum
 
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/blocktemplates/blockarchitectures")
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS/tensornas")
+os.chdir("/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/blocktemplates")
+print(os.getcwd())
+print(os.sys.path)
 
 def find_block_architectures():
-    import tensornas.blocktemplates.blockarchitectures as BT
+    from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture as BT
+
 
     modules = []
     BT_pkg = BT.__name__
@@ -28,7 +35,8 @@ def find_block_architectures():
 
 
 def find_blocks():
-    import tensornas.blocktemplates.subblocks as BT
+    #import tensornas.blocktemplates.subblocks as BT
+    from tensornas.blocktemplates.subblocks import FeatureExtractionBlock, TwoDClassificationBlock as BT
 
     modules = []
     BT_pkg = BT.__name__

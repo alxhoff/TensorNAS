@@ -32,7 +32,7 @@ class FireBlock(Block):
         pwconv_block = LayerBlock(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.POINTWISECONV,
+            layer_type=SupportedLayers.POINTWISECONV2D,
         )
         expand_block = ExpandBlock(
             input_shape=pwconv_block.get_output_shape(),

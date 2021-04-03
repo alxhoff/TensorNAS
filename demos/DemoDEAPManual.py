@@ -35,14 +35,27 @@ pop_size = 10
 
 
 def get_block_architecture():
-    from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
-        ClassificationBlockArchitecture,
+    #from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
+    #MobileNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
+    #InceptionNetBlockArchitecture,
+    #)
+    from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import(
+    EffNetBlockArchitecture,
     )
+    #from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
+    #    ClassificationBlockArchitecture,
+    #)
 
     """
     This function is responsible for creating and returning the block architecture that an individual shuld embed
     """
-    return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
+
+    return EffNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return InceptionNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return MobileNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+    #return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class

@@ -1,5 +1,5 @@
 from enum import Enum, auto
-
+from random import randrange
 from tensornas.core.layerargs import *
 from tensornas.core.block import Block
 from tensornas.core.layerblock import LayerBlock
@@ -11,8 +11,8 @@ from tensornas.layers.MaxPool import Args as pool_args
 import tensorflow as tf
 
 ### ENABLE GPU ###
-gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
+#gpus = tf.config.experimental.list_physical_devices("GPU")
+#tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
 
 
@@ -29,7 +29,10 @@ class EffNetBlock(Block):
         return []
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-
+        Channel_in=randrange(10)
+        Channel_out=randrange(10)
+        Channel_in=2^Channel_in
+        Channel_out=2^Channel_out
         if (input_shape[-1] % 2) == 0:
             bottleneck_factor = 2
         else:
@@ -42,7 +45,8 @@ class EffNetBlock(Block):
                     input_shape=input_shape,
                     parent_block=self,
                     layer_type=SupportedLayers.POINTWISECONV2D,
-                    args={conv_args.FILTERS: int(input_shape[-1] / bottleneck_factor)},
+                    #args={conv_args.FILTERS: int(input_shape[-1] / bottleneck_factor)},
+                    args={conv_args.FILTERS:Channel_in},
                 )
             )
         layers.append(
@@ -83,7 +87,7 @@ class EffNetBlock(Block):
                     layer_type=SupportedLayers.POINTWISECONV2D,
                     args={
                         conv_args.KERNEL_SIZE: (bottleneck_factor, 1),
-                        conv_args.FILTERS: input_shape[-1],
+                        conv_args.FILTERS: Channel_out,
                     },
                 )
             )

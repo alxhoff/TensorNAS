@@ -7,7 +7,8 @@ from tensornas.core.util import find_modules
 
 
 def find_layer_modules():
-    import tensornas.layers as Layers
+    # import tensornas.layers as Layers
+    from tensornas import layers as Layers
     import itertools
     import os
 

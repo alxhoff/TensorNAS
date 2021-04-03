@@ -1,7 +1,7 @@
 import os
-
+import pickle
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
 import multiprocessing
 
 import matplotlib
@@ -20,8 +20,8 @@ from demos.DemoMNISTInput import *
 from math import ceil
 
 ### ENABLE GPU ###
-gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
+#gpus = tf.config.experimental.list_physical_devices("GPU")
+#tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
 
 from tensornas.tools.latexwriter import LatexWriter
@@ -36,9 +36,10 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
-metrics = ["accuracy"]
-pop_size = 20
-gen_count = 20
+metrics = ["accuracy"] 
+#change divs pop_size,gen_count
+pop_size = 10
+gen_count = 10
 
 # Functions used for EA demo
 
@@ -47,19 +48,51 @@ gen_count = 20
 
 
 def get_block_architecture():
-    from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
-        ClassificationBlockArchitecture,
+    #from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
+    #    ClassificationBlockArchitecture,
+    #)
+
+    #from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
+    #MobileNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import (
+    #EffNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
+    #InceptionNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.ShuffleNetBlockArchitecture import (
+    #ShuffleNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.GhostNetBlockArchitecture import (
+    #GhostNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.ResNetBlockArchitecture import (
+    #ResNetBlockArchitecture,
+    #)
+    #from tensornas.blocktemplates.blockarchitectures.SqueezeNetBlockArchitecture import (
+    #SqueezeNetBlockArchitecture,
+    #)
+    from tensornas.blocktemplates.blockarchitectures.MixedArchitecture import(
+        MixedBlockArchitecture,
     )
 
     """
     This function is responsible for creating and returning the block architecture that an individual shuld embed
     """
-    return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
-
-
+    #return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
+    #return MobileNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return EffNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return ShuffleNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return GhostNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return SqueezeNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return ResNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return InceptionNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    return MixedBlockArchitecture(input_tensor_shape,mnist_class_count)
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 fitnesses = []
 fitness_queue = multiprocessing.Queue()
+
 
 
 def fitness_recorder():
@@ -113,8 +146,8 @@ creator.create("Individual", Individual, fitness=creator.FitnessMulti)
 toolbox = base.Toolbox()
 
 ### Multithreading ###
-pool = multiprocessing.Pool()
-toolbox.register("map", pool.map)
+#pool = multiprocessing.Pool()
+#toolbox.register("map", pool.map)
 ######
 
 toolbox.register("get_block_architecture", get_block_architecture)
@@ -182,11 +215,14 @@ def main():
 
 
 if __name__ == "__main__":
+
+    folder='C:\\Users\\mehta\\Desktop\\TensorNAS\\Results'
     pop, log, hof = main()
     best_individual = hof[0]
 
     gen, std, avg, min_, max_ = log.select("gen", "std", "avg", "min", "max")
     print(log)
+
 
     print("### Pareto individuals ###")
     for i in hof.items:
@@ -206,7 +242,7 @@ if __name__ == "__main__":
     agg.FigureCanvasAgg(fig)
     plt.figure(figsize=(15, 5))
 
-    divs = 20
+    divs = 10
     padding = 1.1
 
     max_x = max(x) * padding
@@ -217,6 +253,17 @@ if __name__ == "__main__":
 
     ax = fig.add_subplot(1, 2, 1)
     ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
+    i=0
+    while 1:
+        if os.path.isfile(f'{folder}\\Dominated_{i}.csv'):
+            i+=1
+        else:
+            with open(f'{folder}\\Dominated_{i}.csv','w') as f:
+                for row in dominated:
+                    np.savetxt(f, row)
+                #f.write(dominated)
+            break
+
 
     ax.scatter([i[0] for i in dominated], [i[1] for i in dominated], facecolor="red")
     ax.xscale = "log"
@@ -235,5 +282,11 @@ if __name__ == "__main__":
 
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
-
-    fig.savefig("pareto")
+    while 1:
+        if os.path.isfile(f'{folder}\\Pareto_{i}'):
+            i+=1
+        else:
+            with open(f'{folder}\\Pareto_{i}','w') as f:
+                fig.savefig(f'{folder}\\Pareto_{i}')
+            break
+    fig.savefig(f"{folder}\\pareto")

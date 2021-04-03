@@ -31,7 +31,7 @@ class FilterBankBlock(Block):
                 LayerBlock(
                     input_shape=layers[0].get_output_shape(),
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV,
+                    layer_type=SupportedLayers.POINTWISECONV2D,
                 )
             )
         else:
@@ -39,7 +39,7 @@ class FilterBankBlock(Block):
                 LayerBlock(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV,
+                    layer_type=SupportedLayers.POINTWISECONV2D,
                 )
             )
         return layers

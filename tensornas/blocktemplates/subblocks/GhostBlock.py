@@ -28,11 +28,11 @@ class GhostBlock(Block):
         pwconv_block = LayerBlock(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.POINTWISECONV,
+            layer_type=SupportedLayers.POINTWISECONV2D,
         )
         dwconv_block = LayerBlock(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.DEPTHWISECONV,
+            layer_type=SupportedLayers.DEPTHWISECONV2D,
         )
         return [pwconv_block, dwconv_block]
