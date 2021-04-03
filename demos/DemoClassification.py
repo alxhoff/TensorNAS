@@ -1,5 +1,11 @@
+import os
+import pickle
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
-from demos.DemoMNISTInput import *
+from demos.DemoVWWData import *
+
+#from demos.DemoMNISTInput import *
 import tensorflow as tf
 
 ### ENABLE GPU ###
@@ -19,15 +25,12 @@ from tensornas.tools.latexwriter import LatexWriter
 
 lw = LatexWriter()
 
-latex_arch = lw.create_arch(model1)
+#latex_arch = lw.create_arch(model1)
 
 model1.print()
 
 metrics = model1.evaluate(
-    train_data=images_train,
-    train_labels=labels_train,
-    test_data=images_test,
-    test_labels=labels_test,
+    train_it,
     epochs=2,
     batch_size=32,
     steps=5,
@@ -44,10 +47,7 @@ model1.mutate(verbose=True)
 print(model1.get_ascii_tree())
 
 metrics = model1.evaluate(
-    train_data=images_train,
-    train_labels=labels_train,
-    test_data=images_test,
-    test_labels=labels_test,
+    train_it,
     epochs=2,
     batch_size=32,
     steps=5,
@@ -70,6 +70,7 @@ print(model1.get_ascii_tree())
 print(model2.get_ascii_tree())
 
 try:
+    '''
     metrics = model1.evaluate(
         train_data=images_train,
         train_labels=labels_train,
@@ -82,6 +83,16 @@ try:
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
     )
+    '''
+    metrics = model1.evaluate(
+    train_it,
+    epochs=2,
+    batch_size=32,
+    steps=5,
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)
 except Exception as e:
     print("Training model 1 failed: {}".format(e))
 

@@ -52,9 +52,9 @@ def get_block_architecture():
     #    ClassificationBlockArchitecture,
     #)
 
-    #from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
-    #MobileNetBlockArchitecture,
-    #)
+    from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
+    MobileNetBlockArchitecture,
+    )
     #from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import (
     #EffNetBlockArchitecture,
     #)
@@ -73,22 +73,22 @@ def get_block_architecture():
     #from tensornas.blocktemplates.blockarchitectures.SqueezeNetBlockArchitecture import (
     #SqueezeNetBlockArchitecture,
     #)
-    from tensornas.blocktemplates.blockarchitectures.MixedArchitecture import(
-        MixedBlockArchitecture,
-    )
+    #from tensornas.blocktemplates.blockarchitectures.MixedArchitecture import(
+    #    MixedBlockArchitecture,
+    #)
 
     """
     This function is responsible for creating and returning the block architecture that an individual shuld embed
     """
     #return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
-    #return MobileNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    return MobileNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return EffNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return ShuffleNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return GhostNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return SqueezeNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return ResNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return InceptionNetBlockArchitecture(input_tensor_shape,mnist_class_count)
-    return MixedBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return MixedBlockArchitecture(input_tensor_shape,mnist_class_count)
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 fitnesses = []
 fitness_queue = multiprocessing.Queue()
@@ -216,7 +216,7 @@ def main():
 
 if __name__ == "__main__":
 
-    folder='C:\\Users\\mehta\\Desktop\\TensorNAS\\Results'
+    folder='/Users/priyadalal/Desktop/priya/TensorNAS/Results'
     pop, log, hof = main()
     best_individual = hof[0]
 

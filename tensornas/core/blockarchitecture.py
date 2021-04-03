@@ -1,6 +1,9 @@
 import numpy as np
 import tensorflow as tf
-
+import os
+import pickle
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
 from tensornas.core.block import Block
 from tensornas.core.layer import NetworkLayer
 from ann_visualizer.visualize import ann_viz	#import pydot
@@ -27,10 +30,7 @@ class BlockArchitecture(Block):
 
     def evaluate(
         self,
-        train_data,
-        train_labels,
-        test_data,
-        test_labels,
+        train_it,
         epochs,
         steps,
         batch_size,
@@ -58,6 +58,8 @@ class BlockArchitecture(Block):
                     verbose=1,
                 )
             else:
+                model.fit_generator(train_it,steps_per_epoch=steps)
+                '''
                 model.fit(
                     x=train_data,
                     y=train_labels,
@@ -66,6 +68,7 @@ class BlockArchitecture(Block):
                     steps_per_epoch=steps,
                     verbose=1,
                 )
+                '''
         except Exception as e:
             import math
 

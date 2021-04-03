@@ -17,11 +17,11 @@ class LatexWriter:
         print(dir)
         if not os.path.exists(os.path.join(os.getcwd(), "PlotNeuralNet")):
             pass
-            #os.sys.path.append("C:\\Users\\mehta\\Desktop\\TensorNAS\\venv\\Lib\\site-packages\\git")
-            #import git
-            #os.system('git clone https://github.com/HarisIqbal88/PlotNeuralNet.git:C:\\Users\\mehta\\Desktop\\TensorNAS')
+            os.sys.path.append("C:\\Users\\mehta\\Desktop\\TensorNAS\\venv\\Lib\\site-packages\\git")
+            import git
+            os.system('git clone https://github.com/HarisIqbal88/PlotNeuralNet.git:C:\\Users\\mehta\\Desktop\\TensorNAS')
 
-            #git.Git(dir).clone("https://github.com/HarisIqbal88/PlotNeuralNet.git")
+            git.Git(dir).clone("https://github.com/HarisIqbal88/PlotNeuralNet.git")
             print("PlotNeuralNet cloned")
 
         mod_name = "PlotNeuralNet-master.PlotNeuralNet-master.pycore.tikzeng"
@@ -149,5 +149,5 @@ class LatexWriter:
         except Exception:
             pass
         os.system("cd PlotNeuralNet-master/PlotNeuralNet-master/results && bash ../tikzmake.sh test")
-        self.mod.to_generate(arch, "C:\\Users\\mehta\\Desktop\\TensorNAS\\PlotNeuralNet-master\\PlotNeuralNet-master\\results\\test.tex")
+        self.mod.to_generate(arch, "/Users/priyadalal/Desktop/priya/TensorNAS/PlotNeuralNet-master/PlotNeuralNet-master/results/test.tex")
 
