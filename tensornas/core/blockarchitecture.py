@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import os
 import pickle
+import datetime
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
 from tensornas.core.block import Block
@@ -12,6 +13,13 @@ from pydotplus import graphviz	#import pydotplus
 from keras_sequential_ascii import keras2ascii	#from pydotplus import graphviz
 
 #from keras_sequential_ascii import
+class ReportValidationStatus(tf.keras.callbacks.Callback):
+
+    def on_test_batch_begin(self, batch, logs=None):
+        print('Evaluating: batch {} begins at {}'.format(batch, datetime.datetime.now().time()))
+
+    def on_test_batch_end(self, batch, logs=None):
+        print('Evaluating: batch {} ends at {}'.format(batch,  datetime.datetime.now().time()))
 
 class BlockArchitecture(Block):
     """
@@ -29,27 +37,43 @@ class BlockArchitecture(Block):
         return model
 
     def evaluate(
-        self,
-        train_it,
-        epochs,
-        steps,
-        batch_size,
-        optimizer,
-        loss,
-        metrics,
-        filename=None,
+            self,
+            #todo: change to VWW train iterator if needed
+            #train_it,
+            #test_it,
+            train_data,
+            train_labels,
+            test_data,
+            test_labels,
+            epochs,
+            steps,
+            batch_size,
+            optimizer,
+            loss,
+            metrics,
+            filename=None,
     ):
         try:
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics
             )
             model.summary()
+            #todo: extra code to save model.summary
+            #
+            folder='/Users/priyadalal/Desktop/priya/TensorNAS/Results/Model_summary'
+            def myprint(s):
+                with open(f'{folder}/modelsummary.txt','w+') as f:
+                    print(s, file=f)
+            model.summary(print_fn=myprint)
             if filename:
                 from tensornas.core.util import save_model
-
                 save_model(model, filename)
 
             if batch_size == -1:
+                #todo: change to VWW train iterator if needed
+                #model.fit_generator(train_it,steps_per_epoch=steps)
+
+                
                 model.fit(
                     x=train_data,
                     y=train_labels,
@@ -57,9 +81,11 @@ class BlockArchitecture(Block):
                     steps_per_epoch=steps,
                     verbose=1,
                 )
+
             else:
-                model.fit_generator(train_it,steps_per_epoch=steps)
-                '''
+                #todo: change to VWW train iterator if needed
+                #model.fit_generator(train_it,steps_per_epoch=steps)
+
                 model.fit(
                     x=train_data,
                     y=train_labels,
@@ -68,7 +94,7 @@ class BlockArchitecture(Block):
                     steps_per_epoch=steps,
                     verbose=1,
                 )
-                '''
+
         except Exception as e:
             import math
 
@@ -83,6 +109,12 @@ class BlockArchitecture(Block):
         )
         if params == 0:
             params = np.inf
-        accuracy = model.evaluate(test_data, test_labels)[1] * 100
+        #todo: remove prints
+        print('87')
+        #todo: change to VWW train iterator if needed
+        #accuracy=(model.evaluate_generator(test_it,32))[1]*100
+        print('89')
 
+        accuracy = model.evaluate(test_data, test_labels)[1] * 100
+        print('accuracy ',accuracy)
         return params, accuracy

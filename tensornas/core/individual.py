@@ -20,6 +20,9 @@ class Individual:
 
     def evaluate(
         self,
+        #todo: change to VWW train iterator if needed
+        #train_it,
+        #test_it,
         train_data,
         train_labels,
         test_data,
@@ -31,6 +34,7 @@ class Individual:
         loss,
         metrics,
     ):
+
         return self.block_architecture.evaluate(
             train_data=train_data,
             train_labels=train_labels,
@@ -44,6 +48,19 @@ class Individual:
             metrics=metrics,
         )
 
+        #todo: change to VWW train iterator if needed
+        '''
+        return self.block_architecture.evaluate(
+            train_it,
+            test_it,
+            epochs=epochs,
+            steps=steps,
+            batch_size=batch_size,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+        )
+        '''
     def print(self):
         self.block_architecture.print()
 

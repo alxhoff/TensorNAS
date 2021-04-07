@@ -1,0 +1,1006 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2577
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 input_6 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_19 (Conv2D)              (None, 28, 28, 87)   870         input_6[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_20 (Conv2D)              (None, 28, 28, 24)   48          input_6[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_21 (Conv2D)              (None, 28, 28, 39)   1014        input_6[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_22 (Conv2D)              (None, 28, 28, 53)   530         input_6[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_23 (Conv2D)              (None, 28, 28, 83)   830         input_6[0][0]                    \
+__________________________________________________________________________________________________\
+concatenate_2 (Concatenate)     (None, 28, 28, 286)  0           conv2d_19[0][0]                  \
+                                                                 conv2d_20[0][0]                  \
+                                                                 conv2d_21[0][0]                  \
+                                                                 conv2d_22[0][0]                  \
+                                                                 conv2d_23[0][0]                  \
+__________________________________________________________________________________________________\
+flatten_7 (Flatten)             (None, 224224)       0           concatenate_2[0][0]              \
+__________________________________________________________________________________________________\
+flatten_8 (Flatten)             (None, 224224)       0           flatten_7[0][0]                  \
+__________________________________________________________________________________________________\
+dense_6 (Dense)                 (None, 10)           2242250     flatten_8[0][0]                  \
+==================================================================================================\
+Total params: 2,245,542\
+Trainable params: 2,245,542\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 10s 15ms/step - loss: 71.9754 - accuracy: 0.2465\
+313/313 [==============================] - 11s 36ms/step - loss: 34.1819 - accuracy: 0.5654\
+Model: "model_5"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_7 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_24 (Conv2D)              (None, 28, 28, 125)  3250        input_7[0][0]                    \
+__________________________________________________________________________________________________\
+max_pooling2d_4 (MaxPooling2D)  (None, 28, 28, 125)  0           conv2d_24[0][0]                  \
+__________________________________________________________________________________________________\
+conv2d_26 (Conv2D)              (None, 28, 28, 128)  256         input_7[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_25 (Conv2D)              (None, 28, 28, 128)  16128       max_pooling2d_4[0][0]            \
+__________________________________________________________________________________________________\
+add_2 (Add)                     (None, 28, 28, 128)  0           conv2d_26[0][0]                  \
+                                                                 conv2d_25[0][0]                  \
+__________________________________________________________________________________________________\
+separable_conv2d_2 (SeparableCo (None, 26, 26, 22)   3990        add_2[0][0]                      \
+__________________________________________________________________________________________________\
+separable_conv2d_3 (SeparableCo (None, 26, 26, 52)   1218        separable_conv2d_2[0][0]         \
+__________________________________________________________________________________________________\
+flatten_9 (Flatten)             (None, 35152)        0           separable_conv2d_3[0][0]         \
+__________________________________________________________________________________________________\
+dense_7 (Dense)                 (None, 233)          8190649     flatten_9[0][0]                  \
+__________________________________________________________________________________________________\
+dropout_3 (Dropout)             (None, 233)          0           dense_7[0][0]                    \
+__________________________________________________________________________________________________\
+dense_8 (Dense)                 (None, 10)           2340        dropout_3[0][0]                  \
+==================================================================================================\
+Total params: 8,217,831\
+Trainable params: 8,217,831\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+ 76/600 [==>...........................] - ETA: 29s - loss: 3.8831 - accuracy: 0.2306^CTraceback (most recent call last):\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/demos/DemoDEAPEvolution.py", line 220, in <module>\
+    pop, log, hof = main()\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/demos/DemoDEAPEvolution.py", line 209, in main\
+    individualrecord=ir,\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/algorithms/eaSimple.py", line 72, in eaSimple\
+    for ind, fit in zip(invalid_ind, fitnesses):\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/demos/DemoDEAPEvolution.py", line 118, in evaluate_individual\
+    metrics=metrics,\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/core/individual.py", line 44, in evaluate\
+    metrics=metrics,\
+  File "/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/core/blockarchitecture.py", line 67, in evaluate\
+    verbose=1,\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py", line 1100, in fit\
+    tmp_logs = self.train_function(iterator)\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/def_function.py", line 828, in __call__\
+    result = self._call(*args, **kwds)\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/def_function.py", line 855, in _call\
+    return self._stateless_fn(*args, **kwds)  # pylint: disable=not-callable\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/function.py", line 2943, in __call__\
+    filtered_flat_args, captured_inputs=graph_function.captured_inputs)  # pylint: disable=protected-access\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/function.py", line 1919, in _call_flat\
+    ctx, args, cancellation_manager=cancellation_manager))\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/function.py", line 560, in call\
+    ctx=ctx)\
+  File "/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/eager/execute.py", line 60, in quick_execute\
+    inputs, attrs, num_outputs)\
+KeyboardInterrupt\
+PriyaDalalHost:TensorNAS priyadalal$ /usr/local/bin/python3 /Users/priyadalal/Desktop/priya/TensorNAS/demos/DemoDEAPEvolution.py\
+/Users/priyadalal/Desktop/priya/TensorNAS\
+PlotNeuralNet cloned\
+tikzeng imported\
+/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/blocktemplates\
+['/Users/priyadalal/Desktop/priya/TensorNAS/demos', '/Library/Frameworks/Python.framework/Versions/3.7/lib/python37.zip', '/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7', '/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/lib-dynload', '/Users/priyadalal/Library/Python/3.7/lib/python/site-packages', '/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages', '/Users/priyadalal/Desktop/priya/TensorNAS', '/Users/priyadalal/Desktop/priya/TensorNAS', '/Users/priyadalal/Desktop/priya/TensorNAS/tensornas/blocktemplates/blockarchitectures', '/Users/priyadalal/Desktop/priya/TensorNAS/tensornas']\
+Model: "model"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_1 (InputLayer)         [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d (SeparableC (None, 24, 24, 78)        181       \
+_________________________________________________________________\
+flatten (Flatten)            (None, 44928)             0         \
+_________________________________________________________________\
+dropout (Dropout)            (None, 44928)             0         \
+_________________________________________________________________\
+dense (Dense)                (None, 10)                449290    \
+=================================================================\
+Total params: 449,471\
+Trainable params: 449,471\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 4ms/step - loss: 42.9247 - accuracy: 0.2032 \
+313/313 [==============================] - 4s 13ms/step - loss: 15.0041 - accuracy: 0.3728\
+Num groups: 2\
+Shuffle input: [None, 28, 28, 16]\
+First reshape: [None, 28, 28, 2, 8]\
+Transposed: [None, 28, 28, 2, 8]\
+Output reshape: [None, 28, 28, 16]\
+Model: "model_1"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_2 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d (Conv2D)                 (None, 28, 28, 16)   160         input_2[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_1 (Conv2D)               (None, 28, 28, 16)   272         conv2d[0][0]                     \
+__________________________________________________________________________________________________\
+tf.reshape (TFOpLambda)         (None, 28, 28, 2, 8) 0           conv2d_1[0][0]                   \
+__________________________________________________________________________________________________\
+tf.compat.v1.transpose (TFOpLam (None, 28, 28, 8, 2) 0           tf.reshape[0][0]                 \
+__________________________________________________________________________________________________\
+tf.reshape_1 (TFOpLambda)       (None, 28, 28, 16)   0           tf.compat.v1.transpose[0][0]     \
+__________________________________________________________________________________________________\
+depthwise_conv2d (DepthwiseConv (None, 28, 28, 16)   160         tf.reshape_1[0][0]               \
+__________________________________________________________________________________________________\
+conv2d_3 (Conv2D)               (None, 28, 28, 34)   68          input_2[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_2 (Conv2D)               (None, 28, 28, 34)   578         depthwise_conv2d[0][0]           \
+__________________________________________________________________________________________________\
+add (Add)                       (None, 28, 28, 34)   0           conv2d_3[0][0]                   \
+                                                                 conv2d_2[0][0]                   \
+__________________________________________________________________________________________________\
+flatten_1 (Flatten)             (None, 26656)        0           add[0][0]                        \
+__________________________________________________________________________________________________\
+flatten_2 (Flatten)             (None, 26656)        0           flatten_1[0][0]                  \
+__________________________________________________________________________________________________\
+dense_1 (Dense)                 (None, 10)           266570      flatten_2[0][0]                  \
+==================================================================================================\
+Total params: 267,808\
+Trainable params: 267,808\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 3s 4ms/step - loss: 2.8038 - accuracy: 0.5480  \
+313/313 [==============================] - 3s 11ms/step - loss: 1.4202 - accuracy: 0.7793\
+Num groups: 2\
+Shuffle input: [None, 28, 28, 16]\
+First reshape: [None, 28, 28, 2, 8]\
+Transposed: [None, 28, 28, 2, 8]\
+Output reshape: [None, 28, 28, 16]\
+Model: "model_2"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_3 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_4 (Conv2D)               (None, 28, 28, 16)   160         input_3[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_5 (Conv2D)               (None, 28, 28, 16)   272         conv2d_4[0][0]                   \
+__________________________________________________________________________________________________\
+tf.reshape_2 (TFOpLambda)       (None, 28, 28, 2, 8) 0           conv2d_5[0][0]                   \
+__________________________________________________________________________________________________\
+tf.compat.v1.transpose_1 (TFOpL (None, 28, 28, 8, 2) 0           tf.reshape_2[0][0]               \
+__________________________________________________________________________________________________\
+tf.reshape_3 (TFOpLambda)       (None, 28, 28, 16)   0           tf.compat.v1.transpose_1[0][0]   \
+__________________________________________________________________________________________________\
+depthwise_conv2d_1 (DepthwiseCo (None, 28, 28, 16)   160         tf.reshape_3[0][0]               \
+__________________________________________________________________________________________________\
+conv2d_7 (Conv2D)               (None, 28, 28, 45)   90          input_3[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_6 (Conv2D)               (None, 28, 28, 45)   765         depthwise_conv2d_1[0][0]         \
+__________________________________________________________________________________________________\
+add_1 (Add)                     (None, 28, 28, 45)   0           conv2d_7[0][0]                   \
+                                                                 conv2d_6[0][0]                   \
+__________________________________________________________________________________________________\
+flatten_3 (Flatten)             (None, 35280)        0           add_1[0][0]                      \
+__________________________________________________________________________________________________\
+flatten_4 (Flatten)             (None, 35280)        0           flatten_3[0][0]                  \
+__________________________________________________________________________________________________\
+dropout_1 (Dropout)             (None, 35280)        0           flatten_4[0][0]                  \
+__________________________________________________________________________________________________\
+dense_2 (Dense)                 (None, 10)           352810      dropout_1[0][0]                  \
+==================================================================================================\
+Total params: 354,257\
+Trainable params: 354,257\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 4s 6ms/step - loss: 4.5980 - accuracy: 0.5550\
+313/313 [==============================] - 6s 18ms/step - loss: 2.7403 - accuracy: 0.7168\
+Model: "model_3"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_4 (InputLayer)         [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+conv2d_8 (Conv2D)            (None, 28, 28, 99)        198       \
+_________________________________________________________________\
+max_pooling2d (MaxPooling2D) (None, 14, 14, 99)        0         \
+_________________________________________________________________\
+conv2d_9 (Conv2D)            (None, 14, 14, 99)        9900      \
+_________________________________________________________________\
+depthwise_conv2d_2 (Depthwis (None, 12, 12, 99)        990       \
+_________________________________________________________________\
+flatten_5 (Flatten)          (None, 14256)             0         \
+_________________________________________________________________\
+flatten_6 (Flatten)          (None, 14256)             0         \
+_________________________________________________________________\
+dense_3 (Dense)              (None, 109)               1554013   \
+_________________________________________________________________\
+dense_4 (Dense)              (None, 10)                1100      \
+=================================================================\
+Total params: 1,566,201\
+Trainable params: 1,566,201\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 7s 10ms/step - loss: 2.2073 - accuracy: 0.2385 \
+313/313 [==============================] - 7s 22ms/step - loss: 0.6743 - accuracy: 0.8283\
+Model: "model_4"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_5 (InputLayer)         [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_1 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_7 (Flatten)          (None, 31360)             0         \
+_________________________________________________________________\
+dropout_2 (Dropout)          (None, 31360)             0         \
+_________________________________________________________________\
+dense_5 (Dense)              (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.2930 - accuracy: 0.6215  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.5551 - accuracy: 0.8283\
+Model: "model_5"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_6 (InputLayer)         [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+conv2d_10 (Conv2D)           (None, 28, 28, 97)        194       \
+_________________________________________________________________\
+max_pooling2d_1 (MaxPooling2 (None, 14, 14, 97)        0         \
+_________________________________________________________________\
+flatten_8 (Flatten)          (None, 19012)             0         \
+_________________________________________________________________\
+dense_6 (Dense)              (None, 249)               4734237   \
+_________________________________________________________________\
+flatten_9 (Flatten)          (None, 249)               0         \
+_________________________________________________________________\
+dense_7 (Dense)              (None, 10)                2500      \
+=================================================================\
+Total params: 4,736,931\
+Trainable params: 4,736,931\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 16s 26ms/step - loss: 1.8118 - accuracy: 0.5265\
+313/313 [==============================] - 6s 18ms/step - loss: 0.5836 - accuracy: 0.8231\
+Num groups: 4\
+Shuffle input: [None, 28, 28, 16]\
+First reshape: [None, 28, 28, 4, 4]\
+Transposed: [None, 28, 28, 4, 4]\
+Output reshape: [None, 28, 28, 16]\
+Model: "model_6"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_7 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_11 (Conv2D)              (None, 28, 28, 16)   32          input_7[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_12 (Conv2D)              (None, 28, 28, 16)   272         conv2d_11[0][0]                  \
+__________________________________________________________________________________________________\
+tf.reshape_4 (TFOpLambda)       (None, 28, 28, 4, 4) 0           conv2d_12[0][0]                  \
+__________________________________________________________________________________________________\
+tf.compat.v1.transpose_2 (TFOpL (None, 28, 28, 4, 4) 0           tf.reshape_4[0][0]               \
+__________________________________________________________________________________________________\
+tf.reshape_5 (TFOpLambda)       (None, 28, 28, 16)   0           tf.compat.v1.transpose_2[0][0]   \
+__________________________________________________________________________________________________\
+depthwise_conv2d_3 (DepthwiseCo (None, 28, 28, 16)   160         tf.reshape_5[0][0]               \
+__________________________________________________________________________________________________\
+conv2d_14 (Conv2D)              (None, 28, 28, 122)  244         input_7[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_13 (Conv2D)              (None, 28, 28, 122)  2074        depthwise_conv2d_3[0][0]         \
+__________________________________________________________________________________________________\
+add_2 (Add)                     (None, 28, 28, 122)  0           conv2d_14[0][0]                  \
+                                                                 conv2d_13[0][0]                  \
+__________________________________________________________________________________________________\
+flatten_10 (Flatten)            (None, 95648)        0           add_2[0][0]                      \
+__________________________________________________________________________________________________\
+flatten_11 (Flatten)            (None, 95648)        0           flatten_10[0][0]                 \
+__________________________________________________________________________________________________\
+dense_8 (Dense)                 (None, 10)           956490      flatten_11[0][0]                 \
+==================================================================================================\
+Total params: 959,272\
+Trainable params: 959,272\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 6s 8ms/step - loss: 11.1119 - accuracy: 0.5112  \
+313/313 [==============================] - 9s 28ms/step - loss: 8.2947 - accuracy: 0.7375\
+Num groups: 16\
+Shuffle input: [None, 28, 28, 16]\
+First reshape: [None, 28, 28, 16, 1]\
+Transposed: [None, 28, 28, 16, 1]\
+Output reshape: [None, 28, 28, 16]\
+Model: "model_7"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_8 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_15 (Conv2D)              (None, 28, 28, 84)   840         input_8[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_16 (Conv2D)              (None, 28, 28, 16)   160         input_8[0][0]                    \
+__________________________________________________________________________________________________\
+concatenate (Concatenate)       (None, 28, 28, 100)  0           conv2d_15[0][0]                  \
+                                                                 conv2d_16[0][0]                  \
+__________________________________________________________________________________________________\
+conv2d_17 (Conv2D)              (None, 28, 28, 16)   14416       concatenate[0][0]                \
+__________________________________________________________________________________________________\
+conv2d_18 (Conv2D)              (None, 28, 28, 16)   272         conv2d_17[0][0]                  \
+__________________________________________________________________________________________________\
+tf.reshape_6 (TFOpLambda)       (None, 28, 28, 16, 1 0           conv2d_18[0][0]                  \
+__________________________________________________________________________________________________\
+tf.compat.v1.transpose_3 (TFOpL (None, 28, 28, 1, 16 0           tf.reshape_6[0][0]               \
+__________________________________________________________________________________________________\
+tf.reshape_7 (TFOpLambda)       (None, 28, 28, 16)   0           tf.compat.v1.transpose_3[0][0]   \
+__________________________________________________________________________________________________\
+depthwise_conv2d_4 (DepthwiseCo (None, 28, 28, 16)   160         tf.reshape_7[0][0]               \
+__________________________________________________________________________________________________\
+conv2d_20 (Conv2D)              (None, 28, 28, 98)   9898        concatenate[0][0]                \
+__________________________________________________________________________________________________\
+conv2d_19 (Conv2D)              (None, 28, 28, 98)   1666        depthwise_conv2d_4[0][0]         \
+__________________________________________________________________________________________________\
+add_3 (Add)                     (None, 28, 28, 98)   0           conv2d_20[0][0]                  \
+                                                                 conv2d_19[0][0]                  \
+__________________________________________________________________________________________________\
+flatten_12 (Flatten)            (None, 76832)        0           add_3[0][0]                      \
+__________________________________________________________________________________________________\
+dropout_3 (Dropout)             (None, 76832)        0           flatten_12[0][0]                 \
+__________________________________________________________________________________________________\
+flatten_13 (Flatten)            (None, 76832)        0           dropout_3[0][0]                  \
+__________________________________________________________________________________________________\
+dense_9 (Dense)                 (None, 10)           768330      flatten_13[0][0]                 \
+==================================================================================================\
+Total params: 795,742\
+Trainable params: 795,742\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 14s 19ms/step - loss: 3.5890 - accuracy: 0.3364 \
+313/313 [==============================] - 17s 53ms/step - loss: 1.1473 - accuracy: 0.7139\
+Model: "model_8"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_9 (InputLayer)            [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_21 (Conv2D)              (None, 28, 28, 113)  226         input_9[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_23 (Conv2D)              (None, 28, 28, 33)   66          input_9[0][0]                    \
+__________________________________________________________________________________________________\
+conv2d_22 (Conv2D)              (None, 28, 28, 33)   3762        conv2d_21[0][0]                  \
+__________________________________________________________________________________________________\
+add_4 (Add)                     (None, 28, 28, 33)   0           conv2d_23[0][0]                  \
+                                                                 conv2d_22[0][0]                  \
+__________________________________________________________________________________________________\
+flatten_14 (Flatten)            (None, 25872)        0           add_4[0][0]                      \
+__________________________________________________________________________________________________\
+dense_10 (Dense)                (None, 242)          6261266     flatten_14[0][0]                 \
+__________________________________________________________________________________________________\
+flatten_15 (Flatten)            (None, 242)          0           dense_10[0][0]                   \
+__________________________________________________________________________________________________\
+dense_11 (Dense)                (None, 10)           2430        flatten_15[0][0]                 \
+==================================================================================================\
+Total params: 6,267,750\
+Trainable params: 6,267,750\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 23s 38ms/step - loss: 3.5290 - accuracy: 0.1105\
+313/313 [==============================] - 10s 31ms/step - loss: 2.4206 - accuracy: 0.1032\
+Model: "model_9"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_10 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+conv2d_24 (Conv2D)           (None, 24, 24, 30)        780       \
+_________________________________________________________________\
+conv2d_25 (Conv2D)           (None, 24, 24, 64)        1984      \
+_________________________________________________________________\
+max_pooling2d_2 (MaxPooling2 (None, 12, 12, 64)        0         \
+_________________________________________________________________\
+flatten_16 (Flatten)         (None, 9216)              0         \
+_________________________________________________________________\
+dense_12 (Dense)             (None, 255)               2350335   \
+_________________________________________________________________\
+dense_13 (Dense)             (None, 155)               39680     \
+_________________________________________________________________\
+dense_14 (Dense)             (None, 10)                1560      \
+=================================================================\
+Total params: 2,394,339\
+Trainable params: 2,394,339\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 12s 17ms/step - loss: 1.6292 - accuracy: 0.5099 \
+313/313 [==============================] - 5s 14ms/step - loss: 0.5624 - accuracy: 0.8640\
+gen     nevals  avg                             std                             min                             max        \
+0       10      [1.81054620e+06 6.76719998e+01] [1.97937688e+06 2.32583764e+01] [2.67808000e+05 1.03200004e+01] 6.26775e+06\
+Model: "model_10"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_11 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_2 (Separabl (None, 24, 24, 78)        181       \
+_________________________________________________________________\
+dropout_4 (Dropout)          (None, 24, 24, 78)        0         \
+=================================================================\
+Total params: 181\
+Trainable params: 181\
+Non-trainable params: 0\
+_________________________________________________________________\
+Error fitting model, in user code:\
+\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py:805 train_function  *\
+        return step_function(self, iterator)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py:795 step_function  **\
+        outputs = model.distribute_strategy.run(run_step, args=(data,))\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/distribute/distribute_lib.py:1259 run\
+        return self._extended.call_for_each_replica(fn, args=args, kwargs=kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/distribute/distribute_lib.py:2730 call_for_each_replica\
+        return self._call_for_each_replica(fn, args, kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/distribute/distribute_lib.py:3417 _call_for_each_replica\
+        return fn(*args, **kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py:788 run_step  **\
+        outputs = model.train_step(data)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py:756 train_step\
+        y, y_pred, sample_weight, regularization_losses=self.losses)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/engine/compile_utils.py:203 __call__\
+        loss_value = loss_obj(y_t, y_p, sample_weight=sw)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/losses.py:152 __call__\
+        losses = call_fn(y_true, y_pred)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/losses.py:256 call  **\
+        return ag_fn(y_true, y_pred, **self._fn_kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/util/dispatch.py:201 wrapper\
+        return target(*args, **kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/losses.py:1569 sparse_categorical_crossentropy\
+        y_true, y_pred, from_logits=from_logits, axis=axis)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/util/dispatch.py:201 wrapper\
+        return target(*args, **kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/keras/backend.py:4941 sparse_categorical_crossentropy\
+        labels=target, logits=output)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/util/dispatch.py:201 wrapper\
+        return target(*args, **kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/ops/nn_ops.py:4241 sparse_softmax_cross_entropy_with_logits_v2\
+        labels=labels, logits=logits, name=name)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/util/dispatch.py:201 wrapper\
+        return target(*args, **kwargs)\
+    /Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/tensorflow/python/ops/nn_ops.py:4156 sparse_softmax_cross_entropy_with_logits\
+        logits.get_shape()))\
+\
+    ValueError: Shape mismatch: The shape of labels (received (1,)) should equal the shape of logits except for the last dimension (received (576, 78)).\
+\
+Model: "model_11"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_12 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_3 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_17 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+flatten_18 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_5 (Dropout)          (None, 31360)             0         \
+_________________________________________________________________\
+dense_15 (Dense)             (None, 10)                313610    \
+_________________________________________________________________\
+dense_16 (Dense)             (None, 10)                110       \
+=================================================================\
+Total params: 313,801\
+Trainable params: 313,801\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 4s 4ms/step - loss: 2.2060 - accuracy: 0.2240   \
+313/313 [==============================] - 2s 5ms/step - loss: 2.0683 - accuracy: 0.2915\
+Model: "model_12"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_13 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_4 (Separabl (None, 24, 24, 78)        181       \
+_________________________________________________________________\
+flatten_19 (Flatten)         (None, 44928)             0         \
+_________________________________________________________________\
+dropout_6 (Dropout)          (None, 44928)             0         \
+_________________________________________________________________\
+dense_17 (Dense)             (None, 10)                449290    \
+=================================================================\
+Total params: 449,471\
+Trainable params: 449,471\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 5ms/step - loss: 45.0429 - accuracy: 0.1174 \
+313/313 [==============================] - 5s 15ms/step - loss: 23.3816 - accuracy: 0.4023\
+Num groups: 4\
+Shuffle input: [None, 28, 28, 16]\
+First reshape: [None, 28, 28, 4, 4]\
+Transposed: [None, 28, 28, 4, 4]\
+Output reshape: [None, 28, 28, 16]\
+Model: "model_13"\
+__________________________________________________________________________________________________\
+Layer (type)                    Output Shape         Param #     Connected to                     \
+==================================================================================================\
+input_14 (InputLayer)           [(None, 28, 28, 1)]  0                                            \
+__________________________________________________________________________________________________\
+conv2d_26 (Conv2D)              (None, 28, 28, 16)   32          input_14[0][0]                   \
+__________________________________________________________________________________________________\
+conv2d_27 (Conv2D)              (None, 28, 28, 16)   272         conv2d_26[0][0]                  \
+__________________________________________________________________________________________________\
+tf.reshape_8 (TFOpLambda)       (None, 28, 28, 4, 4) 0           conv2d_27[0][0]                  \
+__________________________________________________________________________________________________\
+tf.compat.v1.transpose_4 (TFOpL (None, 28, 28, 4, 4) 0           tf.reshape_8[0][0]               \
+__________________________________________________________________________________________________\
+tf.reshape_9 (TFOpLambda)       (None, 28, 28, 16)   0           tf.compat.v1.transpose_4[0][0]   \
+__________________________________________________________________________________________________\
+depthwise_conv2d_5 (DepthwiseCo (None, 28, 28, 16)   160         tf.reshape_9[0][0]               \
+__________________________________________________________________________________________________\
+conv2d_29 (Conv2D)              (None, 28, 28, 122)  244         input_14[0][0]                   \
+__________________________________________________________________________________________________\
+conv2d_28 (Conv2D)              (None, 28, 28, 122)  2074        depthwise_conv2d_5[0][0]         \
+__________________________________________________________________________________________________\
+add_5 (Add)                     (None, 28, 28, 122)  0           conv2d_29[0][0]                  \
+                                                                 conv2d_28[0][0]                  \
+__________________________________________________________________________________________________\
+flatten_20 (Flatten)            (None, 95648)        0           add_5[0][0]                      \
+__________________________________________________________________________________________________\
+flatten_21 (Flatten)            (None, 95648)        0           flatten_20[0][0]                 \
+__________________________________________________________________________________________________\
+dense_18 (Dense)                (None, 10)           956490      flatten_21[0][0]                 \
+==================================================================================================\
+Total params: 959,272\
+Trainable params: 959,272\
+Non-trainable params: 0\
+__________________________________________________________________________________________________\
+600/600 [==============================] - 6s 8ms/step - loss: 14.5169 - accuracy: 0.5184 \
+313/313 [==============================] - 8s 26ms/step - loss: 10.2473 - accuracy: 0.7317\
+/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/numpy/core/_methods.py:202: RuntimeWarning: invalid value encountered in subtract\
+  x = asanyarray(arr - arrmean)\
+1       4       [        inf 52.12299913]       [        nan 25.77496483]       [267808.      0.]               inf        \
+Model: "model_14"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_15 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_5 (Separabl (None, 20, 20, 78)        181       \
+_________________________________________________________________\
+flatten_22 (Flatten)         (None, 31200)             0         \
+_________________________________________________________________\
+dropout_7 (Dropout)          (None, 31200)             0         \
+_________________________________________________________________\
+dense_19 (Dense)             (None, 10)                312010    \
+=================================================================\
+Total params: 312,191\
+Trainable params: 312,191\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 34.0133 - accuracy: 0.1712 \
+313/313 [==============================] - 4s 11ms/step - loss: 5.1215 - accuracy: 0.4223\
+Model: "model_15"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_16 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_6 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_23 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+flatten_24 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_8 (Dropout)          (None, 31360)             0         \
+_________________________________________________________________\
+dense_20 (Dense)             (None, 10)                313610    \
+_________________________________________________________________\
+dense_21 (Dense)             (None, 10)                110       \
+=================================================================\
+Total params: 313,801\
+Trainable params: 313,801\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 2.1923 - accuracy: 0.2350\
+313/313 [==============================] - 2s 5ms/step - loss: 1.9921 - accuracy: 0.3429\
+Model: "model_16"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_17 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_7 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_25 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_9 (Dropout)          (None, 31360)             0         \
+_________________________________________________________________\
+dense_22 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.3314 - accuracy: 0.5856  \
+313/313 [==============================] - 1s 4ms/step - loss: 0.5216 - accuracy: 0.8494\
+Model: "model_17"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_18 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_8 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_26 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+flatten_27 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_10 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_23 (Dense)             (None, 10)                313610    \
+_________________________________________________________________\
+dense_24 (Dense)             (None, 10)                110       \
+=================================================================\
+Total params: 313,801\
+Trainable params: 313,801\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 4ms/step - loss: 2.1813 - accuracy: 0.2250  \
+313/313 [==============================] - 1s 4ms/step - loss: 1.9350 - accuracy: 0.4028\
+2       4       [3.40730000e+05 5.56889999e+01] [5.43724451e+04 2.28565355e+01] [3.12191000e+05 2.91500002e+01] 449471     \
+Model: "model_18"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_19 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_9 (Separabl (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_28 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_11 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_25 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 3ms/step - loss: 1.4186 - accuracy: 0.5701  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.5498 - accuracy: 0.8257\
+Model: "model_19"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_20 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_10 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_29 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_12 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_26 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.7923 - accuracy: 0.3735  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.5118 - accuracy: 0.8419\
+3       2       [3.13702000e+05 7.75719997e+01] [33.         16.14618812]       [3.13691000e+05 2.91500002e+01] 313801     \
+4       0       [3.13691000e+05 8.31019998e+01] [0.         0.54399967]         [3.13691000e+05 8.28299999e+01] 313691     \
+5       0       [3.13691000e+05 8.36459994e+01] [0.         0.66626081]         [3.13691000e+05 8.28299999e+01] 313691     \
+Model: "model_20"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_21 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_11 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_30 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_13 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_27 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 3ms/step - loss: 1.3868 - accuracy: 0.5701  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.5747 - accuracy: 0.8283\
+Model: "model_21"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_22 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_12 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_31 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_14 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_28 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.4094 - accuracy: 0.6272  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.6600 - accuracy: 0.7922\
+6       2       [3.13691000e+05 8.35569996e+01] [0.         1.50145183]         [3.13691000e+05 7.92200029e+01] 313691     \
+Model: "model_22"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_23 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_13 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_32 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_15 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_29 (Dense)             (None, 10)                313610    \
+_________________________________________________________________\
+dropout_16 (Dropout)         (None, 10)                0         \
+_________________________________________________________________\
+dense_30 (Dense)             (None, 10)                110       \
+=================================================================\
+Total params: 313,801\
+Trainable params: 313,801\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 3ms/step - loss: 2.2308 - accuracy: 0.1872  \
+313/313 [==============================] - 2s 5ms/step - loss: 2.1295 - accuracy: 0.2880\
+Model: "model_23"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_24 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_14 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_33 (Flatten)         (None, 31360)             0         \
+=================================================================\
+Total params: 81\
+Trainable params: 81\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 16.0317 - accuracy: 0.0386  \
+313/313 [==============================] - 4s 14ms/step - loss: 10.3533 - accuracy: 0.0980\
+Model: "model_24"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_25 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_15 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_34 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_17 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_31 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.3887 - accuracy: 0.6062  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.6472 - accuracy: 0.8002\
+Model: "model_25"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_26 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_16 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_35 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_18 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_32 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.2738 - accuracy: 0.5985  \
+313/313 [==============================] - 2s 4ms/step - loss: 0.5310 - accuracy: 0.8385\
+7       4       [2.82341000e+05 7.07609994e+01] [9.40866724e+04 2.61075627e+01] [81.          9.79999974]       313801     \
+Model: "model_26"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_27 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_17 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_36 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_19 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_33 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 4ms/step - loss: 1.3568 - accuracy: 0.5873  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.9302 - accuracy: 0.7485\
+8       1       [2.82330000e+05 7.57829995e+01] [9.40830000e+04 2.21685515e+01] [81.          9.79999974]       313691     \
+Model: "model_27"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_28 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_18 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_37 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_20 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_34 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 3s 4ms/step - loss: 1.3783 - accuracy: 0.6060  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.6746 - accuracy: 0.7864\
+Model: "model_28"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_29 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_19 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_38 (Flatten)         (None, 31360)             0         \
+=================================================================\
+Total params: 81\
+Trainable params: 81\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 16.2040 - accuracy: 0.0411  \
+313/313 [==============================] - 5s 14ms/step - loss: 10.3533 - accuracy: 0.0980\
+Error fitting model, Input 0 of layer separable_conv2d_21 is incompatible with the layer: : expected min_ndim=4, found ndim=2. Full shape received: (None, 31360)\
+Model: "model_29"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_31 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+dropout_21 (Dropout)         (None, 28, 28, 1)         0         \
+_________________________________________________________________\
+flatten_40 (Flatten)         (None, 784)               0         \
+=================================================================\
+Total params: 0\
+Trainable params: 0\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 1s 1ms/step - loss: 20.5483 - accuracy: 0.0000e+00\
+313/313 [==============================] - 1s 2ms/step - loss: 20.7039 - accuracy: 0.0000e+00\
+Model: "model_30"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_32 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_22 (Separab (None, 14, 14, 40)        81        \
+_________________________________________________________________\
+flatten_41 (Flatten)         (None, 7840)              0         \
+_________________________________________________________________\
+dropout_22 (Dropout)         (None, 7840)              0         \
+_________________________________________________________________\
+dense_35 (Dense)             (None, 10)                78410     \
+=================================================================\
+Total params: 78,491\
+Trainable params: 78,491\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 1s 2ms/step - loss: 1.3819 - accuracy: 0.5679  \
+313/313 [==============================] - 1s 2ms/step - loss: 0.7787 - accuracy: 0.7531\
+9       5       [        inf 51.03099957]       [        nan 37.89211039]       [81.  0.]                       inf        \
+Model: "model_31"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_33 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_23 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_42 (Flatten)         (None, 31360)             0         \
+_________________________________________________________________\
+dropout_23 (Dropout)         (None, 31360)             0         \
+_________________________________________________________________\
+dense_36 (Dense)             (None, 10)                313610    \
+=================================================================\
+Total params: 313,691\
+Trainable params: 313,691\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 3ms/step - loss: 1.4014 - accuracy: 0.5656  \
+313/313 [==============================] - 2s 5ms/step - loss: 0.5300 - accuracy: 0.8343\
+Model: "model_32"\
+_________________________________________________________________\
+Layer (type)                 Output Shape              Param #   \
+=================================================================\
+input_34 (InputLayer)        [(None, 28, 28, 1)]       0         \
+_________________________________________________________________\
+separable_conv2d_24 (Separab (None, 28, 28, 40)        81        \
+_________________________________________________________________\
+flatten_43 (Flatten)         (None, 31360)             0         \
+=================================================================\
+Total params: 81\
+Trainable params: 81\
+Non-trainable params: 0\
+_________________________________________________________________\
+600/600 [==============================] - 2s 2ms/step - loss: 16.4204 - accuracy: 0.0446  \
+313/313 [==============================] - 5s 15ms/step - loss: 10.3533 - accuracy: 0.1010\
+10      2       [1.33366000e+05 4.60609993e+01] [1.48964474e+05 3.62850405e+01] [81.          9.79999974]       313691     \
+gen     nevals  avg                             std                             min                             max        \
+0       10      [1.81054620e+06 6.76719998e+01] [1.97937688e+06 2.32583764e+01] [2.67808000e+05 1.03200004e+01] 6.26775e+06\
+1       4       [        inf 52.12299913]       [        nan 25.77496483]       [267808.      0.]               inf        \
+2       4       [3.40730000e+05 5.56889999e+01] [5.43724451e+04 2.28565355e+01] [3.12191000e+05 2.91500002e+01] 449471     \
+3       2       [3.13702000e+05 7.75719997e+01] [33.         16.14618812]       [3.13691000e+05 2.91500002e+01] 313801     \
+4       0       [3.13691000e+05 8.31019998e+01] [0.         0.54399967]         [3.13691000e+05 8.28299999e+01] 313691     \
+5       0       [3.13691000e+05 8.36459994e+01] [0.         0.66626081]         [3.13691000e+05 8.28299999e+01] 313691     \
+6       2       [3.13691000e+05 8.35569996e+01] [0.         1.50145183]         [3.13691000e+05 7.92200029e+01] 313691     \
+7       4       [2.82341000e+05 7.07609994e+01] [9.40866724e+04 2.61075627e+01] [81.          9.79999974]       313801     \
+8       1       [2.82330000e+05 7.57829995e+01] [9.40830000e+04 2.21685515e+01] [81.          9.79999974]       313691     \
+9       5       [        inf 51.03099957]       [        nan 37.89211039]       [81.  0.]                       inf        \
+10      2       [1.33366000e+05 4.60609993e+01] [1.48964474e+05 3.62850405e+01] [81.          9.79999974]       313691     \
+### Pareto individuals ###\
+Params: 81.0, Accuracy: 10.100000351667404\
+                              \{ROOT (28, 28, 1)->(1, 31360)\}                              \
+ +-------------------------+------------------------------------------+------------------+\
+ |   \{MOBILE_NET_BLOCK (28, 28, 1)->(28, 28, 40)\}    \{FLATTEN (28, 28, 40)->(1, 31360)\} | \
+    +----------------------+-----------------------+                                      \
+    | \{SEPARABLECONV2D (28, 28, 1)->(28, 28, 40)\} |                                       \
+Params: 78491.0, Accuracy: 75.30999779701233\
+                                                                  \{ROOT (28, 28, 1)->(1, 10)\}                                                                  \
+ +-------------------------+----------------------------------------------------------------------------+-----------------------------------------------------+\
+ |   \{MOBILE_NET_BLOCK (28, 28, 1)->(14, 14, 40)\}                                 \{CLASSIFICATION_BLOCK (14, 14, 40)->(1, 10)\}                               | \
+    +----------------------+-----------------------+  +-----------------+--------------------------------+-------------------------------+-----------------+   \
+    | \{SEPARABLECONV2D (28, 28, 1)->(14, 14, 40)\} |   | \{FLATTEN (14, 14, 40)->(1, 7840)\} \{DROPOUT (1, 7840)->(1, 7840)\} \{OUTPUTDENSE (1, 7840)->(1, 10)\} |    \
+Params: 267808.0, Accuracy: 77.92999744415283\
+                                                                                                                                                            \{ROOT (28, 28, 1)->(1, 10)\}                                                                                                                                                             \
+ +------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------+\
+ |                                                                                           \{SHUFFLE_NET_BLOCK (28, 28, 1)->(28, 28, 34)\}                                                                                                                           \{CLASSIFICATION_BLOCK (28, 28, 34)->(1, 10)\}                                 | \
+    +------------------+------------------------------------------+--------------------------------------------+----------------------------------------+-----------------------------------------------+---------------------------+  +------------------+---------------------------------+--------------------------------+------------------+   \
+    | \{CONV2D (28, 28, 1)->(28, 28, 16)\} \{GROUPEDPOINTWISECONV2D (28, 28, 16)->(28, 28, 16)\} \{SHUFFLE (28, 28, 16)->(28, 28, 16)\} \{DEPTHWISECONV2D (28, 28, 16)->(28, 28, 34)\} \{GROUPEDPOINTWISECONV2D (28, 28, 34)->(28, 28, 34)\} |   | \{FLATTEN (28, 28, 34)->(1, 26656)\} \{FLATTEN (1, 26656)->(1, 26656)\} \{OUTPUTDENSE (1, 26656)->(1, 10)\} |    \
+Params: 313691.0, Accuracy: 84.9399983882904\
+                                                                    \{ROOT (28, 28, 1)->(1, 10)\}                                                                    \
+ +-------------------------+------------------------------------------------------------------------------+-------------------------------------------------------+\
+ |   \{MOBILE_NET_BLOCK (28, 28, 1)->(28, 28, 40)\}                                   \{CLASSIFICATION_BLOCK (28, 28, 40)->(1, 10)\}                                 | \
+    +----------------------+-----------------------+  +------------------+---------------------------------+--------------------------------+------------------+   \
+    | \{SEPARABLECONV2D (28, 28, 1)->(28, 28, 40)\} |   | \{FLATTEN (28, 28, 40)->(1, 31360)\} \{DROPOUT (1, 31360)->(1, 31360)\} \{OUTPUTDENSE (1, 31360)->(1, 10)\} |    \
+Params: 2394339.0, Accuracy: 86.40000224113464\
+                                                                                                                     \{ROOT (28, 28, 1)->(1, 10)\}                                                                                                                      \
+ +----------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------+\
+ |                                \{FEATURE_EXTRACTION_BLOCK (28, 28, 1)->(13, 13, 64)\}                                                                                 \{CLASSIFICATION_BLOCK (13, 13, 64)->(1, 10)\}                                                 | \
+    +------------------+----------------------------------+-------------------------------------+--------------------+  +------------------+----------------------------------+---------------------------------+-------------------------------+-----------------+   \
+    | \{CONV2D (28, 28, 1)->(24, 24, 30)\} \{CONV2D (24, 24, 30)->(24, 24, 64)\} \{MAXPOOL2D (24, 24, 64)->(13, 13, 64)\} |   | \{FLATTEN (13, 13, 64)->(1, 10816)\} \{HIDDENDENSE (1, 10816)->(1, 255)\} \{HIDDENDENSE (1, 255)->(1, 155)\} \{OUTPUTDENSE (1, 155)->(1, 10)\} |    \
+PriyaDalalHost:TensorNAS priyadalal$ }

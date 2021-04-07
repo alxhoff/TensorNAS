@@ -85,6 +85,7 @@ def eaSimple(
 
         if individualrecord:
             individualrecord.add_gen(population)
+            print("length of population",len(population))
 
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))

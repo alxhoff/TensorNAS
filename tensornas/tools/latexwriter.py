@@ -73,6 +73,134 @@ class LatexWriter:
                 width=layer.layer.outputshape.get()[-1],
             )
             return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.SAMECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.POINTWISECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.DEPTHWISECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.GROUPEDCONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.DEPTHWISECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.POINTWISECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.SAMECONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
+        if layer.layer_type == SupportedLayers.CONV2D:
+            from tensornas.layers.Conv2D import Args
+
+            self.conv_count += 1
+            name = "conv{}".format(self.conv_count)
+            string = self.mod.to_Conv(
+                name,
+                layer.layer.args[Args.FILTERS],
+                layer.layer.inputshape.get()[-1],
+                offset="(0,0,0)",
+                to=to,
+                height=layer.layer.inputshape.get()[1],
+                depth=layer.layer.inputshape.get()[1],
+                width=layer.layer.outputshape.get()[-1],
+            )
+            return LatexLayer(name, string)
         if layer.layer_type == SupportedLayers.MAXPOOL2D:
             self.pool_count += 1
             name = "pool{}".format(self.pool_count)
