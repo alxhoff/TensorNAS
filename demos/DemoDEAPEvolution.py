@@ -3,6 +3,8 @@ import pickle
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.sys.path.append("/Users/priyadalal/Desktop/priya/TensorNAS")
 import multiprocessing
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,6 +17,8 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 from deap import base, creator, tools, algorithms
 
 from tensornas.core.individual import Individual
+#todo: change to VWW train iterator
+#from demos.DemoVWWData import *
 from demos.DemoMNISTInput import *
 
 from math import ceil
@@ -23,24 +27,26 @@ from math import ceil
 #gpus = tf.config.experimental.list_physical_devices("GPU")
 #tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
-
 from tensornas.tools.latexwriter import LatexWriter
 
 lw = LatexWriter()
 
 # Tensorflow parameters
 epochs = 1
+#todo:change batch size to 1
 batch_size = 1
+#todo: change to VWW train iterator if needed
+#training_size=len(train_it)
 training_size = len(images_train)
-step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
+print('training size length',training_size)
+step_size = int(ceil((1.0 * training_size) / batch_size) / 100)
 
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
-metrics = ["accuracy"] 
+metrics = ["accuracy"]
 #change divs pop_size,gen_count
-pop_size = 10
-gen_count = 10
-
+pop_size = 5
+gen_count = 1
 # Functions used for EA demo
 
 # Create a NAS model individual from one of the two demo models
@@ -52,9 +58,9 @@ def get_block_architecture():
     #    ClassificationBlockArchitecture,
     #)
 
-    from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
-    MobileNetBlockArchitecture,
-    )
+    #from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
+    #MobileNetBlockArchitecture,
+    #)
     #from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import (
     #EffNetBlockArchitecture,
     #)
@@ -73,22 +79,22 @@ def get_block_architecture():
     #from tensornas.blocktemplates.blockarchitectures.SqueezeNetBlockArchitecture import (
     #SqueezeNetBlockArchitecture,
     #)
-    #from tensornas.blocktemplates.blockarchitectures.MixedArchitecture import(
-    #    MixedBlockArchitecture,
-    #)
+    from tensornas.blocktemplates.blockarchitectures.MixedArchitecture import(
+       MixedBlockArchitecture,
+    )
 
     """
     This function is responsible for creating and returning the block architecture that an individual shuld embed
     """
     #return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
-    return MobileNetBlockArchitecture(input_tensor_shape,mnist_class_count)
+    #return MobileNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return EffNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return ShuffleNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return GhostNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return SqueezeNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return ResNetBlockArchitecture(input_tensor_shape,mnist_class_count)
     #return InceptionNetBlockArchitecture(input_tensor_shape,mnist_class_count)
-    #return MixedBlockArchitecture(input_tensor_shape,mnist_class_count)
+    return MixedBlockArchitecture(input_tensor_shape,mnist_class_count)
 # Evaluation function for evaluating an individual. This simply calls the evaluate method of the TensorNASModel class
 fitnesses = []
 fitness_queue = multiprocessing.Queue()
@@ -105,11 +111,14 @@ fitness_task = multiprocessing.Process(target=fitness_recorder)
 
 
 def evaluate_individual(individual):
+    #todo: change to VWW if needed
     ret = individual.evaluate(
         train_data=images_train,
         train_labels=labels_train,
         test_data=images_test,
         test_labels=labels_test,
+        #train_it,
+        #test_it,
         epochs=epochs,
         batch_size=batch_size,
         steps=step_size,
@@ -166,6 +175,8 @@ from tensornas.core.crossover import crossover_individuals_sp
 
 toolbox.register("mate", crossover_individuals_sp)
 toolbox.register("mutate", mutate_individual)
+#todo: change back to tournament sel
+#toolbox.register("select",tools.selRoulette)
 toolbox.register("select", tools.selTournament, tournsize=3)
 
 # Statistics
@@ -185,8 +196,9 @@ def compare_individual(ind1, ind2):
 def main():
     from tensornas.algorithms.eaSimple import eaSimple
     from tensornas.tools.visualization import IndividualRecord
-
+    print('191')
     ir = IndividualRecord()
+    print('193')
     pop = toolbox.population(n=pop_size)
     history.update(pop)
     # hof = tools.HallOfFame(1)
@@ -196,7 +208,7 @@ def main():
     stats.register("std", np.std, axis=0)
     stats.register("min", np.min, axis=0)
     stats.register("max", np.max)
-
+    print('203')
     pop, logbook = eaSimple(
         pop,
         toolbox,
@@ -215,8 +227,9 @@ def main():
 
 
 if __name__ == "__main__":
-
+    print('221')
     folder='/Users/priyadalal/Desktop/priya/TensorNAS/Results'
+
     pop, log, hof = main()
     best_individual = hof[0]
 
@@ -250,15 +263,76 @@ if __name__ == "__main__":
 
     x_divs = max_x / divs
     y_divs = max_y / divs
+    # command+U to uncomment multiple lines of code
+    #comment block of code Shift+Option+A
+    """ plt.subplot(1, 3, 1)
+    plt.plot(gen, avg, label="average")
+    plt.plot(gen, min_, label="minimum")
+    plt.plot(gen, max_, label="maximum")
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness")
+    plt.legend(loc="lower right")
+
+    # Pareto
+    dominated = [
+        ind
+        for ind in history.genealogy_history.values()
+        if pareto_dominance(best_individual, ind)
+    ]
+    dominators = [
+        ind
+        for ind in history.genealogy_history.values()
+        if pareto_dominance(ind, best_individual)
+    ]
+    others = [
+        ind
+        for ind in history.genealogy_history.values()
+        if not ind in dominated and not ind in dominators
+    ]
+
+    plt.subplot(1, 3, 2)
+    for ind in dominators:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "r.", alpha=0.7)
+    for ind in dominated:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "g.", alpha=0.7)
+    if len(others):
+        for ind in others:
+            plt.plot(
+                ind.fitness.values[0], ind.fitness.values[1], "k.", alpha=0.7, ms=3
+            )
+    plt.plot(
+        best_individual.fitness.values[0], best_individual.fitness.values[1], "bo", ms=6
+    )
+    for ind in hof.items:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1],  "r.", alpha=0.7)
+    plt.xlabel("Parameters")
+    plt.ylabel("Accuracy")
+    plt.title("Objective space")
+    plt.tight_layout()
+    
+    non_dom = tools.sortNondominated(
+        history.genealogy_history.values(),
+        k=len(history.genealogy_history.values()),
+        first_front_only=True,
+    )[0]
+    
+    plt.subplot(1, 3, 3)
+    for ind in history.genealogy_history.values():
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "k.", ms=3, alpha=0.5)
+    for ind in non_dom:
+        plt.plot(ind.fitness.values[0], ind.fitness.values[1], "bo", alpha=0.74, ms=5)
+    plt.title("Pareto-optimal front")
+
+    plt.subplot(1,3,3) """
 
     ax = fig.add_subplot(1, 2, 1)
     ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
     i=0
     while 1:
-        if os.path.isfile(f'{folder}\\Dominated_{i}.csv'):
+        if os.path.isfile(f'{folder}/Dominated_{i}.csv'):
             i+=1
         else:
-            with open(f'{folder}\\Dominated_{i}.csv','w') as f:
+            with open(f'{folder}/Dominated_{i}.csv','w') as f:
                 for row in dominated:
                     np.savetxt(f, row)
                 #f.write(dominated)
@@ -277,16 +351,16 @@ if __name__ == "__main__":
                 lw=0,
                 facecolor=(1.0, 0.8, 0.8),
                 zorder=-10,
-            )
+                )
         )
 
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
     while 1:
-        if os.path.isfile(f'{folder}\\Pareto_{i}'):
+        if os.path.isfile(f'{folder}/Pareto_{i}'):
             i+=1
         else:
-            with open(f'{folder}\\Pareto_{i}','w') as f:
-                fig.savefig(f'{folder}\\Pareto_{i}')
+            with open(f'{folder}/Pareto_{i}','w') as f:
+                fig.savefig(f'{folder}/Pareto_{i}')
             break
-    fig.savefig(f"{folder}\\pareto")
+    fig.savefig(f"{folder}/pareto")
