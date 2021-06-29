@@ -10,14 +10,11 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 40
-gen_count = 10
+pop_size = 200
+gen_count = 50
 cxpb = 0.1
 mutpb = 0.4
 verbose = True
-
-normalization_vector = [1000, 1]
-goal_vector = [20000, 100]
 
 
 def _gen_block_architecture():
@@ -78,16 +75,30 @@ def step_filter(fitness):
         return fitness[0], 0
 
 
-def min_max(fitnesses):
+def min_max_array(fitnesses, vectors):
+
+    ret = []
+
+    normalization_vectors, goal_vectors = vectors
+    for nv, gv in zip(normalization_vectors, goal_vectors):
+        ret.append(min_max(fitnesses, nv, gv))
+
+    ret = tuple(ret)
+    return ret
+
+
+def min_max(fitnesses, normalization_vector, goal_vector):
 
     ret = max(
         (fitnesses[0] - goal_vector[0]) / normalization_vector[0],
         (goal_vector[1] - fitnesses[1]) / normalization_vector[1],
     )
-    return (ret,)
+    return ret
 
 
-def DEAPTestEASimple(test, filter_function=None):
+def DEAPTestEASimple(
+    test, filter_function=None, filter_function_args=None, comment=None
+):
     from tensornas.algorithms.eaSimple import eaSimple
 
     pop, logbook = eaSimple(
@@ -101,9 +112,14 @@ def DEAPTestEASimple(test, filter_function=None):
         verbose=verbose,
         individualrecord=test.ir,
         filter_function=filter_function,
+        filter_function_args=filter_function_args,
     )
 
-    test.ir.show(1, filter_function.__name__ if filter_function else "no filter func")
+    test.ir.save(
+        5,
+        filter_function.__name__ if filter_function else "no filter func",
+        comment=comment,
+    )
 
     return pop, logbook
 
@@ -133,23 +149,76 @@ def setup(objective_weights) -> object:
     return test
 
 
-# filter_functions = [log_evaluate_accuracy, step_filter, min_max, None]
-filter_functions = [None]
+def gen_vectors_variable_goal(g_start, g_stop, g_step, n1, n2):
 
-# filter_function_weights = [(-1, 1), (-1, 1), (-1, 1), (-1,)]
-filter_function_weights = [(-1, 1)]
+    if g_start == g_stop:
+        goal_vectors = [(g_start, 1)]
+    else:
+        goal_vectors = [
+            (i, 100)
+            for i in range(g_start, g_stop + g_step, 1 if not g_step else g_step)
+        ]
+    normalization_vectors = [(n1, n2) for _ in range(len(goal_vectors))]
+
+    return goal_vectors, normalization_vectors
+
+
+def gen_vectors_variable_normalization(n_start, n_stop, n_step, g1, g2):
+
+    if n_start == n_stop:
+        normalization_vectors = [(n_start, 1)]
+    else:
+        normalization_vectors = [
+            (i, 1) for i in range(n_start, n_stop + n_step, 1 if not n_step else n_step)
+        ]
+    goal_vectors = [(g1, g2) for _ in range(len(normalization_vectors))]
+
+    return goal_vectors, normalization_vectors
+
+
+filter_functions_args = [
+    gen_vectors_variable_goal(40000, 40000, 0, 1000, 1),
+    gen_vectors_variable_goal(40000, 50000, 10000, 1000, 1),
+    gen_vectors_variable_goal(40000, 60000, 10000, 1000, 1),
+    gen_vectors_variable_normalization(1000, 2000, 1000, 40000, 1),
+    gen_vectors_variable_normalization(1000, 5000, 1000, 40000, 1),
+]
+
+filter_functions_comments = [
+    "G 40000, N 1000,1",
+    "G 40000->50000, N 1000,1",
+    "G 40000->60000, N 1000,1",
+    "G 40000, N 1000->2000,1",
+    "G 40000, N 1000->5000, 1",
+]
+
+filter_functions = [
+    min_max_array,
+    min_max_array,
+    min_max_array,
+    min_max_array,
+    min_max_array,
+    min_max_array,
+]
+filter_function_weights = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from tensornas.tools.visualization import plot_hof_pareto
 
-    for filter_function, weights in zip(filter_functions, filter_function_weights):
-        test = setup(weights)
-        DEAPTestEASimple(test, filter_function=filter_function)
-        name = filter_function.__name__ if filter_function else "no filter func"
+    for ff, w, ff_args, cmnt in zip(
+        filter_functions,
+        filter_function_weights,
+        filter_functions_args,
+        filter_functions_comments,
+    ):
+        test = setup(w)
+        DEAPTestEASimple(
+            test, filter_function=ff, filter_function_args=ff_args, comment=cmnt
+        )
+        name = ff.__name__ if ff else "no filter func"
         plot_hof_pareto(test.hof, name)
         print("Finished: {}".format(name))
 
-    plt.show()
     print("Done")

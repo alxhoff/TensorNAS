@@ -184,7 +184,7 @@ def main():
         filter_function=log_evaluate_accuracy,
     )
 
-    ir.show(2)
+    ir.save(2)
 
     return pop, logbook, hof
 
