@@ -26,6 +26,9 @@ class LayerBlock(Block):
             input_shape=input_shape, parent_block=parent_block, layer_type=layer_type
         )
 
+    def __str__(self):
+        return str(self.layer)
+
     def mutate(self, verbose=False):
         return self.layer.mutate(verbose)
 

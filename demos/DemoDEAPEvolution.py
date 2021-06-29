@@ -21,7 +21,8 @@ from math import ceil
 
 ### ENABLE GPU ###
 gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
+for device in gpus:
+    tf.config.experimental.set_memory_growth(gpus[0], True)
 ##################
 
 from tensornas.tools.latexwriter import LatexWriter
@@ -37,8 +38,8 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 20
-gen_count = 20
+pop_size = 12
+gen_count = 5
 
 # Functions used for EA demo
 
@@ -52,7 +53,7 @@ def get_block_architecture():
     )
 
     """
-    This function is responsible for creating and returning the block architecture that an individual shuld embed
+    This function is responsible for creating and returning the block architecture that an individual should embed
     """
     return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
@@ -71,6 +72,13 @@ def fitness_recorder():
 fitness_task = multiprocessing.Process(target=fitness_recorder)
 
 
+def log_evaluate_accuracy(fitness):
+    from math import log
+
+    ret = 63 * log(1 + fitness, 20) / (1 + 63 * log(1 + fitness, 20))
+    return ret
+
+
 def evaluate_individual(individual):
     ret = individual.evaluate(
         train_data=images_train,
@@ -84,7 +92,6 @@ def evaluate_individual(individual):
         loss=loss,
         metrics=metrics,
     )
-    fitness_queue.put(ret, block=True)
     return ret
 
 
@@ -133,7 +140,7 @@ from tensornas.core.crossover import crossover_individuals_sp
 
 toolbox.register("mate", crossover_individuals_sp)
 toolbox.register("mutate", mutate_individual)
-toolbox.register("select", tools.selTournament, tournsize=3)
+toolbox.register("select", tools.selTournamentDCD)
 
 # Statistics
 history = tools.History()
@@ -167,13 +174,14 @@ def main():
     pop, logbook = eaSimple(
         pop,
         toolbox,
-        cxpb=0.05,
-        mutpb=0.2,
+        cxpb=0.1,
+        mutpb=0.4,
         ngen=gen_count,
         stats=stats,
         halloffame=hof,
         verbose=True,
         individualrecord=ir,
+        filter_function=log_evaluate_accuracy,
     )
 
     ir.show(2)
@@ -196,9 +204,9 @@ if __name__ == "__main__":
         i.print_tree()
 
     x = [i.fitness.values[0] for i in hof.items]
-    y = [i.fitness.values[1] for i in hof.items]
+    y = [i.block_architecture.accuracy for i in hof.items]
     hof_fitness = [i.fitness for i in hof.items]
-    dominated = np.setdiff1d(fitnesses, hof_fitness)
+    # dominated = np.setdiff1d(fitnesses, hof_fitness)
 
     import matplotlib.backends.backend_agg as agg
 
@@ -218,7 +226,7 @@ if __name__ == "__main__":
     ax = fig.add_subplot(1, 2, 1)
     ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
 
-    ax.scatter([i[0] for i in dominated], [i[1] for i in dominated], facecolor="red")
+    # ax.scatter([i[0] for i in dominated], [i[1] for i in dominated], facecolor="red")
     ax.xscale = "log"
 
     for item in [(x[i], y[i]) for i in range(1, len(x))]:

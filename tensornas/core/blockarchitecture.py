@@ -12,6 +12,14 @@ class BlockArchitecture(Block):
     architecture to be created, namely what sort of sub-blocks the block architecture can generate.
     """
 
+    def __init__(self, input_shape, parent_block, layer_type):
+        self.param_count = 0
+        self.accuracy = 0
+
+        super().__init__(
+            input_shape=input_shape, parent_block=parent_block, layer_type=layer_type
+        )
+
     def get_keras_model(self, optimizer, loss, metrics):
         inp = tf.keras.Input(shape=self.input_shape)
         out = self.get_keras_layers(inp)
@@ -37,7 +45,6 @@ class BlockArchitecture(Block):
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics
             )
-            model.summary()
             if filename:
                 from tensornas.core.util import save_model
 
@@ -61,10 +68,9 @@ class BlockArchitecture(Block):
                     verbose=1,
                 )
         except Exception as e:
-            import math
 
             print("Error fitting model, {}".format(e))
-            return [np.inf, 0]
+            return np.inf, 0
         params = int(
             np.sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
         ) + int(
@@ -75,5 +81,4 @@ class BlockArchitecture(Block):
         if params == 0:
             params = np.inf
         accuracy = model.evaluate(test_data, test_labels)[1] * 100
-
         return params, accuracy

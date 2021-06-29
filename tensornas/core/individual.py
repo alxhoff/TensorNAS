@@ -31,7 +31,10 @@ class Individual:
         loss,
         metrics,
     ):
-        return self.block_architecture.evaluate(
+        (
+            self.block_architecture.param_count,
+            self.block_architecture.accuracy,
+        ) = self.block_architecture.evaluate(
             train_data=train_data,
             train_labels=train_labels,
             test_data=test_data,
@@ -43,9 +46,16 @@ class Individual:
             loss=loss,
             metrics=metrics,
         )
+        return self.block_architecture.param_count, self.block_architecture.accuracy
 
     def print(self):
         self.block_architecture.print()
+
+    def __str__(self):
+        return str(self.block_architecture)
+
+    def print_summary(self):
+        self.block_architecture.print_summary()
 
     def print_tree(self):
         print(self.block_architecture.get_ascii_tree())

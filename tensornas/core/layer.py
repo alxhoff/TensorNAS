@@ -120,11 +120,9 @@ class NetworkLayer(ABC):
     def get_args_enum(self):
         return self.args_enum
 
-    def print(self):
-        print(
-            "Layer:{} {}-> {}".format(
-                self.get_name(), self.inputshape, self.outputshape
-            )
+    def __str__(self):
+        ret = "Layer:{} {}-> {}, ".format(
+            self.get_name(), self.inputshape, self.outputshape
         )
         try:
             arg_list = list(self.get_args_enum())
@@ -133,10 +131,14 @@ class NetworkLayer(ABC):
                     name = arg_list[param - 1].name
                 else:
                     name = param.name
-                print("{}: {}".format(name, param_value))
+                ret += "{}: {}, ".format(name, param_value)
+            ret += "\n"
         except Exception:
             pass
-        print("")
+        return ret
+
+    def print(self):
+        print(str(self))
 
     def mutate(self, verbose=False):
         if self.mutation_funcs:

@@ -1,5 +1,7 @@
 from deap import tools
 from deap.algorithms import varAnd
+from tensornas.tools.logging import Logger
+from deap.tools.emo import assignCrowdingDist
 
 
 def eaSimple(
@@ -12,6 +14,7 @@ def eaSimple(
     halloffame=None,
     verbose=__debug__,
     individualrecord=None,
+    filter_function=None,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -63,14 +66,36 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
+    logger = Logger()
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
     fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+
     for ind, fit in zip(invalid_ind, fitnesses):
-        ind.fitness.values = fit
+        ind.block_architecture.param_count = fit[-2]
+        ind.block_architecture.accuracy = fit[-1]
+
+        if filter_function:
+            ind.fitness.values = filter_function(fit)
+        else:
+            ind.fitness.values = fit
+
+        if hasattr(ind, "updates"):
+            ind.updates.append(
+                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
+            )
+        else:
+            ind.updates = [
+                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
+            ]
+
+    assignCrowdingDist(population)
+
+    if individualrecord:
+        individualrecord.add_gen(population)
 
     if halloffame is not None:
         halloffame.update(population)
@@ -83,8 +108,8 @@ def eaSimple(
     # Begin the generational process
     for gen in range(1, ngen + 1):
 
-        if individualrecord:
-            individualrecord.add_gen(population)
+        if verbose:
+            logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))
@@ -95,14 +120,32 @@ def eaSimple(
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
         fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+
         for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
+            ind.block_architecture.param_count = fit[-2]
+            ind.block_architecture.accuracy = fit[-1]
+
+            if filter_function:
+                ind.fitness.values = filter_function(fit)
+            else:
+                ind.fitness.values = fit
 
             if hasattr(ind, "updates"):
-                ind.updates[gen] = fit
+                ind.updates.append(
+                    (
+                        ind.block_architecture.param_count,
+                        ind.block_architecture.accuracy,
+                    )
+                )
             else:
-                ind.updates = {}
-                ind.updates[gen] = fit
+                ind.updates = [
+                    (
+                        ind.block_architecture.param_count,
+                        ind.block_architecture.accuracy,
+                    )
+                ]
+
+        assignCrowdingDist(offspring)
 
         # Update the hall of fame with the generated individuals
         if halloffame is not None:
@@ -111,10 +154,26 @@ def eaSimple(
         # Replace the current population by the offspring
         population[:] = offspring
 
+        if individualrecord:
+            individualrecord.add_gen(population)
+
+        if verbose:
+            for x, ind in enumerate(population):
+                logger.log(
+                    "Ind #{}, params:{}, acc:{}%".format(
+                        x,
+                        ind.block_architecture.param_count,
+                        ind.block_architecture.accuracy,
+                    )
+                )
+                logger.log(str(ind))
+
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
         if verbose:
             print(logbook.stream)
+
+    logger.log("STOP")
 
     return population, logbook

@@ -268,14 +268,19 @@ class Block(ABC):
         except Exception as e:
             exit(e)
 
+    def __str__(self):
+        ret = ""
+        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
+            ret += str(sb)
+        return ret
+
     def print(self):
         """
         Function useful for print debugging, the function by default invokes print self and then invokes printing in all
         child nodes. If you wish to print all children nodes then only override print_self and not print_self
         """
         self.print_self()
-        for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            sb.print()
+        print(str(self))
 
     def print_self(self):
         pass
