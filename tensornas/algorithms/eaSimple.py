@@ -15,6 +15,7 @@ def eaSimple(
     verbose=__debug__,
     individualrecord=None,
     filter_function=None,
+    filter_function_args=None,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -79,7 +80,10 @@ def eaSimple(
         ind.block_architecture.accuracy = fit[-1]
 
         if filter_function:
-            ind.fitness.values = filter_function(fit)
+            if filter_function_args:
+                ind.fitness.values = filter_function(fit, filter_function_args)
+            else:
+                ind.fitness.values = filter_function(fit)
         else:
             ind.fitness.values = fit
 
@@ -126,9 +130,10 @@ def eaSimple(
             ind.block_architecture.accuracy = fit[-1]
 
             if filter_function:
-                ind.fitness.values = filter_function(fit)
-            else:
-                ind.fitness.values = fit
+                if filter_function_args:
+                    ind.fitness.values = filter_function(fit, filter_function_args)
+                else:
+                    ind.fitness.values = filter_function(fit)
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
