@@ -5,7 +5,7 @@ from enum import Enum
 
 
 def find_block_architectures():
-    import tensornas.blocktemplates.blockarchitectures as BT
+    from tensornas.blocktemplates import blockarchitectures as BT
 
     modules = []
     BT_pkg = BT.__name__
@@ -28,7 +28,7 @@ def find_block_architectures():
 
 
 def find_blocks():
-    import tensornas.blocktemplates.subblocks as BT
+    from tensornas.blocktemplates import subblocks as BT
 
     modules = []
     BT_pkg = BT.__name__

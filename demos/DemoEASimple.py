@@ -10,8 +10,8 @@ step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-pop_size = 200
-gen_count = 50
+pop_size = 4
+gen_count = 2
 cxpb = 0.1
 mutpb = 0.4
 verbose = True
@@ -79,7 +79,8 @@ def min_max_array(fitnesses, vectors):
 
     ret = []
 
-    normalization_vectors, goal_vectors = vectors
+    goal_vectors, normalization_vectors = vectors
+
     for nv, gv in zip(normalization_vectors, goal_vectors):
         ret.append(min_max(fitnesses, nv, gv))
 
@@ -93,6 +94,25 @@ def min_max(fitnesses, normalization_vector, goal_vector):
         (fitnesses[0] - goal_vector[0]) / normalization_vector[0],
         (goal_vector[1] - fitnesses[1]) / normalization_vector[1],
     )
+    print("----")
+    print(
+        "Value Nr. param:"
+        + str(fitnesses[0])
+        + " Value Acc: "
+        + str(fitnesses[1])
+        + " obj:"
+        + str(ret)
+    )
+    print(
+        "Goal  Nr. param:" + str(goal_vector[0]) + " Goal  Acc: " + str(goal_vector[1])
+    )
+    print(
+        "Norm  Nr. param:"
+        + str(normalization_vector[0])
+        + " Norm  Acc: "
+        + str(normalization_vector[1])
+    )
+    print("----")
     return ret
 
 
@@ -127,7 +147,7 @@ def DEAPTestEASimple(
 def setup(objective_weights) -> object:
     from tensornas.tools.DEAPtest import DEAPTest
     from tensornas.core.crossover import crossover_individuals_sp
-    import tensornas.tools.GPU as GPU
+    from tensornas.tools import GPU as GPU
 
     GPU.Enable()
 
@@ -152,7 +172,7 @@ def setup(objective_weights) -> object:
 def gen_vectors_variable_goal(g_start, g_stop, g_step, n1, n2):
 
     if g_start == g_stop:
-        goal_vectors = [(g_start, 1)]
+        goal_vectors = [(g_start, 100)]
     else:
         goal_vectors = [
             (i, 100)
@@ -180,8 +200,8 @@ filter_functions_args = [
     gen_vectors_variable_goal(40000, 40000, 0, 1000, 1),
     gen_vectors_variable_goal(40000, 50000, 10000, 1000, 1),
     gen_vectors_variable_goal(40000, 60000, 10000, 1000, 1),
-    gen_vectors_variable_normalization(1000, 2000, 1000, 40000, 1),
-    gen_vectors_variable_normalization(1000, 5000, 1000, 40000, 1),
+    gen_vectors_variable_normalization(1000, 2000, 1000, 40000, 100),
+    gen_vectors_variable_normalization(1000, 5000, 1000, 40000, 100),
 ]
 
 filter_functions_comments = [
@@ -198,13 +218,17 @@ filter_functions = [
     min_max_array,
     min_max_array,
     min_max_array,
-    min_max_array,
 ]
-filter_function_weights = [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]
 
+filter_function_weights = [
+    (-1,),
+    (-1, -1),
+    (-1, -1, -1),
+    (-1, -1),
+    (-1, -1, -1, -1, -1),
+]
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
     from tensornas.tools.visualization import plot_hof_pareto
 
     for ff, w, ff_args, cmnt in zip(
@@ -214,10 +238,13 @@ if __name__ == "__main__":
         filter_functions_comments,
     ):
         test = setup(w)
+        name = ff.__name__ if ff else "no filter func"
+        print("Start: {}".format(name))
+
         DEAPTestEASimple(
             test, filter_function=ff, filter_function_args=ff_args, comment=cmnt
         )
-        name = ff.__name__ if ff else "no filter func"
+
         plot_hof_pareto(test.hof, name)
         print("Finished: {}".format(name))
 
