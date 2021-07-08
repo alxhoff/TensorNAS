@@ -30,6 +30,7 @@ class Individual:
         optimizer,
         loss,
         metrics,
+        use_GPU,
     ):
         (
             self.block_architecture.param_count,
@@ -45,6 +46,7 @@ class Individual:
             optimizer=optimizer,
             loss=loss,
             metrics=metrics,
+            use_GPU=use_GPU,
         )
         return self.block_architecture.param_count, self.block_architecture.accuracy
 

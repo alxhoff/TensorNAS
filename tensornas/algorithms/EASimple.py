@@ -1,7 +1,61 @@
 from deap import tools
 from deap.algorithms import varAnd
-from tensornas.tools.logging import Logger
+
+# from tensornas.tools.logging import Logger
 from deap.tools.emo import assignCrowdingDist
+
+
+def TestEASimple(
+    cxpb,
+    mutpb,
+    pop_size,
+    gen_count,
+    gen_individual,
+    evaluate_individual,
+    crossover_individual,
+    mutate_individual,
+    objective_weights,
+    verbose=False,
+    filter_function=None,
+    filter_function_args=None,
+    comment=None,
+):
+    from tensornas.tools.DEAPtest import DEAPTest
+
+    test = DEAPTest(
+        pop_size=pop_size,
+        gen_count=gen_count,
+        f_gen_individual=gen_individual,
+        objective_weights=objective_weights,
+        multithreaded=True,
+    )
+
+    test.set_evaluate(func=evaluate_individual)
+    test.set_mate(func=crossover_individual)
+    test.set_mutate(func=mutate_individual)
+    test.set_select(func=tools.selTournamentDCD)
+
+    pop, logbook = eaSimple(
+        population=test.pop,
+        toolbox=test.toolbox,
+        cxpb=cxpb,
+        mutpb=mutpb,
+        ngen=gen_count,
+        stats=test.stats,
+        halloffame=test.hof,
+        verbose=verbose,
+        individualrecord=test.ir,
+        filter_function=filter_function,
+        filter_function_args=filter_function_args,
+    )
+
+    test.ir.save(
+        1,
+        filter_function.__name__ if filter_function else "no filter func",
+        comment=comment,
+    )
+
+    return pop, logbook, test
 
 
 def eaSimple(
@@ -67,7 +121,7 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
-    logger = Logger()
+    # logger = Logger()
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
@@ -112,8 +166,8 @@ def eaSimple(
     # Begin the generational process
     for gen in range(1, ngen + 1):
 
-        if verbose:
-            logger.log("Gen #{}, population: {}".format(gen, len(population)))
+        # if verbose:
+        #     logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))
@@ -162,16 +216,16 @@ def eaSimple(
         if individualrecord:
             individualrecord.add_gen(population)
 
-        if verbose:
-            for x, ind in enumerate(population):
-                logger.log(
-                    "Ind #{}, params:{}, acc:{}%".format(
-                        x,
-                        ind.block_architecture.param_count,
-                        ind.block_architecture.accuracy,
-                    )
-                )
-                logger.log(str(ind))
+        # if verbose:
+        # for x, ind in enumerate(population):
+        #     logger.log(
+        #         "Ind #{}, params:{}, acc:{}%".format(
+        #             x,
+        #             ind.block_architecture.param_count,
+        #             ind.block_architecture.accuracy,
+        #         )
+        #     )
+        #     logger.log(str(ind))
 
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
@@ -179,6 +233,6 @@ def eaSimple(
         if verbose:
             print(logbook.stream)
 
-    logger.log("STOP")
+    # logger.log("STOP")
 
     return population, logbook

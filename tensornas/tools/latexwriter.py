@@ -42,7 +42,7 @@ class LatexWriter:
                     + self._recurse_blocks(bl.output_blocks)
                 )
             except Exception as e:
-                print("here")
+                break
         return ret
 
     def _get_flattened_model(self, model):

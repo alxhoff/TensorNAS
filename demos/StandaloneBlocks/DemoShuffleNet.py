@@ -1,5 +1,4 @@
 from tensornas.blocktemplates.blockarchitectures import ShuffleNetBlockArchitecture
-from demos.DemoMNISTInput import *
 from tensornas.core.util import list_available_blocks
 
 print("##########################################")
@@ -25,7 +24,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="shufflenet.tflite",
+    filename="../shufflenet.tflite",
 )
 
 print(metrics)

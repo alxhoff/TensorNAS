@@ -1,21 +1,13 @@
-from tensornas.blocktemplates.blockarchitectures import ResNetBlockArchitecture
-from demos.DemoMNISTInput import *
+from tensornas.blocktemplates.blockarchitectures import MobileNetBlockArchitecture
 from tensornas.core.util import list_available_blocks
 
-import tensorflow as tf
-
-### ENABLE GPU ###
-gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
-##################
-
 print("##########################################")
-print("Testing Res Net block architecture")
+print("Testing Mobile Net block architecture")
 print("##########################################")
 
 list_available_blocks()
 
-model = ResNetBlockArchitecture.ResNetBlockArchitecture(
+model = MobileNetBlockArchitecture.MobileNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -32,7 +24,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="resnet.tflite",
+    filename="../mobilenet.tflite",
 )
 
 print(metrics)

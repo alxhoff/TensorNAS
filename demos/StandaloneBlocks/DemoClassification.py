@@ -1,5 +1,4 @@
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
-from demos.DemoMNISTInput import *
 import tensorflow as tf
 
 ### ENABLE GPU ###
@@ -34,7 +33,7 @@ metrics = model1.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="conv2d.tflite",
+    filename="../conv2d.tflite",
 )
 
 print(metrics)

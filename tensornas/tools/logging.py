@@ -17,7 +17,7 @@ def writer(pqueue, filename):
 
 class Logger:
     def __init__(self):
-        filename = "tensornas_{}.log".format(strftime("%Y%m%d-%H%M", gmtime()))
+        filename = "Logs/tensornas_{}.log".format(strftime("%Y%m%d-%H%M", gmtime()))
 
         self.queue = Queue()
 

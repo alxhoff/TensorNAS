@@ -1,5 +1,4 @@
 import numpy as np
-import tensorflow as tf
 
 from tensornas.core.block import Block
 
@@ -21,6 +20,8 @@ class BlockArchitecture(Block):
         )
 
     def get_keras_model(self, optimizer, loss, metrics):
+        import tensorflow as tf
+
         inp = tf.keras.Input(shape=self.input_shape)
         out = self.get_keras_layers(inp)
         model = tf.keras.Model(inp, out)
@@ -40,7 +41,15 @@ class BlockArchitecture(Block):
         loss,
         metrics,
         filename=None,
+        use_GPU=True,
     ):
+        import tensorflow as tf
+
+        if use_GPU:
+            from tensornas.tools.tensorflow import GPU as GPU
+
+            GPU.config_GPU()
+
         try:
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics

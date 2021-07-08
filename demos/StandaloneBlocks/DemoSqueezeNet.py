@@ -1,18 +1,23 @@
-from tensornas.blocktemplates.blockarchitectures import MobileNetBlockArchitecture
-from demos.DemoMNISTInput import *
+from tensornas.blocktemplates.blockarchitectures import SqueezeNetBlockArchitecture
 from tensornas.core.util import list_available_blocks
 
+import tensorflow as tf
+
 print("##########################################")
-print("Testing Mobile Net block architecture")
+print("Testing Squeeze Net block architecture")
 print("##########################################")
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 list_available_blocks()
 
-model = MobileNetBlockArchitecture.MobileNetBlockArchitecture(
+model = SqueezeNetBlockArchitecture.SqueezeNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
-model.print()
+# model.print()
+
+print(model.get_ascii_tree())
 
 metrics = model.evaluate(
     train_data=images_train,
@@ -25,14 +30,16 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="mobilenet.tflite",
+    filename="../squeezenet.tflite",
 )
 
 print(metrics)
 
 model.mutate(verbose=True)
 
-model.print()
+# model.print()
+
+print(model.get_ascii_tree())
 
 metrics = model.evaluate(
     train_data=images_train,

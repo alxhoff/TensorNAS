@@ -19,6 +19,7 @@ class IndividualRecord:
         plot_cols = math.ceil(len(self.gens) / gen_interval / 2)
         fig, axes = plt.subplots(plot_cols, 2, sharey=True)
         fig.tight_layout(h_pad=2)
+        fig.set_size_inches(20, 10 * plot_cols)
         if title:
             if comment:
                 title = title + " '{}'".format(comment)
@@ -35,10 +36,10 @@ class IndividualRecord:
             except Exception as e:
                 pass
 
-        fig.savefig(title)
+        fig.savefig("Figures/" + title)
 
 
-def plot_hof_pareto(hof, filename="pareto"):
+def plot_hof_pareto(hof, filename="hof"):
     import matplotlib
 
     x = [i.block_architecture.param_count for i in hof.items]
@@ -70,4 +71,4 @@ def plot_hof_pareto(hof, filename="pareto"):
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
 
-    fig.savefig("pareto_" + filename)
+    fig.savefig("Figures/pareto_" + filename)

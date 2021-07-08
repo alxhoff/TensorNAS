@@ -1,6 +1,6 @@
-from demos.DemoMNISTInput import input_tensor_shape, mnist_class_count
+from demos.Datasets.MNIST import input_tensor_shape, mnist_class_count
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
-from tensornas.core.crossover import crossover_cutting_point, _get_max_depth
+from tensornas.core.crossover import crossover_cutting_point
 
 print("###########################")
 print("Auto example")

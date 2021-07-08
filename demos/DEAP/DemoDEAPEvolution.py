@@ -12,10 +12,9 @@ import tensorflow as tf
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-from deap import base, creator, tools, algorithms
+from deap import base, creator, tools
 
 from tensornas.core.individual import Individual
-from demos.DemoMNISTInput import *
 
 from math import ceil
 
@@ -157,7 +156,7 @@ def compare_individual(ind1, ind2):
 
 
 def main():
-    from tensornas.algorithms.eaSimple import eaSimple
+    from tensornas.algorithms.EASimple import eaSimple
     from tensornas.tools.visualization import IndividualRecord
 
     ir = IndividualRecord()

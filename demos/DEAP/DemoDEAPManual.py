@@ -13,8 +13,6 @@ from deap import base, creator, tools
 from math import ceil
 
 from tensornas.core.individual import Individual
-from demos.DemoMNISTInput import *
-
 
 # Tensorflow parameters
 epochs = 10

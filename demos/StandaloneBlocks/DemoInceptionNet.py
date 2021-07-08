@@ -1,14 +1,13 @@
-from tensornas.blocktemplates.blockarchitectures import GhostNetBlockArchitecture
-from demos.DemoMNISTInput import *
+from tensornas.blocktemplates.blockarchitectures import InceptionNetArchitecture
 from tensornas.core.util import list_available_blocks
 
 print("##########################################")
-print("Testing Ghost Net block architecture")
+print("Testing Inception Net block architecture")
 print("##########################################")
 
 list_available_blocks()
 
-model = GhostNetBlockArchitecture.GhostNetBlockArchitecture(
+model = InceptionNetArchitecture.InceptionNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -25,7 +24,7 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="ghostnet.tflite",
+    filename="../inceptionnet.tflite",
 )
 
 print(metrics)
