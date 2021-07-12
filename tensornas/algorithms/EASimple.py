@@ -13,6 +13,7 @@ def TestEASimple(
     filter_function=None,
     filter_function_args=None,
     save_individuals=True,
+    generation_gap=1,
     comment=None,
     multithreaded=True,
     log=True,
@@ -53,7 +54,7 @@ def TestEASimple(
     )
 
     test.ir.save(
-        1,
+        generation_gap,
         test_name=test_name,
         title=filter_function.__name__ if filter_function else "no filter func",
         comment=comment,

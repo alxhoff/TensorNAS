@@ -74,6 +74,7 @@ if __name__ == "__main__":
     log = GetLog(config)
     globals()["use_gpu"] = GetGPU(config)
     globals()["save_individuals"] = GetSaveIndividual(config)
+    generation_gap = GetGenerationGap(config)
 
     from demos.Datasets.MNIST import GetData
 
@@ -107,6 +108,7 @@ if __name__ == "__main__":
         filter_function=filter_function,
         filter_function_args=filter_function_args,
         save_individuals=save_individuals,
+        generation_gap=generation_gap,
         comment=comments,
         multithreaded=multithreaded,
         log=log,

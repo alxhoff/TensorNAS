@@ -22,7 +22,7 @@ class IndividualRecord:
         fig.set_size_inches(20, 10 * plot_cols)
         if title:
             if comment:
-                title = title + " '{}'".format(comment)
+                title = title + "_{}".format(comment)
             fig.suptitle(title)
         for i in range(0, self.gen_count, gen_interval):
             try:
