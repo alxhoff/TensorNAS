@@ -50,7 +50,8 @@ if __name__ == "__main__":
 
     from tensornas.tools.configparse import *
 
-    config = LoadConfig("example")
+    config_filename = "example"
+    config = LoadConfig(config_filename)
 
     from time import gmtime, strftime
 
@@ -58,6 +59,8 @@ if __name__ == "__main__":
     test_name = strftime("%d_%m_%Y-%H_%M", gmtime())
     if test_name_prefix:
         test_name = test_name_prefix + "_" + test_name
+
+    CopyConfig(config_filename, test_name)
 
     globals()["epochs"] = GetTFEpochs(config)
     globals()["batch_size"] = GetTFBatchSize(config)
