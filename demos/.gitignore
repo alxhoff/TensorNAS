@@ -1,3 +1,4 @@
 PlotNeuralNet
 *.tex
 *.log
+Output/*

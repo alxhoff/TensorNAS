@@ -1,10 +1,3 @@
-from deap import tools
-from deap.algorithms import varAnd
-
-# from tensornas.tools.logging import Logger
-from deap.tools.emo import assignCrowdingDist
-
-
 def TestEASimple(
     cxpb,
     mutpb,
@@ -15,10 +8,14 @@ def TestEASimple(
     crossover_individual,
     mutate_individual,
     objective_weights,
+    test_name,
     verbose=False,
     filter_function=None,
     filter_function_args=None,
+    save_individuals=True,
     comment=None,
+    multithreaded=True,
+    log=True,
 ):
     from tensornas.tools.DEAPtest import DEAPTest
 
@@ -27,12 +24,15 @@ def TestEASimple(
         gen_count=gen_count,
         f_gen_individual=gen_individual,
         objective_weights=objective_weights,
-        multithreaded=True,
+        multithreaded=multithreaded,
     )
 
     test.set_evaluate(func=evaluate_individual)
     test.set_mate(func=crossover_individual)
     test.set_mutate(func=mutate_individual)
+
+    from deap import tools
+
     test.set_select(func=tools.selTournamentDCD)
 
     pop, logbook = eaSimple(
@@ -41,17 +41,21 @@ def TestEASimple(
         cxpb=cxpb,
         mutpb=mutpb,
         ngen=gen_count,
+        test_name=test_name,
         stats=test.stats,
         halloffame=test.hof,
         verbose=verbose,
         individualrecord=test.ir,
+        save_individuals=save_individuals,
         filter_function=filter_function,
         filter_function_args=filter_function_args,
+        log=log,
     )
 
     test.ir.save(
         1,
-        filter_function.__name__ if filter_function else "no filter func",
+        test_name=test_name,
+        title=filter_function.__name__ if filter_function else "no filter func",
         comment=comment,
     )
 
@@ -64,12 +68,15 @@ def eaSimple(
     cxpb,
     mutpb,
     ngen,
+    test_name,
     stats=None,
     halloffame=None,
     verbose=__debug__,
     individualrecord=None,
+    save_individuals=False,
     filter_function=None,
     filter_function_args=None,
+    log=True,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -121,15 +128,29 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
-    # logger = Logger()
+    if log:
+        from tensornas.tools.logging import Logger
+
+        logger = Logger(test_name)
+
+    from deap import tools
+
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
-    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    if save_individuals:
+        fitnesses = toolbox.map(
+            toolbox.evaluate,
+            [(ii, test_name, 0, i) for i, ii in enumerate(invalid_ind)],
+        )
+    else:
+        fitnesses = toolbox.map(
+            toolbox.evaluate, [(ii, None, None, None) for ii in invalid_ind]
+        )
 
-    for ind, fit in zip(invalid_ind, fitnesses):
+    for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
         ind.block_architecture.param_count = fit[-2]
         ind.block_architecture.accuracy = fit[-1]
 
@@ -150,6 +171,8 @@ def eaSimple(
                 (ind.block_architecture.param_count, ind.block_architecture.accuracy)
             ]
 
+    from deap.tools.emo import assignCrowdingDist
+
     assignCrowdingDist(population)
 
     if individualrecord:
@@ -166,20 +189,30 @@ def eaSimple(
     # Begin the generational process
     for gen in range(1, ngen + 1):
 
-        # if verbose:
-        #     logger.log("Gen #{}, population: {}".format(gen, len(population)))
+        if log:
+            logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
         # Select the next generation individuals
         offspring = toolbox.select(population, len(population))
 
         # Vary the pool of individuals
+        from deap.algorithms import varAnd
+
         offspring = varAnd(offspring, toolbox, cxpb, mutpb)
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        if save_individuals:
+            fitnesses = toolbox.map(
+                toolbox.evaluate,
+                [(ii, test_name, gen, i) for i, ii in enumerate(invalid_ind)],
+            )
+        else:
+            fitnesses = toolbox.map(
+                toolbox.evaluate, [(ii, None, None, None) for ii in invalid_ind]
+            )
 
-        for ind, fit in zip(invalid_ind, fitnesses):
+        for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             ind.block_architecture.param_count = fit[-2]
             ind.block_architecture.accuracy = fit[-1]
 
@@ -216,16 +249,16 @@ def eaSimple(
         if individualrecord:
             individualrecord.add_gen(population)
 
-        # if verbose:
-        # for x, ind in enumerate(population):
-        #     logger.log(
-        #         "Ind #{}, params:{}, acc:{}%".format(
-        #             x,
-        #             ind.block_architecture.param_count,
-        #             ind.block_architecture.accuracy,
-        #         )
-        #     )
-        #     logger.log(str(ind))
+        if log:
+            for x, ind in enumerate(population):
+                logger.log(
+                    "Ind #{}, params:{}, acc:{}%".format(
+                        x,
+                        ind.block_architecture.param_count,
+                        ind.block_architecture.accuracy,
+                    )
+                )
+                logger.log(str(ind))
 
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
@@ -233,6 +266,7 @@ def eaSimple(
         if verbose:
             print(logbook.stream)
 
-    # logger.log("STOP")
+    if log:
+        logger.log("STOP")
 
     return population, logbook

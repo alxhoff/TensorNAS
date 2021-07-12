@@ -208,12 +208,19 @@ def list_available_block_architectures():
         print(arch.value)
 
 
-def save_model(model, filename="out_model.tflite"):
-    import tensorflow as tf
+def save_model(model, test_name, model_name):
 
-    model.save("/home/alxhoff/Downloads")
+    from pathlib import Path
+
+    path = "Output/{}/Models/{}".format(test_name, model_name)
+    Path(path).mkdir(parents=True, exist_ok=True)
+    model.save(path)
+
+    import tensorflow as tf
 
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
     tflite_model = converter.convert()
-    open(filename, "wb").write(tflite_model)
+    open(
+        "Output/{}/Models/{}/saved_model.tflite".format(test_name, model_name), "wb"
+    ).write(tflite_model)

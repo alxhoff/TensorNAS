@@ -36,6 +36,21 @@ def GetVerbose(config):
     return bool(_GetGeneral(config)["Verbose"])
 
 
+def GetMultithreaded(config):
+
+    return bool(_GetGeneral(config)["Multithreaded"])
+
+
+def GetGPU(config):
+
+    return bool(_GetGeneral(config)["GPU"])
+
+
+def GetLog(config):
+
+    return bool(_GetGeneral(config)["Log"])
+
+
 def _GetEvolution(config):
 
     return config["evolution"]
@@ -66,16 +81,6 @@ def _GetOutput(config):
     return config["output"]
 
 
-def _GetGoals(config):
-
-    return config["goals"]
-
-
-def _GetFilters(config):
-
-    return config["filter"]
-
-
 def GetGenerationGap(config):
 
     return int(_GetOutput(config)["GenerationGap"])
@@ -84,6 +89,26 @@ def GetGenerationGap(config):
 def GetFigureTitle(config):
 
     return _GetOutput(config)["FigureTitle"]
+
+
+def GetSaveIndividual(config):
+
+    return _GetOutput(config)["SaveIndividuals"]
+
+
+def GetOutputPrefix(config):
+
+    return _GetOutput(config)["OutputPrefix"]
+
+
+def _GetGoals(config):
+
+    return config["goals"]
+
+
+def _GetFilters(config):
+
+    return config["filter"]
 
 
 def _GetVariableGoal(config):

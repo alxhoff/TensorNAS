@@ -12,7 +12,7 @@ class IndividualRecord:
             )
         self.gen_count += 1
 
-    def save(self, gen_interval, title="Fig_None", comment=None):
+    def save(self, gen_interval, test_name, title="Fig_None", comment=None):
         import matplotlib.pyplot as plt
         import math
 
@@ -36,10 +36,14 @@ class IndividualRecord:
             except Exception as e:
                 pass
 
-        fig.savefig("Figures/" + title)
+        from pathlib import Path
+
+        path = "Output/{}/Figures".format(test_name)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        fig.savefig("Output/{}/Figures/{}".format(test_name, title))
 
 
-def plot_hof_pareto(hof, filename="hof"):
+def plot_hof_pareto(hof, test_name):
     import matplotlib
 
     x = [i.block_architecture.param_count for i in hof.items]
@@ -71,4 +75,8 @@ def plot_hof_pareto(hof, filename="hof"):
     ax.set_xscale("log")
     ax.set_ylim(bottom=0, top=100)
 
-    fig.savefig("Figures/pareto_" + filename)
+    from pathlib import Path
+
+    path = "Output/{}/Figures".format(test_name)
+    Path(path).mkdir(parents=True, exist_ok=True)
+    fig.savefig("Output/{}/Figures/pareto".format(test_name))

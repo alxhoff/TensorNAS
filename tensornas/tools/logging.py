@@ -1,8 +1,16 @@
 from multiprocessing import Process, Queue
-from time import gmtime, strftime
 
 
 def writer(pqueue, filename):
+
+    import os, errno
+
+    if not os.path.exists(os.path.dirname(filename)):
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError as exc:  # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
 
     with open(filename, "w+") as log_file:
 
@@ -16,8 +24,8 @@ def writer(pqueue, filename):
 
 
 class Logger:
-    def __init__(self):
-        filename = "Logs/tensornas_{}.log".format(strftime("%Y%m%d-%H%M", gmtime()))
+    def __init__(self, test_name):
+        filename = "Output/{}/Logs/tensornas_{}.log".format(test_name, test_name)
 
         self.queue = Queue()
 

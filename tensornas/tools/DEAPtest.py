@@ -29,7 +29,7 @@ class DEAPTest:
 
         if multithreaded:
             self.pool = multiprocessing.Pool()
-            self.toolbox.register("map", self.pool.map)
+            self.toolbox.register("map", self.pool.starmap)
 
         # Function for creating individual (block architecture)
         self.toolbox.register("get_block_architecture", f_gen_individual)

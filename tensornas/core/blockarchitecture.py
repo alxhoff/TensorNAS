@@ -40,7 +40,8 @@ class BlockArchitecture(Block):
         optimizer,
         loss,
         metrics,
-        filename=None,
+        test_name=None,
+        model_name=None,
         use_GPU=True,
     ):
         import tensorflow as tf
@@ -54,10 +55,10 @@ class BlockArchitecture(Block):
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics
             )
-            if filename:
+            if test_name and model_name:
                 from tensornas.core.util import save_model
 
-                save_model(model, filename)
+                save_model(model, test_name, model_name)
 
             if batch_size == -1:
                 model.fit(
