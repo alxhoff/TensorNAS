@@ -108,6 +108,21 @@ def GetGenerationGap(config):
     return int(_GetOutput(config)["GenerationGap"])
 
 
+def GetGenerationSaveInterval(config):
+
+    val = _GetOutput(config)["GenerationSave"]
+
+    if val == "INTERVAL":
+        return _GetGenerationSaveInterval(config)
+    else:
+        return 1
+
+
+def _GetGenerationSaveInterval(config):
+
+    return int(_GetOutput(config)["GenerationSaveInterval"])
+
+
 def GetFigureTitle(config):
 
     return _GetOutput(config)["FigureTitle"]
@@ -286,3 +301,7 @@ def GetTFBatchSize(config):
 
 def GetTFEpochs(config):
     return int(_GetTensorflow(config)["Epochs"])
+
+
+def GetQuantizationAware(config):
+    return bool(_GetTensorflow(config)["QuantizationAware"])

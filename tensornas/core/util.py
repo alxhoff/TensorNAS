@@ -209,7 +209,6 @@ def list_available_block_architectures():
 
 
 def save_model(model, test_name, model_name):
-
     from pathlib import Path
 
     path = "Output/{}/Models/{}".format(test_name, model_name)

@@ -14,6 +14,7 @@ def TestEASimple(
     filter_function_args=None,
     save_individuals=True,
     generation_gap=1,
+    generation_save=1,
     comment=None,
     multithreaded=True,
     log=True,
@@ -51,6 +52,7 @@ def TestEASimple(
         filter_function=filter_function,
         filter_function_args=filter_function_args,
         log=log,
+        generation_save_interval=generation_save,
     )
 
     test.ir.save(
@@ -78,6 +80,7 @@ def eaSimple(
     filter_function=None,
     filter_function_args=None,
     log=True,
+    generation_save_interval=1,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -141,7 +144,7 @@ def eaSimple(
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
-    if save_individuals:
+    if save_individuals and generation_save_interval == 1:
         fitnesses = toolbox.map(
             toolbox.evaluate,
             [(ii, test_name, 0, i) for i, ii in enumerate(invalid_ind)],
@@ -203,7 +206,7 @@ def eaSimple(
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        if save_individuals:
+        if save_individuals and ((gen + 1) % generation_save_interval) == 0:
             fitnesses = toolbox.map(
                 toolbox.evaluate,
                 [(ii, test_name, gen, i) for i, ii in enumerate(invalid_ind)],

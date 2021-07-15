@@ -34,6 +34,7 @@ class Individual:
         test_name=None,
         model_name=None,
         use_GPU=False,
+        q_aware=False,
     ):
         (
             self.block_architecture.param_count,
@@ -52,6 +53,7 @@ class Individual:
             test_name=test_name,
             model_name=model_name,
             use_GPU=use_GPU,
+            q_aware=q_aware,
         )
         return self.block_architecture.param_count, self.block_architecture.accuracy
 

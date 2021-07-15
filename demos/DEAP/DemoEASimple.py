@@ -36,6 +36,7 @@ def _evaluate_individual(individual, test_name, gen, ind_num):
         test_name=test_name,
         model_name="{}/{}".format(gen, ind_num),
         use_GPU=True,
+        q_aware=q_aware,
     )
     param_count = ret[0]
     accuracy = ret[1]
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     globals()["optimizer"] = GetTFOptimizer(config)
     globals()["loss"] = GetTFLoss(config)
     globals()["metrics"] = GetTFMetrics(config)
+    globals()["q_aware"] = GetQuantizationAware(config)
 
     pop_size = GetPopulationSize(config)
     gen_count = GetGenerationCount(config)
@@ -78,6 +80,7 @@ if __name__ == "__main__":
     globals()["use_gpu"] = GetGPU(config)
     globals()["save_individuals"] = GetSaveIndividual(config)
     generation_gap = GetGenerationGap(config)
+    generation_save_interval = GetGenerationSaveInterval(config)
 
     from demos.Datasets.MNIST import GetData
 
@@ -112,6 +115,7 @@ if __name__ == "__main__":
         filter_function_args=filter_function_args,
         save_individuals=save_individuals,
         generation_gap=generation_gap,
+        generation_save=generation_save_interval,
         comment=comments,
         multithreaded=multithreaded,
         log=log,

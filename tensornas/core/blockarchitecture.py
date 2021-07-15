@@ -43,6 +43,7 @@ class BlockArchitecture(Block):
         test_name=None,
         model_name=None,
         use_GPU=True,
+        q_aware=False,
     ):
         import tensorflow as tf
 
@@ -55,6 +56,15 @@ class BlockArchitecture(Block):
             model = self.get_keras_model(
                 optimizer=optimizer, loss=loss, metrics=metrics
             )
+            if q_aware:
+                try:
+                    import tensorflow_model_optimization as tfmot
+
+                    q_model = tfmot.quantization.keras.quantize_model(model)
+                    q_model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+                    model = q_model
+                except Exception:
+                    pass
             if test_name and model_name:
                 from tensornas.core.util import save_model
 
