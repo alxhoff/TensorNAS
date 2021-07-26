@@ -16,6 +16,9 @@ def crossover_individuals_sp(ind1, ind2):
         except Exception:
             continue
         break
+
+    ind3.index = None
+    ind4.index = None
     return ind3, ind4
 
 

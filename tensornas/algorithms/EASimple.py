@@ -17,7 +17,7 @@ def TestEASimple(
     generation_save=1,
     comment=None,
     multithreaded=True,
-    log=True,
+    logger=None,
 ):
     from tensornas.tools.DEAPtest import DEAPTest
 
@@ -51,7 +51,7 @@ def TestEASimple(
         save_individuals=save_individuals,
         filter_function=filter_function,
         filter_function_args=filter_function_args,
-        log=log,
+        logger=logger,
         generation_save_interval=generation_save,
     )
 
@@ -79,7 +79,7 @@ def eaSimple(
     save_individuals=False,
     filter_function=None,
     filter_function_args=None,
-    log=True,
+    logger=None,
     generation_save_interval=1,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
@@ -132,31 +132,31 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
-    if log:
-        from tensornas.tools.logging import Logger
-
-        logger = Logger(test_name)
 
     from deap import tools
 
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
+    if logger:
+        logger.log("Gen #0, population: {}".format(len(population)))
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
     if save_individuals and generation_save_interval == 1:
         fitnesses = toolbox.map(
             toolbox.evaluate,
-            [(ii, test_name, 0, i) for i, ii in enumerate(invalid_ind)],
+            [(ii, test_name, 0, i, logger) for i, ii in enumerate(invalid_ind)],
         )
     else:
         fitnesses = toolbox.map(
-            toolbox.evaluate, [(ii, None, None, None) for ii in invalid_ind]
+            toolbox.evaluate, [(ii, None, None, None, logger) for ii in invalid_ind]
         )
 
     for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
         ind.block_architecture.param_count = fit[-2]
         ind.block_architecture.accuracy = fit[-1]
+        # Assign individuals an index so they can be copied in output folder structure if taken to next gen
+        ind.index = count
 
         if filter_function:
             if filter_function_args:
@@ -174,6 +174,17 @@ def eaSimple(
             ind.updates = [
                 (ind.block_architecture.param_count, ind.block_architecture.accuracy)
             ]
+
+    if logger:
+        for x, ind in enumerate(population):
+            logger.log(
+                "Ind #{}, params:{}, acc:{}%".format(
+                    x,
+                    ind.block_architecture.param_count,
+                    ind.block_architecture.accuracy,
+                )
+            )
+            logger.log(str(ind))
 
     from deap.tools.emo import assignCrowdingDist
 
@@ -193,7 +204,7 @@ def eaSimple(
     # Begin the generational process
     for gen in range(1, ngen + 1):
 
-        if log:
+        if logger:
             logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
         # Select the next generation individuals
@@ -204,21 +215,45 @@ def eaSimple(
 
         offspring = varAnd(offspring, toolbox, cxpb, mutpb)
 
-        # Evaluate the individuals with an invalid fitness
+        valid_ind = [ind for ind in offspring if ind.fitness.valid]
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+
+        if logger:
+            logger.log("{} existing individuals".format(len(valid_ind)))
+
+        # Copy existing models to new generation
+        from tensornas.core.util import copy_output_model
+
+        for i, ind in enumerate(valid_ind):
+            index = offspring.index(ind)
+            copy_output_model(test_name, gen, ind.index, index)
+            logger.log(
+                "Copying existing model, index:{}/{}->{}/{}".format(
+                    gen - 1, ind.index, gen, index
+                )
+            )
+            ind.index = index
+
+        # Evaluate the individuals with an invalid fitness
+        if logger:
+            logger.log("{} new individuals".format(len(invalid_ind)))
         if save_individuals and ((gen + 1) % generation_save_interval) == 0:
             fitnesses = toolbox.map(
                 toolbox.evaluate,
-                [(ii, test_name, gen, i) for i, ii in enumerate(invalid_ind)],
+                [
+                    (ind, test_name, gen, offspring.index(ind), logger)
+                    for ind in invalid_ind
+                ],
             )
         else:
             fitnesses = toolbox.map(
-                toolbox.evaluate, [(ii, None, None, None) for ii in invalid_ind]
+                toolbox.evaluate, [(ii, None, None, None, logger) for ii in invalid_ind]
             )
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             ind.block_architecture.param_count = fit[-2]
             ind.block_architecture.accuracy = fit[-1]
+            ind.index = offspring.index(ind)
 
             if filter_function:
                 if filter_function_args:
@@ -253,7 +288,7 @@ def eaSimple(
         if individualrecord:
             individualrecord.add_gen(population)
 
-        if log:
+        if logger:
             for x, ind in enumerate(population):
                 logger.log(
                     "Ind #{}, params:{}, acc:{}%".format(
@@ -270,7 +305,7 @@ def eaSimple(
         if verbose:
             print(logbook.stream)
 
-    if log:
+    if logger:
         logger.log("STOP")
 
     return population, logbook

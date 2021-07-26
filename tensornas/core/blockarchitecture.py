@@ -44,9 +44,8 @@ class BlockArchitecture(Block):
         model_name=None,
         use_GPU=True,
         q_aware=False,
+        logger=None,
     ):
-        import tensorflow as tf
-
         if use_GPU:
             from tensornas.tools.tensorflow import GPU as GPU
 
@@ -65,10 +64,6 @@ class BlockArchitecture(Block):
                     model = q_model
                 except Exception:
                     pass
-            if test_name and model_name:
-                from tensornas.core.util import save_model
-
-                save_model(model, test_name, model_name)
 
             if batch_size == -1:
                 model.fit(
@@ -87,10 +82,19 @@ class BlockArchitecture(Block):
                     steps_per_epoch=steps,
                     verbose=1,
                 )
+
+            if test_name and model_name:
+                from tensornas.core.util import save_model
+
+                save_model(model, test_name, model_name, logger)
         except Exception as e:
+            logger.log("Error running/saving model:{}".format(model_name))
 
             print("Error fitting model, {}".format(e))
             return np.inf, 0
+
+        import tensorflow as tf
+
         params = int(
             np.sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
         ) + int(

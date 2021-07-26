@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Manager
 
 
 def writer(pqueue, filename):
@@ -27,7 +27,8 @@ class Logger:
     def __init__(self, test_name):
         filename = "Output/{}/Logs/tensornas_{}.log".format(test_name, test_name)
 
-        self.queue = Queue()
+        m = Manager()
+        self.queue = m.Queue()
 
         reader = Process(
             target=writer,

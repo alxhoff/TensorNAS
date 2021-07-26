@@ -16,8 +16,8 @@ def _gen_block_architecture():
     return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
-def _evaluate_individual(individual, test_name, gen, ind_num):
-    global epochs, batch_size, optimizer, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu
+def _evaluate_individual(individual, test_name, gen, ind_num, logger):
+    global epochs, batch_size, optimizer, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu, q_aware
 
     training_size = len(images_train)
     step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
@@ -37,6 +37,7 @@ def _evaluate_individual(individual, test_name, gen, ind_num):
         model_name="{}/{}".format(gen, ind_num),
         use_GPU=True,
         q_aware=q_aware,
+        logger=logger,
     )
     param_count = ret[0]
     accuracy = ret[1]
@@ -76,7 +77,15 @@ if __name__ == "__main__":
     mutpb = GetMutationProbability(config)
     verbose = GetVerbose(config)
     multithreaded = GetMultithreaded(config)
+
     log = GetLog(config)
+    if log:
+        from tensornas.tools.logging import Logger
+
+        logger = Logger(test_name)
+    else:
+        logger = None
+
     globals()["use_gpu"] = GetGPU(config)
     globals()["save_individuals"] = GetSaveIndividual(config)
     generation_gap = GetGenerationGap(config)
@@ -118,7 +127,7 @@ if __name__ == "__main__":
         generation_save=generation_save_interval,
         comment=comments,
         multithreaded=multithreaded,
-        log=log,
+        logger=logger,
     )
 
     from tensornas.tools.visualization import plot_hof_pareto

@@ -13,9 +13,10 @@ class Individual:
 
     def __init__(self, block_architecture):
         self.block_architecture = next(block_architecture)
-        self.model = None
+        self.index = None
 
     def mutate(self, verbose=False):
+        self.index = None
         self.block_architecture.mutate(verbose=verbose)
         return self
 
@@ -35,6 +36,7 @@ class Individual:
         model_name=None,
         use_GPU=False,
         q_aware=False,
+        logger=None,
     ):
         (
             self.block_architecture.param_count,
@@ -54,6 +56,7 @@ class Individual:
             model_name=model_name,
             use_GPU=use_GPU,
             q_aware=q_aware,
+            logger=logger,
         )
         return self.block_architecture.param_count, self.block_architecture.accuracy
 
