@@ -1,7 +1,7 @@
 from math import ceil
 
 
-def _gen_block_architecture():
+def _gen_classification_block_architecture():
 
     global input_tensor_shape
     mnist_class_count = 10
@@ -14,6 +14,18 @@ def _gen_block_architecture():
     This function is responsible for creating and returning the block architecture that an individual should embed
     """
     return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
+
+
+def _gen_inception_net_block_architecture():
+
+    global input_tensor_shape
+    mnist_class_count = 10
+
+    from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
+        InceptionNetBlockArchitecture,
+    )
+
+    return InceptionNetBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
 def _evaluate_individual(individual, test_name, gen, ind_num, logger):
@@ -91,7 +103,7 @@ if __name__ == "__main__":
     generation_gap = GetGenerationGap(config)
     generation_save_interval = GetGenerationSaveInterval(config)
 
-    from demos.Datasets.MNIST import GetData
+    from tensornasdemos.Datasets.MNIST import GetData
 
     images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
     globals()["images_test"] = images_test
@@ -113,7 +125,7 @@ if __name__ == "__main__":
         mutpb=mutpb,
         pop_size=pop_size,
         gen_count=gen_count,
-        gen_individual=_gen_block_architecture,
+        gen_individual=_gen_inception_net_block_architecture,
         evaluate_individual=_evaluate_individual,
         crossover_individual=crossover_individuals_sp,
         mutate_individual=_mutate_individual,

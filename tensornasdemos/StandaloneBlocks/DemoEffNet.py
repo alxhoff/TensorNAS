@@ -1,5 +1,15 @@
 from tensornas.blocktemplates.blockarchitectures import EffNetBlockArchitecture
 
+from tensornasdemos.Datasets.MNIST import GetData
+
+images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
+mnist_class_count = 10
+
+from tensornas.tools.tensorflow.GPU import config_GPU
+
+# enable GPU
+config_GPU()
+
 print("##########################################")
 print("Testing classification block architecture")
 print("##########################################")
@@ -21,7 +31,6 @@ metrics = model1.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="../effnet.tflite",
 )
 
 print(metrics)

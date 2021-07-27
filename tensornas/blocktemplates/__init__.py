@@ -8,9 +8,7 @@ def find_block_architectures():
     from tensornas.blocktemplates import blockarchitectures as BT
 
     modules = []
-    BT_pkg = BT.__name__
     BT_dir = os.path.dirname(BT.__file__)
-    # modules.append(find_modules(BT_pkg, BT_dir))
     for mod in iter_modules([BT_dir]):
         if not mod.ispkg:
             mod_name = mod.name
@@ -18,7 +16,6 @@ def find_block_architectures():
 
     for pkg in find_packages(BT_dir):
         pkg_path = BT_dir + "/" + pkg.replace(".", "/")
-        # modules.append(find_modules(BT_pkg + "." + pkg, pkg_path))
         for mod in iter_modules([pkg_path]):
             if not mod.ispkg:
                 mod_name = mod.name
@@ -31,9 +28,7 @@ def find_blocks():
     from tensornas.blocktemplates import subblocks as BT
 
     modules = []
-    BT_pkg = BT.__name__
     BT_dir = os.path.dirname(BT.__file__)
-    # modules.append(find_modules(BT_pkg, BT_dir))
     for mod in iter_modules([BT_dir]):
         if not mod.ispkg:
             mod_name = mod.name
@@ -41,7 +36,6 @@ def find_blocks():
 
     for pkg in find_packages(BT_dir):
         pkg_path = BT_dir + "/" + pkg.replace(".", "/")
-        # modules.append(find_modules(BT_pkg + "." + pkg, pkg_path))
         for mod in iter_modules([pkg_path]):
             if not mod.ispkg:
                 mod_name = mod.name

@@ -1,10 +1,14 @@
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
-import tensorflow as tf
 
-### ENABLE GPU ###
-gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
-##################
+from tensornasdemos.Datasets.MNIST import GetData
+
+images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
+mnist_class_count = 10
+
+from tensornas.tools.tensorflow.GPU import config_GPU
+
+# enable GPU
+config_GPU()
 
 print("##########################################")
 print("Testing classification block architecture")
@@ -13,12 +17,6 @@ print("##########################################")
 model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
-
-from tensornas.tools.latexwriter import LatexWriter
-
-lw = LatexWriter()
-
-latex_arch = lw.create_arch(model1)
 
 model1.print()
 
@@ -33,7 +31,6 @@ metrics = model1.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="../conv2d.tflite",
 )
 
 print(metrics)

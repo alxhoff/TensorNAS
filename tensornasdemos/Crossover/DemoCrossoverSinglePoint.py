@@ -1,4 +1,4 @@
-from demos.Datasets.MNIST import input_tensor_shape, mnist_class_count
+from tensornasdemos.Datasets.MNIST import input_tensor_shape, mnist_class_count
 from tensornas.blocktemplates.blockarchitectures import ClassificationBlockArchitecture
 from tensornas.core.crossover import _select_random_node, crossover_single_point
 

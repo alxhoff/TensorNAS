@@ -1,20 +1,23 @@
-from tensornas.blocktemplates.blockarchitectures import ResNetBlockArchitecture
+from tensornas.blocktemplates.blockarchitectures import GhostNetBlockArchitecture
 from tensornas.core.util import list_available_blocks
 
-import tensorflow as tf
+from tensornasdemos.Datasets.MNIST import GetData
 
-### ENABLE GPU ###
-gpus = tf.config.experimental.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(gpus[0], True)
-##################
+images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
+mnist_class_count = 10
+
+from tensornas.tools.tensorflow.GPU import config_GPU
+
+# enable GPU
+config_GPU()
 
 print("##########################################")
-print("Testing Res Net block architecture")
+print("Testing Ghost Net block architecture")
 print("##########################################")
 
 list_available_blocks()
 
-model = ResNetBlockArchitecture.ResNetBlockArchitecture(
+model = GhostNetBlockArchitecture.GhostNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -31,7 +34,6 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="../resnet.tflite",
 )
 
 print(metrics)

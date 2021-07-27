@@ -1,4 +1,4 @@
-from demos.Datasets.MNIST import input_tensor_shape
+from tensornasdemos.Datasets.MNIST import input_tensor_shape
 
 from tensornas.layers import Conv2D, Reshape, Dropout, Flatten
 from tensornas.layers.Dense import HiddenDense, OutputDense

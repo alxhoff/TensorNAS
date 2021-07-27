@@ -10,8 +10,8 @@ class SubBlockTypes(Enum):
     Layers that can be used in the generation of a feature extraction block are enumerated here for random selection
     """
 
-    POINTWISE_CONV = auto()
-    DEPTHWISE_CONV = auto()
+    POINTWISE_CONV2D = auto()
+    DEPTHWISE_CONV2D = auto()
 
 
 class GhostBlock(Block):
@@ -28,11 +28,11 @@ class GhostBlock(Block):
         pwconv_block = LayerBlock(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.POINTWISECONV,
+            layer_type=SupportedLayers.POINTWISECONV2D,
         )
         dwconv_block = LayerBlock(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.DEPTHWISECONV,
+            layer_type=SupportedLayers.DEPTHWISECONV2D,
         )
         return [pwconv_block, dwconv_block]

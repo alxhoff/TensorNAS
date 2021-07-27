@@ -1,13 +1,23 @@
-from tensornas.blocktemplates.blockarchitectures import GhostNetBlockArchitecture
+from tensornas.blocktemplates.blockarchitectures import MobileNetBlockArchitecture
 from tensornas.core.util import list_available_blocks
 
+from tensornasdemos.Datasets.MNIST import GetData
+
+images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
+mnist_class_count = 10
+
+from tensornas.tools.tensorflow.GPU import config_GPU
+
+# enable GPU
+config_GPU()
+
 print("##########################################")
-print("Testing Ghost Net block architecture")
+print("Testing Mobile Net block architecture")
 print("##########################################")
 
 list_available_blocks()
 
-model = GhostNetBlockArchitecture.GhostNetBlockArchitecture(
+model = MobileNetBlockArchitecture.MobileNetBlockArchitecture(
     input_tensor_shape, mnist_class_count
 )
 
@@ -24,13 +34,13 @@ metrics = model.evaluate(
     optimizer="adam",
     loss="sparse_categorical_crossentropy",
     metrics=["accuracy"],
-    filename="../ghostnet.tflite",
 )
 
 print(metrics)
 
 model.mutate(verbose=True)
 
+print(model.get_ascii_tree())
 model.print()
 
 metrics = model.evaluate(

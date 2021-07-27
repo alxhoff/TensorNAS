@@ -88,7 +88,8 @@ class BlockArchitecture(Block):
 
                 save_model(model, test_name, model_name, logger)
         except Exception as e:
-            logger.log("Error running/saving model:{}".format(model_name))
+            if logger:
+                logger.log("Error running/saving model:{}".format(model_name))
 
             print("Error fitting model, {}".format(e))
             return np.inf, 0
