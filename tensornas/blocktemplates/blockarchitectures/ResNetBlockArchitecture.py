@@ -13,7 +13,7 @@ class ResNetArchitectureSubBlocks(Enum):
 
 
 class ResNetBlockArchitecture(BlockArchitecture):
-    MAX_SUB_BLOCKS = 5
+    MAX_SUB_BLOCKS = 1
     SUB_BLOCK_TYPES = ResNetArchitectureSubBlocks
 
     def __init__(self, input_shape, class_count):
