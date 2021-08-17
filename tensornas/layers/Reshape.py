@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-import tensorflow as tf
-
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import dimension_mag, mutate_dimension
 
@@ -24,6 +22,8 @@ class Layer(NetworkLayer):
         return self.args[self.get_args_enum().TARGET_SHAPE]
 
     def get_keras_layer(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.Reshape(
             self.args.get(self.get_args_enum().TARGET_SHAPE),
             input_shape=self.inputshape.get(),

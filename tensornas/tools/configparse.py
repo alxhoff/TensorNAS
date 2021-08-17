@@ -55,22 +55,27 @@ def _GetGeneral(config):
 
 def GetVerbose(config):
 
-    return bool(_GetGeneral(config)["Verbose"])
+    return _GetGeneral(config).getboolean("Verbose")
 
 
 def GetMultithreaded(config):
 
-    return bool(_GetGeneral(config)["Multithreaded"])
+    return _GetGeneral(config).getboolean("Multithreaded")
+
+
+def GetThreadCount(config):
+
+    return int(_GetGeneral(config)["ThreadCount"])
 
 
 def GetGPU(config):
 
-    return bool(_GetGeneral(config)["GPU"])
+    return _GetGeneral(config).getboolean("GPU")
 
 
 def GetLog(config):
 
-    return bool(_GetGeneral(config)["Log"])
+    return _GetGeneral(config).getboolean("Log")
 
 
 def _GetEvolution(config):
@@ -150,7 +155,7 @@ def _GetFilters(config):
 
 def _GetVariableGoal(config):
 
-    return bool(_GetGoals(config)["VariableGoal"])
+    return _GetGoals(config).getboolean("VariableGoal")
 
 
 def _GetNormalizationVectorStart(config):
@@ -279,6 +284,16 @@ def _GetTensorflow(config):
     return config["tensorflow"]
 
 
+def GetTrainingSampleSize(config):
+
+    return int(_GetTensorflow(config)["TrainingSampleSize"])
+
+
+def GetTestSampleSize(config):
+
+    return int(_GetTensorflow(config)["TestSampleSize"])
+
+
 def GetTFOptimizer(config):
 
     return _GetTensorflow(config)["Optimizer"]
@@ -304,4 +319,4 @@ def GetTFEpochs(config):
 
 
 def GetQuantizationAware(config):
-    return bool(_GetTensorflow(config)["QuantizationAware"])
+    return _GetTensorflow(config).getboolean("QuantizationAware")

@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-import tensorflow as tf
-
 from tensornas.core.layer import NetworkLayer
 
 
@@ -40,6 +38,8 @@ class Layer(NetworkLayer):
 
     def get_keras_layer(self, input_tensor):
         # TODO
+        import tensorflow as tf
+
         keras_layers = [
             layer.get_keras_layer()
             for layer in self.args.get(self.get_args_enum().LAYERS)

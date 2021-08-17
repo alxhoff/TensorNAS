@@ -1,7 +1,6 @@
-import tensorflow as tf
-
-
 def shortcut(input, residual):
+    import tensorflow as tf
+
     input_shape = tf.keras.backend.int_shape(input)
     residual_shape = tf.keras.backend.int_shape(residual)
     equal_channels = input_shape[3] == residual_shape[3]

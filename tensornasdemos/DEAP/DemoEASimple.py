@@ -1,6 +1,3 @@
-from math import ceil
-
-
 def _gen_classification_block_architecture():
 
     global input_tensor_shape
@@ -16,23 +13,86 @@ def _gen_classification_block_architecture():
     return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
-def _gen_inception_net_block_architecture():
-
-    global input_tensor_shape
-    mnist_class_count = 10
-
-    from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
-        InceptionNetBlockArchitecture,
-    )
-
-    return InceptionNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+# def _gen_eff_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import (
+#         EffNetBlockArchitecture,
+#     )
+#
+#     return EffNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_ghost_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.GhostNetBlockArchitecture import (
+#         GhostNetBlockArchitecture,
+#     )
+#
+#     return GhostNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_inception_net_block_architecture():
+#
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
+#         InceptionNetBlockArchitecture,
+#     )
+#
+#     return InceptionNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_mobile_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
+#         MobileNetBlockArchitecture,
+#     )
+#
+#     return MobileNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_res_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.ResNetBlockArchitecture import (
+#         ResNetBlockArchitecture,
+#     )
+#
+#     return ResNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_shuffle_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.ShuffleNetBlockArchitecture import (
+#         ShuffleNetBlockArchitecture,
+#     )
+#
+#     return ShuffleNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+#
+#
+# def _gen_squeeze_net_block_architecture():
+#     global input_tensor_shape
+#     mnist_class_count = 10
+#
+#     from tensornas.blocktemplates.blockarchitectures.SqueezeNetBlockArchitecture import (
+#         SqueezeNetBlockArchitecture,
+#     )
+#
+#     return SqueezeNetBlockArchitecture(input_tensor_shape, mnist_class_count)
 
 
 def _evaluate_individual(individual, test_name, gen, ind_num, logger):
     global epochs, batch_size, optimizer, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu, q_aware
-
-    training_size = len(images_train)
-    step_size = int(ceil((1.0 * training_size) / batch_size)) / 100
 
     ret = individual.evaluate(
         train_data=images_train,
@@ -41,13 +101,12 @@ def _evaluate_individual(individual, test_name, gen, ind_num, logger):
         test_labels=labels_test,
         epochs=epochs,
         batch_size=batch_size,
-        steps=step_size,
         optimizer=optimizer,
         loss=loss,
         metrics=metrics,
         test_name=test_name,
         model_name="{}/{}".format(gen, ind_num),
-        use_GPU=True,
+        use_GPU=use_gpu,
         q_aware=q_aware,
         logger=logger,
     )
@@ -76,6 +135,8 @@ if __name__ == "__main__":
 
     CopyConfig(config_filename, test_name)
 
+    training_sample_size = GetTrainingSampleSize(config)
+    test_sample_size = GetTestSampleSize(config)
     globals()["epochs"] = GetTFEpochs(config)
     globals()["batch_size"] = GetTFBatchSize(config)
     globals()["optimizer"] = GetTFOptimizer(config)
@@ -90,13 +151,8 @@ if __name__ == "__main__":
     verbose = GetVerbose(config)
     multithreaded = GetMultithreaded(config)
 
+    thread_count = GetThreadCount(config)
     log = GetLog(config)
-    if log:
-        from tensornas.tools.logging import Logger
-
-        logger = Logger(test_name)
-    else:
-        logger = None
 
     globals()["use_gpu"] = GetGPU(config)
     globals()["save_individuals"] = GetSaveIndividual(config)
@@ -106,6 +162,10 @@ if __name__ == "__main__":
     from tensornasdemos.Datasets.MNIST import GetData
 
     images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
+    images_train = images_train[:training_sample_size]
+    labels_train = labels_train[:training_sample_size]
+    images_test = images_test[:test_sample_size]
+    labels_test = labels_test[:test_sample_size]
     globals()["images_test"] = images_test
     globals()["images_train"] = images_train
     globals()["labels_test"] = labels_test
@@ -120,30 +180,54 @@ if __name__ == "__main__":
     from tensornas.algorithms.EASimple import TestEASimple
     from tensornas.core.crossover import crossover_individuals_sp
 
-    pop, logbook, test = TestEASimple(
-        cxpb=cxpb,
-        mutpb=mutpb,
-        pop_size=pop_size,
-        gen_count=gen_count,
-        gen_individual=_gen_inception_net_block_architecture,
-        evaluate_individual=_evaluate_individual,
-        crossover_individual=crossover_individuals_sp,
-        mutate_individual=_mutate_individual,
+    import re
+
+    gen_functions = [
+        func
+        for func in filter(callable, globals().values())
+        if re.search(r"^_gen", func.__name__)
+    ]
+
+    from importlib import import_module
+
+    creator = import_module("deap.creator")
+    toolbox = import_module("deap.base").Toolbox()
+
+    from tensornas.tools.DEAPtest import setup_DEAP, register_DEAP_individual_gen_func
+
+    setup_DEAP(
+        creator=creator,
+        toolbox=toolbox,
         objective_weights=weights,
-        test_name=test_name,
-        verbose=verbose,
-        filter_function=filter_function,
-        filter_function_args=filter_function_args,
-        save_individuals=save_individuals,
-        generation_gap=generation_gap,
-        generation_save=generation_save_interval,
-        comment=comments,
         multithreaded=multithreaded,
-        logger=logger,
+        thread_count=thread_count,
     )
 
-    from tensornas.tools.visualization import plot_hof_pareto
+    for gen_func in gen_functions:
+        register_DEAP_individual_gen_func(
+            creator=creator, toolbox=toolbox, ind_gen_func=gen_func
+        )
 
-    plot_hof_pareto(test.hof, test_name)
+        pop, logbook, test = TestEASimple(
+            cxpb=cxpb,
+            mutpb=mutpb,
+            pop_size=pop_size,
+            gen_count=gen_count,
+            gen_individual=gen_func,
+            evaluate_individual=_evaluate_individual,
+            crossover_individual=crossover_individuals_sp,
+            mutate_individual=_mutate_individual,
+            toolbox=toolbox,
+            test_name=test_name,
+            verbose=verbose,
+            filter_function=filter_function,
+            filter_function_args=filter_function_args,
+            save_individuals=save_individuals,
+            generation_gap=generation_gap,
+            generation_save=generation_save_interval,
+            comment=comments,
+            multithreaded=multithreaded,
+            log=log,
+        )
 
     print("Done")

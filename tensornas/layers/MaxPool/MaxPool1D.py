@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from tensornas.core.layerargs import *
 from tensornas.layers.MaxPool import (
     Layer,
@@ -46,6 +44,8 @@ class Layer(Layer):
         return (0, 0)
 
     def get_keras_layer(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.MaxPool1D(
             input_shape=self.inputshape.get(),
             pool_size=self.args.get(self.get_args_enum().POOL_SIZE),

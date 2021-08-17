@@ -1,5 +1,3 @@
-import numpy as np
-
 from tensornas.core.block import Block
 
 
@@ -25,7 +23,7 @@ class BlockArchitecture(Block):
         inp = tf.keras.Input(shape=self.input_shape)
         out = self.get_keras_layers(inp)
         model = tf.keras.Model(inp, out)
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+        model.compile(optimizer=optimizer, loss=loss, metrics=metrics, run_eagerly=True)
         return model
 
     def evaluate(
@@ -35,7 +33,6 @@ class BlockArchitecture(Block):
         test_data,
         test_labels,
         epochs,
-        steps,
         batch_size,
         optimizer,
         loss,
@@ -46,64 +43,84 @@ class BlockArchitecture(Block):
         q_aware=False,
         logger=None,
     ):
+        import numpy as np
+
         if use_GPU:
             from tensornas.tools.tensorflow import GPU as GPU
 
             GPU.config_GPU()
+        else:
+            import os
+
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
         try:
             model = self.get_keras_model(
-                optimizer=optimizer, loss=loss, metrics=metrics
+                optimizer=optimizer,
+                loss=loss,
+                metrics=metrics,
             )
-            if q_aware:
-                try:
-                    import tensorflow_model_optimization as tfmot
+        except Exception as e:
+            print("Error getting keras model: {}".format(e))
+            return np.inf, 0
 
-                    q_model = tfmot.quantization.keras.quantize_model(model)
-                    q_model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
-                    model = q_model
-                except Exception:
-                    pass
+        if q_aware:
+            try:
+                import tensorflow_model_optimization as tfmot
 
-            if batch_size == -1:
+                q_model = tfmot.quantization.keras.quantize_model(model)
+                q_model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+                model = q_model
+            except Exception as e:
+                print("Error getting QA model: {}".format(e))
+
+        try:
+            if not batch_size > 0:
                 model.fit(
                     x=train_data,
                     y=train_labels,
                     epochs=epochs,
-                    steps_per_epoch=steps,
                     verbose=1,
                 )
             else:
+                import tensorflow as tf
+
+                early_stopper = tf.keras.callbacks.EarlyStopping(
+                    monitor="val_accuracy", patience=1, mode="max"
+                )
                 model.fit(
                     x=train_data,
                     y=train_labels,
+                    validation_data=(test_data, test_labels),
                     epochs=epochs,
                     batch_size=batch_size,
-                    steps_per_epoch=steps,
                     verbose=1,
+                    callbacks=[early_stopper],
                 )
+        except Exception as e:
+            print("Error fitting model, {}".format(e))
+            return np.inf, 0
 
+        try:
             if test_name and model_name:
                 from tensornas.core.util import save_model
 
                 save_model(model, test_name, model_name, logger)
         except Exception as e:
             if logger:
-                logger.log("Error running/saving model:{}".format(model_name))
+                logger.log("Error running/saving model:{}, {}".format(model_name, e))
 
-            print("Error fitting model, {}".format(e))
-            return np.inf, 0
+        from tensorflow.keras.backend import count_params
 
-        import tensorflow as tf
-
-        params = int(
-            np.sum([tf.keras.backend.count_params(p) for p in model.trainable_weights])
-        ) + int(
-            np.sum(
-                [tf.keras.backend.count_params(p) for p in model.non_trainable_weights]
-            )
+        params = int(np.sum([count_params(p) for p in model.trainable_weights])) + int(
+            np.sum([count_params(p) for p in model.non_trainable_weights])
         )
         if params == 0:
             params = np.inf
-        accuracy = model.evaluate(test_data, test_labels)[1] * 100
+
+        try:
+            accuracy = model.evaluate(test_data, test_labels)[1] * 100
+        except Exception as e:
+            print("Error evaluating model: {}".format(e))
+
         return params, accuracy

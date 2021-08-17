@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-import tensorflow as tf
-
 import tensornas.core.layerargs as la
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.layerargs import *
@@ -35,6 +33,8 @@ class Layer(NetworkLayer):
         return self.inputshape.get()
 
     def get_keras_layer(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.Dropout(
             rate=self.args.get(self.get_args_enum().RATE),
             input_shape=self.inputshape.get(),

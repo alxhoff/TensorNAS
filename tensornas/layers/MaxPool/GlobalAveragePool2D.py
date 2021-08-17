@@ -1,4 +1,3 @@
-import tensorflow as tf
 from tensornas.layers.MaxPool import Layer
 
 
@@ -8,6 +7,8 @@ class Layer(Layer):
         return inp[-1]
 
     def get_keras_layer(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.GlobalAveragePooling2D(data_format="channels_last")(
             input_tensor
         )

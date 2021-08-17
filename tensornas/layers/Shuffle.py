@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-import tensorflow as tf
-
 import tensornas.core.layerargs as la
 from tensornas.core.layer import NetworkLayer
 from tensornas.core.util import dimension_mag, mutate_int

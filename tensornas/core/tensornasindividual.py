@@ -1,4 +1,4 @@
-class Individual:
+class TensorNASIndividual:
     """
     This class is a wrapper object that allows for DEAP individuals to contain the abstract classes defined by tensornas
     as DEAP does not allow the use of abstract classes for individuals. As such this class stores a block architecture,
@@ -27,7 +27,6 @@ class Individual:
         test_data,
         test_labels,
         epochs,
-        steps,
         batch_size,
         optimizer,
         loss,
@@ -47,7 +46,6 @@ class Individual:
             test_data=test_data,
             test_labels=test_labels,
             epochs=epochs,
-            steps=steps,
             batch_size=batch_size,
             optimizer=optimizer,
             loss=loss,

@@ -1,3 +1,6 @@
+import time
+
+
 def TestEASimple(
     cxpb,
     mutpb,
@@ -7,7 +10,7 @@ def TestEASimple(
     evaluate_individual,
     crossover_individual,
     mutate_individual,
-    objective_weights,
+    toolbox,
     test_name,
     verbose=False,
     filter_function=None,
@@ -17,29 +20,30 @@ def TestEASimple(
     generation_save=1,
     comment=None,
     multithreaded=True,
-    logger=None,
+    log=None,
 ):
+    test_name += "/" + gen_individual.__name__
+    if log:
+        from tensornas.tools.logging import Logger
+
+        logger = Logger(test_name)
+        logger.log("Starting test {}".format(test_name))
+
     from tensornas.tools.DEAPtest import DEAPTest
 
-    test = DEAPTest(
-        pop_size=pop_size,
-        gen_count=gen_count,
-        f_gen_individual=gen_individual,
-        objective_weights=objective_weights,
-        multithreaded=multithreaded,
-    )
+    test = DEAPTest(pop_size=pop_size, gen_count=gen_count, toolbox=toolbox)
 
-    test.set_evaluate(func=evaluate_individual)
-    test.set_mate(func=crossover_individual)
-    test.set_mutate(func=mutate_individual)
+    test.set_evaluate(toolbox=toolbox, func=evaluate_individual)
+    test.set_mate(toolbox=toolbox, func=crossover_individual)
+    test.set_mutate(toolbox=toolbox, func=mutate_individual)
 
     from deap import tools
 
-    test.set_select(func=tools.selTournamentDCD)
+    test.set_select(toolbox=toolbox, func=tools.selTournamentDCD)
 
     pop, logbook = eaSimple(
         population=test.pop,
-        toolbox=test.toolbox,
+        toolbox=toolbox,
         cxpb=cxpb,
         mutpb=mutpb,
         ngen=gen_count,
@@ -53,6 +57,7 @@ def TestEASimple(
         filter_function_args=filter_function_args,
         logger=logger,
         generation_save_interval=generation_save,
+        multithreaded=multithreaded,
     )
 
     test.ir.save(
@@ -61,6 +66,13 @@ def TestEASimple(
         title=filter_function.__name__ if filter_function else "no filter func",
         comment=comment,
     )
+
+    from tensornas.tools.visualization import plot_hof_pareto
+
+    plot_hof_pareto(test.hof, test_name)
+
+    if logger:
+        logger.log("Done")
 
     return pop, logbook, test
 
@@ -81,6 +93,7 @@ def eaSimple(
     filter_function_args=None,
     logger=None,
     generation_save_interval=1,
+    multithreaded=False,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -139,18 +152,37 @@ def eaSimple(
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
     if logger:
+        from tensornas.tools.logging import Logger
+
+        timing_log = Logger(test_name + "_timing")
+        start_time = time.time()
+        cur_gen_start_time = start_time
+        timing_log.log("Start time: {}".format(start_time))
         logger.log("Gen #0, population: {}".format(len(population)))
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
-    if save_individuals and generation_save_interval == 1:
-        fitnesses = toolbox.map(
-            toolbox.evaluate,
-            [(ii, test_name, 0, i, logger) for i, ii in enumerate(invalid_ind)],
-        )
+    if multithreaded:
+        from multiprocessing import set_start_method
+
+        set_start_method("spawn", force=True)
+
+        if save_individuals and generation_save_interval == 1:
+            fitnesses = toolbox.map(
+                toolbox.evaluate,
+                [(ind, test_name, 0, i, logger) for i, ind in enumerate(invalid_ind)],
+            )
+        else:
+            fitnesses = toolbox.map(
+                toolbox.evaluate,
+                [(ind, None, None, None, logger) for ind in invalid_ind],
+            )
     else:
-        fitnesses = toolbox.map(
-            toolbox.evaluate, [(ii, None, None, None, logger) for ii in invalid_ind]
-        )
+        fitnesses = []
+        for i, ind in enumerate(invalid_ind):
+            if save_individuals and generation_save_interval == 1:
+                fitnesses.append(toolbox.evaluate(ind, test_name, 0, i, logger))
+            else:
+                fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
     for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
         ind.block_architecture.param_count = fit[-2]
@@ -201,6 +233,11 @@ def eaSimple(
     if verbose:
         print(logbook.stream)
 
+    if logger:
+        cur_time = time.time()
+        timing_log.log("Gen #0 finished in: {}".format(cur_gen_start_time - cur_time))
+        cur_gen_start_time = cur_time
+
     # Begin the generational process
     for gen in range(1, ngen + 1):
 
@@ -237,18 +274,36 @@ def eaSimple(
         # Evaluate the individuals with an invalid fitness
         if logger:
             logger.log("{} new individuals".format(len(invalid_ind)))
-        if save_individuals and ((gen + 1) % generation_save_interval) == 0:
-            fitnesses = toolbox.map(
-                toolbox.evaluate,
-                [
-                    (ind, test_name, gen, offspring.index(ind), logger)
-                    for ind in invalid_ind
-                ],
-            )
+
+        if multithreaded:
+            from multiprocessing import set_start_method
+
+            set_start_method("spawn", force=True)
+
+            if save_individuals and ((gen + 1) % generation_save_interval) == 0:
+                fitnesses = toolbox.map(
+                    toolbox.evaluate,
+                    [
+                        (ind, test_name, gen, offspring.index(ind), logger)
+                        for ind in invalid_ind
+                    ],
+                )
+            else:
+                fitnesses = toolbox.map(
+                    toolbox.evaluate,
+                    [(ind, None, None, None, logger) for ind in invalid_ind],
+                )
         else:
-            fitnesses = toolbox.map(
-                toolbox.evaluate, [(ii, None, None, None, logger) for ii in invalid_ind]
-            )
+            fitnesses = []
+            for ind in invalid_ind:
+                if save_individuals and generation_save_interval == 1:
+                    fitnesses.append(
+                        toolbox.evaluate(
+                            ind, test_name, 0, offspring.index(ind), logger
+                        )
+                    )
+                else:
+                    fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             ind.block_architecture.param_count = fit[-2]
@@ -305,7 +360,16 @@ def eaSimple(
         if verbose:
             print(logbook.stream)
 
+        if logger:
+            cur_time = time.time()
+            timing_log.log(
+                "Gen #{} finished in: {}".format(gen, cur_gen_start_time - cur_time)
+            )
+            cur_gen_start_time = cur_time
+
     if logger:
+        timing_log.log("Total time: {}".format(time.time() - start_time))
+        timing_log.log("STOP")
         logger.log("STOP")
 
     return population, logbook

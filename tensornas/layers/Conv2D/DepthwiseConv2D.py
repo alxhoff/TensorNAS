@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from tensornas.layers.Conv2D import Layer
 
 """The number of depthwise convolution output channels for each input channel. The total number of depthwise convolution 
@@ -17,6 +15,8 @@ Given a 4D input tensor ('NHWC' or 'NCHW' data formats) and a filter
 
 class Layer(Layer):
     def get_keras_layer(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.DepthwiseConv2D(
             kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),
             strides=self.args.get(self.get_args_enum().STRIDES),
