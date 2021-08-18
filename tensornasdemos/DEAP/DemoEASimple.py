@@ -1,94 +1,27 @@
-def _gen_classification_block_architecture():
+def _get_block_architecture():
+    global input_tensor_shape, ba_name, class_count
 
-    global input_tensor_shape
-    mnist_class_count = 10
+    from importlib import import_module
 
-    from tensornas.blocktemplates.blockarchitectures.ClassificationBlockArchitecture import (
-        ClassificationBlockArchitecture,
+    ba_module = import_module(
+        "tensornas.blocktemplates.blockarchitectures.{}".format(ba_name)
     )
 
-    """
-    This function is responsible for creating and returning the block architecture that an individual should embed
-    """
-    return ClassificationBlockArchitecture(input_tensor_shape, mnist_class_count)
+    import inspect
 
+    classes = inspect.getmembers(
+        ba_module, lambda member: inspect.isclass(member) and member.__name__ == ba_name
+    )
 
-# def _gen_eff_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.EffNetBlockArchitecture import (
-#         EffNetBlockArchitecture,
-#     )
-#
-#     return EffNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_ghost_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.GhostNetBlockArchitecture import (
-#         GhostNetBlockArchitecture,
-#     )
-#
-#     return GhostNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_inception_net_block_architecture():
-#
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.InceptionNetArchitecture import (
-#         InceptionNetBlockArchitecture,
-#     )
-#
-#     return InceptionNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_mobile_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.MobileNetBlockArchitecture import (
-#         MobileNetBlockArchitecture,
-#     )
-#
-#     return MobileNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_res_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.ResNetBlockArchitecture import (
-#         ResNetBlockArchitecture,
-#     )
-#
-#     return ResNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_shuffle_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.ShuffleNetBlockArchitecture import (
-#         ShuffleNetBlockArchitecture,
-#     )
-#
-#     return ShuffleNetBlockArchitecture(input_tensor_shape, mnist_class_count)
-#
-#
-# def _gen_squeeze_net_block_architecture():
-#     global input_tensor_shape
-#     mnist_class_count = 10
-#
-#     from tensornas.blocktemplates.blockarchitectures.SqueezeNetBlockArchitecture import (
-#         SqueezeNetBlockArchitecture,
-#     )
-#
-#     return SqueezeNetBlockArchitecture(input_tensor_shape, mnist_class_count)
+    assert len(classes) == 1
+
+    classes = classes[0]
+
+    assert classes[0] == ba_name
+
+    classes = classes[1]
+
+    return classes(input_tensor_shape, class_count)
 
 
 def _evaluate_individual(individual, test_name, gen, ind_num, logger):
@@ -135,6 +68,9 @@ if __name__ == "__main__":
 
     CopyConfig(config_filename, test_name)
 
+    globals()["ba_name"] = GetBlockArchitecture(config)
+    globals()["class_count"] = GetClassCount(config)
+
     training_sample_size = GetTrainingSampleSize(config)
     test_sample_size = GetTestSampleSize(config)
     globals()["epochs"] = GetTFEpochs(config)
@@ -180,13 +116,13 @@ if __name__ == "__main__":
     from tensornas.algorithms.EASimple import TestEASimple
     from tensornas.core.crossover import crossover_individuals_sp
 
-    import re
+    # import re
 
-    gen_functions = [
-        func
-        for func in filter(callable, globals().values())
-        if re.search(r"^_gen", func.__name__)
-    ]
+    # gen_functions = [
+    #     func
+    #     for func in filter(callable, globals().values())
+    #     if re.search(r"^_gen", func.__name__)
+    # ]
 
     from importlib import import_module
 
@@ -203,31 +139,31 @@ if __name__ == "__main__":
         thread_count=thread_count,
     )
 
-    for gen_func in gen_functions:
-        register_DEAP_individual_gen_func(
-            creator=creator, toolbox=toolbox, ind_gen_func=gen_func
-        )
+    # for gen_func in gen_functions:
+    register_DEAP_individual_gen_func(
+        creator=creator, toolbox=toolbox, ind_gen_func=_get_block_architecture
+    )
 
-        pop, logbook, test = TestEASimple(
-            cxpb=cxpb,
-            mutpb=mutpb,
-            pop_size=pop_size,
-            gen_count=gen_count,
-            gen_individual=gen_func,
-            evaluate_individual=_evaluate_individual,
-            crossover_individual=crossover_individuals_sp,
-            mutate_individual=_mutate_individual,
-            toolbox=toolbox,
-            test_name=test_name,
-            verbose=verbose,
-            filter_function=filter_function,
-            filter_function_args=filter_function_args,
-            save_individuals=save_individuals,
-            generation_gap=generation_gap,
-            generation_save=generation_save_interval,
-            comment=comments,
-            multithreaded=multithreaded,
-            log=log,
-        )
+    pop, logbook, test = TestEASimple(
+        cxpb=cxpb,
+        mutpb=mutpb,
+        pop_size=pop_size,
+        gen_count=gen_count,
+        gen_individual=_get_block_architecture,
+        evaluate_individual=_evaluate_individual,
+        crossover_individual=crossover_individuals_sp,
+        mutate_individual=_mutate_individual,
+        toolbox=toolbox,
+        test_name=test_name,
+        verbose=verbose,
+        filter_function=filter_function,
+        filter_function_args=filter_function_args,
+        save_individuals=save_individuals,
+        generation_gap=generation_gap,
+        generation_save=generation_save_interval,
+        comment=comments,
+        multithreaded=multithreaded,
+        log=log,
+    )
 
     print("Done")

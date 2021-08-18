@@ -53,6 +53,16 @@ def _GetGeneral(config):
     return config["general"]
 
 
+def GetBlockArchitecture(config):
+
+    return _GetGeneral(config)["BlockArchitecture"]
+
+
+def GetClassCount(config):
+
+    return int(_GetGeneral(config)["ClassCount"])
+
+
 def GetVerbose(config):
 
     return _GetGeneral(config).getboolean("Verbose")
