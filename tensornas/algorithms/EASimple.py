@@ -67,10 +67,32 @@ def TestEASimple(
         comment=comment,
     )
 
-    test.ir.pareto(test_name=test_name)
+    pareto_inds = test.ir.pareto(test_name=test_name)
+
+    pareto_models = []
+    for ind in pareto_inds:
+        models = [
+            i
+            for i in pop
+            if (
+                (i.block_architecture.param_count == ind[0])
+                and (i.block_architecture.accuracy == ind[1])
+            )
+        ]
+        if len(models):
+            pareto_models.append(models[0])
+
+    from tensornas.core.util import copy_pareto_model
+
+    for i, pmodel in enumerate(pareto_models):
+        copy_pareto_model(test_name, gen_count, pmodel.index, i)
+        if logger:
+            logger.log("Pareto Ind #{}".format(i))
+            logger.log(str(pmodel))
 
     if logger:
         logger.log("Done")
+        logger.log("STOP")
 
     return pop, logbook, test
 
@@ -368,6 +390,5 @@ def eaSimple(
     if logger:
         timing_log.log("Total time: {}".format(time.time() - start_time))
         timing_log.log("STOP")
-        logger.log("STOP")
 
     return population, logbook

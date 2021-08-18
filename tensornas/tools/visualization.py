@@ -1,6 +1,3 @@
-import matplotlib.figure
-
-
 class IndividualRecord:
     def __init__(self):
 
@@ -58,13 +55,13 @@ class IndividualRecord:
             if ind[1] > best_models[bm_index][1]:
                 best_models[bm_index][1] = ind[1]
 
-        skyline = [best_models[0]]
+        pareto_inds = [best_models[0]]
 
         for ind in best_models[1:]:
 
             is_dominated = False
 
-            for s_ind in skyline:
+            for s_ind in pareto_inds:
 
                 if a_dominates_b(s_ind, ind, [0], [1]):
 
@@ -72,17 +69,18 @@ class IndividualRecord:
                     break
 
                 elif a_dominates_b(ind, s_ind, [0], [1]):
-                    skyline.remove(s_ind)
+                    pareto_inds.remove(s_ind)
 
             if is_dominated:
                 continue
             else:
-                skyline.append(ind)
+                pareto_inds.append(ind)
 
-        x = [ind[0] for ind in skyline]
-        y = [ind[1] for ind in skyline]
+        x = [ind[0] for ind in pareto_inds]
+        y = [ind[1] for ind in pareto_inds]
 
         import matplotlib.backends.backend_agg as agg
+        import matplotlib.figure
 
         fig = matplotlib.figure.Figure(figsize=(45, 15))
         agg.FigureCanvasAgg(fig)
@@ -119,6 +117,8 @@ class IndividualRecord:
         path = "Output/{}/Figures".format(test_name)
         Path(path).mkdir(parents=True, exist_ok=True)
         fig.savefig("Output/{}/Figures/pareto".format(test_name))
+
+        return pareto_inds
 
 
 def a_dominates_b(a, b, to_min, to_max):
@@ -176,4 +176,4 @@ def plot_hof_pareto(hof, test_name):
 
     path = "Output/{}/Figures".format(test_name)
     Path(path).mkdir(parents=True, exist_ok=True)
-    fig.savefig("Output/{}/Figures/pareto".format(test_name))
+    fig.savefig("Output/{}/Figures/hof_pareto".format(test_name))

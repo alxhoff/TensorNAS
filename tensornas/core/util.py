@@ -232,13 +232,29 @@ def save_model(model, test_name, model_name, logger):
 
 def copy_output_model(test_name, gen, index_from, index_to):
 
-    from_path = "Output/{}/Models/{}/{}".format(test_name, gen - 1, index_from)
-    to_path = "Output/{}/Models/{}/{}".format(test_name, gen, index_to)
+    from_subdir = "Models/{}/{}".format(gen - 1, index_from)
+    to_subdir = "Models/{}/{}".format(gen, index_to)
+
+    copy_model(test_name, from_subdir, to_subdir)
+
+
+def copy_pareto_model(test_name, gen, index_from, index_to):
+
+    from_subdir = "Models/{}/{}".format(gen, index_from)
+    to_subdir = "Models/pareto/{}".format(index_to)
+
+    copy_model(test_name, from_subdir, to_subdir)
+
+
+def copy_model(test_name, from_subdir, to_subdir):
+
+    from_path = "Output/{}/{}".format(test_name, from_subdir)
+    to_path = "Output/{}/{}".format(test_name, to_subdir)
+
     import os, distutils.dir_util
     from pathlib import Path
 
     if os.path.isdir(from_path):
         if not os.path.isdir(to_path):
             Path(to_path).mkdir(parents=True, exist_ok=True)
-        # shutil.copytree(from_path, to_path)
         distutils.dir_util.copy_tree(from_path, to_path)
