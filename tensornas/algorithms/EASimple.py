@@ -67,9 +67,7 @@ def TestEASimple(
         comment=comment,
     )
 
-    from tensornas.tools.visualization import plot_hof_pareto
-
-    plot_hof_pareto(test.hof, test_name)
+    test.ir.pareto(test_name=test_name)
 
     if logger:
         logger.log("Done")

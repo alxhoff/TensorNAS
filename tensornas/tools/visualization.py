@@ -1,3 +1,6 @@
+import matplotlib.figure
+
+
 class IndividualRecord:
     def __init__(self):
 
@@ -41,6 +44,100 @@ class IndividualRecord:
         path = "Output/{}/Figures".format(test_name)
         Path(path).mkdir(parents=True, exist_ok=True)
         fig.savefig("Output/{}/Figures/{}".format(test_name, title))
+
+    def pareto(self, test_name):
+        individuals = [list(ind) for ind in self.gens[-1]]
+        best_models = [
+            [param_count, 0]
+            for param_count in list(set([ind[0] for ind in individuals]))
+        ]
+        best_models.sort(key=lambda x: x[0])
+
+        for ind in individuals:
+            bm_index = [pcount for (pcount, acc) in best_models].index(ind[0])
+            if ind[1] > best_models[bm_index][1]:
+                best_models[bm_index][1] = ind[1]
+
+        skyline = [best_models[0]]
+
+        for ind in best_models[1:]:
+
+            is_dominated = False
+
+            for s_ind in skyline:
+
+                if a_dominates_b(s_ind, ind, [0], [1]):
+
+                    is_dominated = True
+                    break
+
+                elif a_dominates_b(ind, s_ind, [0], [1]):
+                    skyline.remove(s_ind)
+
+            if is_dominated:
+                continue
+            else:
+                skyline.append(ind)
+
+        x = [ind[0] for ind in skyline]
+        y = [ind[1] for ind in skyline]
+
+        import matplotlib.backends.backend_agg as agg
+
+        fig = matplotlib.figure.Figure(figsize=(45, 15))
+        agg.FigureCanvasAgg(fig)
+
+        ax = fig.add_subplot(1, 3, 1)
+        ax.set_xscale("log")
+        ax.title.set_text("Population")
+        ax.set_ylim(bottom=0, top=100)
+        ax.scatter(
+            [ind[0] for ind in individuals],
+            [ind[1] for ind in individuals],
+            facecolor=(0.7, 0.7, 0.7),
+            zorder=-1,
+        )
+        ax = fig.add_subplot(1, 3, 2)
+        ax.set_xscale("log")
+        ax.title.set_text("Best for Each Param Count")
+        ax.set_ylim(bottom=0, top=100)
+        ax.scatter(
+            [ind[0] for ind in best_models],
+            [ind[1] for ind in best_models],
+            facecolor=(0.7, 0.7, 0.7),
+            zorder=-1,
+        )
+        ax = fig.add_subplot(1, 3, 3)
+        ax.plot(x, y)
+        ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
+        ax.set_xscale("log")
+        ax.title.set_text("Pareto Front")
+        ax.set_ylim(bottom=0, top=100)
+
+        from pathlib import Path
+
+        path = "Output/{}/Figures".format(test_name)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        fig.savefig("Output/{}/Figures/pareto".format(test_name))
+
+
+def a_dominates_b(a, b, to_min, to_max):
+
+    n_better = 0
+
+    for f in to_min:
+        if a[f] > b[f]:
+            return False
+        n_better += a[f] < b[f]
+
+    for f in to_max:
+        if a[f] < b[f]:
+            return False
+        n_better += a[f] > b[f]
+
+    if n_better > 0:
+        return True
+    return False
 
 
 def plot_hof_pareto(hof, test_name):
