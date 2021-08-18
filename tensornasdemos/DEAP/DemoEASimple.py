@@ -1,6 +1,11 @@
-def _get_block_architecture():
-    global input_tensor_shape, ba_name, class_count
+def _gen_ba():
 
+    global ba_class, input_tensor_shape, class_count
+
+    return ba_class(input_tensor_shape, class_count)
+
+
+def _get_block_architecture_class(ba_name):
     from importlib import import_module
 
     ba_module = import_module(
@@ -19,9 +24,7 @@ def _get_block_architecture():
 
     assert classes[0] == ba_name
 
-    classes = classes[1]
-
-    return classes(input_tensor_shape, class_count)
+    return classes[1]
 
 
 def _evaluate_individual(individual, test_name, gen, ind_num, logger):
@@ -68,8 +71,9 @@ if __name__ == "__main__":
 
     CopyConfig(config_filename, test_name)
 
-    globals()["ba_name"] = GetBlockArchitecture(config)
+    ba_name = GetBlockArchitecture(config)
     globals()["class_count"] = GetClassCount(config)
+    globals()["ba_class"] = _get_block_architecture_class(ba_name)
 
     training_sample_size = GetTrainingSampleSize(config)
     test_sample_size = GetTestSampleSize(config)
@@ -141,7 +145,7 @@ if __name__ == "__main__":
 
     # for gen_func in gen_functions:
     register_DEAP_individual_gen_func(
-        creator=creator, toolbox=toolbox, ind_gen_func=_get_block_architecture
+        creator=creator, toolbox=toolbox, ind_gen_func=_gen_ba
     )
 
     pop, logbook, test = TestEASimple(
@@ -149,7 +153,7 @@ if __name__ == "__main__":
         mutpb=mutpb,
         pop_size=pop_size,
         gen_count=gen_count,
-        gen_individual=_get_block_architecture,
+        gen_individual=_gen_ba,
         evaluate_individual=_evaluate_individual,
         crossover_individual=crossover_individuals_sp,
         mutate_individual=_mutate_individual,
