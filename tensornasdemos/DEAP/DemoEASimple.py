@@ -64,16 +64,17 @@ if __name__ == "__main__":
 
     from time import gmtime, strftime
 
+    ba_name = GetBlockArchitecture(config)
+    globals()["class_count"] = GetClassCount(config)
+    globals()["ba_class"] = _get_block_architecture_class(ba_name)
+
     test_name_prefix = GetOutputPrefix(config)
     test_name = strftime("%d_%m_%Y-%H_%M", gmtime())
     if test_name_prefix:
         test_name = test_name_prefix + "_" + test_name
+    test_name += "_" + ba_name
 
     CopyConfig(config_filename, test_name)
-
-    ba_name = GetBlockArchitecture(config)
-    globals()["class_count"] = GetClassCount(config)
-    globals()["ba_class"] = _get_block_architecture_class(ba_name)
 
     training_sample_size = GetTrainingSampleSize(config)
     test_sample_size = GetTestSampleSize(config)
@@ -119,14 +120,6 @@ if __name__ == "__main__":
 
     from tensornas.algorithms.EASimple import TestEASimple
     from tensornas.core.crossover import crossover_individuals_sp
-
-    # import re
-
-    # gen_functions = [
-    #     func
-    #     for func in filter(callable, globals().values())
-    #     if re.search(r"^_gen", func.__name__)
-    # ]
 
     from importlib import import_module
 

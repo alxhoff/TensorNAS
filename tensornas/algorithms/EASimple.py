@@ -22,7 +22,6 @@ def TestEASimple(
     multithreaded=True,
     log=None,
 ):
-    test_name += "/" + gen_individual.__name__
     if log:
         from tensornas.tools.logging import Logger
 
@@ -88,6 +87,12 @@ def TestEASimple(
         copy_pareto_model(test_name, gen_count, pmodel.index, i)
         if logger:
             logger.log("Pareto Ind #{}".format(i))
+            logger.log(
+                "Acc: {}, Param Count: {}".format(
+                    pmodel.block_architecture.accuracy,
+                    pmodel.block_architecture.param_count,
+                )
+            )
             logger.log(str(pmodel))
 
     if logger:
@@ -174,7 +179,7 @@ def eaSimple(
     if logger:
         from tensornas.tools.logging import Logger
 
-        timing_log = Logger(test_name + "_timing")
+        timing_log = Logger(test_name, subdir="Timing")
         start_time = time.time()
         cur_gen_start_time = start_time
         timing_log.log("Start time: {}".format(start_time))

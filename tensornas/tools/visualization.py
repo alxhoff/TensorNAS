@@ -19,7 +19,7 @@ class IndividualRecord:
         plot_cols = math.ceil(len(self.gens) / gen_interval / 2)
         fig, axes = plt.subplots(plot_cols, 2, sharey=True)
         fig.tight_layout(h_pad=2)
-        fig.set_size_inches(20, 10 * plot_cols)
+        fig.set_size_inches(20, 8 * plot_cols)
         if title:
             if comment:
                 title = title + "_{}".format(comment)

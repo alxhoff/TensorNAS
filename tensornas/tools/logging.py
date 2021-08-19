@@ -24,8 +24,14 @@ def writer(pqueue, filename):
 
 
 class Logger:
-    def __init__(self, test_name):
-        filename = "Output/{}/Logs/tensornas_{}.log".format(test_name, test_name)
+    def __init__(self, test_name, subdir=""):
+        if subdir != "":
+            f_subdir = "/" + subdir
+        else:
+            f_subdir = subdir
+        filename = "Output/{}/{}Logs/tensornas_{}.log".format(
+            test_name, f_subdir, test_name + subdir
+        )
 
         m = Manager()
         self.queue = m.Queue()
