@@ -6,6 +6,41 @@ from abc import ABC, abstractmethod
 from tensornas.core.util import mutate_enum_i
 
 
+def get_block_from_JSON(json_dict, parent_block=None):
+    class_name = json_dict["class_name"]
+
+    import tensornas, os, glob
+
+    mod_path = glob.glob(
+        "{}/**/{}.py".format(os.path.dirname(tensornas.__file__), class_name),
+        recursive=True,
+    )[0]
+
+    import importlib.util as iu
+
+    spec = iu.spec_from_file_location("{}".format(class_name), mod_path)
+    class_mod = iu.module_from_spec(spec)
+    spec.loader.exec_module(class_mod)
+    b_class = getattr(class_mod, class_name)
+
+    import inspect
+
+    class_args = inspect.getfullargspec(b_class.__init__).args
+    try:
+        class_args = [
+            json_dict[key] if key is not "parent_block" else parent_block
+            for key in class_args[1:]
+        ]
+    except Exception as e:
+        print(e)
+
+    blk = b_class(*class_args)
+
+    blk._import_subblocks_from_json(json_dict)
+
+    return blk
+
+
 class Block(ABC):
     """
     An abstract class that all model blocks are derived from. Thus all model blocks, regardless of their depth within
@@ -393,6 +428,65 @@ class Block(ABC):
 
     def get_sb_count(self):
         return len(self.input_blocks + self.middle_blocks + self.output_blocks)
+
+    def _import_subblocks_from_json(self, json_dict):
+
+        for block in json_dict["input_blocks"]:
+            self.input_blocks.append(get_block_from_JSON(block, self))
+
+        for block in json_dict["middle_blocks"]:
+            self.input_blocks.append(get_block_from_JSON(block, self))
+
+        for block in json_dict["output_blocks"]:
+            self.input_blocks.append(get_block_from_JSON(block, self))
+
+    def get_JSON_dict(self):
+
+        json_dict = {
+            "class_name": self.__class__.__name__,
+            "input_shape": self.input_shape,
+            "layer_type": self.layer_type.name
+            if self.layer_type is not None
+            else "None",
+            "mutation_funcs": self.mutation_funcs,
+        }
+
+        ib_json = []
+        for block in self.input_blocks:
+            ib_json.append(block.toJSON())
+
+        mb_json = []
+        for block in self.middle_blocks:
+            mb_json.append(block.toJSON())
+
+        ob_json = []
+        for block in self.output_blocks:
+            ob_json.append(block.toJSON())
+
+        json_dict["input_blocks"] = ib_json
+        json_dict["middle_blocks"] = mb_json
+        json_dict["output_blocks"] = ob_json
+
+        return json_dict
+
+    def subclass_get_JSON(self, json_dict):
+
+        for key in self.__dict__.keys():
+            if key not in json_dict.keys():
+                if (
+                    key != "parent_block"
+                ):  # We want to ignore these memory references as BA will be reconstructed
+                    json_dict[key] = self.__dict__[key]
+
+        return json_dict
+
+    def toJSON(self):
+
+        json_dict = self.get_JSON_dict()
+
+        json_dict = self.subclass_get_JSON(json_dict)
+
+        return json_dict
 
     def __init__(self, input_shape, parent_block, layer_type):
         """

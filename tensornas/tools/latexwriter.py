@@ -26,7 +26,7 @@ class LatexWriter:
         print("tikzeng imported")
 
     def _recurse_blocks(self, blocks):
-        from tensornas.core.layerblock import LayerBlock
+        from tensornas.core.LayerBlock import LayerBlock
 
         ret = []
 

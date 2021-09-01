@@ -7,7 +7,7 @@ from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
 from tensornas.core.layerargs import ArgActivations, ArgPadding
 from tensornas.core.modelutil import shortcut
 from tensornas.core.block import Block
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.layers import SupportedLayers
 from tensornas.layers.Conv2D import Args as conv_args
 

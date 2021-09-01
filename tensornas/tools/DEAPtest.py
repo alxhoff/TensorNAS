@@ -4,7 +4,7 @@ import multiprocessing
 from tensornas.tools.visualization import IndividualRecord
 import numpy as np
 
-from tensornas.core.tensornasindividual import TensorNASIndividual
+from tensornas.core.individual import TensorNASIndividual
 
 
 def setup_DEAP(creator, toolbox, objective_weights, multithreaded, thread_count=0):
@@ -39,7 +39,7 @@ def register_DEAP_individual_gen_func(creator, toolbox, ind_gen_func):
 
 
 class DEAPTest:
-    def __init__(self, pop_size, gen_count, toolbox):
+    def __init__(self, pop_size, gen_count, toolbox, existing_generation=None):
 
         self.pop_size = pop_size
         self.gen_count = gen_count
@@ -56,6 +56,15 @@ class DEAPTest:
         )
 
         self.pop = toolbox.population(n=self.pop_size)
+
+        if existing_generation:
+            from tensornas.tools.baimporterexporter import ImportGeneration
+
+            exist_pop = ImportGeneration(existing_generation)
+
+            for i, ind in enumerate(exist_pop[: len(self.pop)]):
+                self.pop[i].block_architecutre = ind
+
         self.history.update(self.pop)
         self.hof = tools.ParetoFront(self._compare_individual)
         self.stats = tools.Statistics(lambda ind: ind.fitness.values)

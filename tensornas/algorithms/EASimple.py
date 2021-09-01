@@ -6,7 +6,6 @@ def TestEASimple(
     mutpb,
     pop_size,
     gen_count,
-    gen_individual,
     evaluate_individual,
     crossover_individual,
     mutate_individual,
@@ -21,6 +20,7 @@ def TestEASimple(
     comment=None,
     multithreaded=True,
     log=None,
+    existing_generation=None,
 ):
     if log:
         from tensornas.tools.logging import Logger
@@ -30,7 +30,12 @@ def TestEASimple(
 
     from tensornas.tools.DEAPtest import DEAPTest
 
-    test = DEAPTest(pop_size=pop_size, gen_count=gen_count, toolbox=toolbox)
+    test = DEAPTest(
+        pop_size=pop_size,
+        gen_count=gen_count,
+        toolbox=toolbox,
+        existing_generation=existing_generation,
+    )
 
     test.set_evaluate(toolbox=toolbox, func=evaluate_individual)
     test.set_mate(toolbox=toolbox, func=crossover_individual)
@@ -184,6 +189,10 @@ def eaSimple(
         cur_gen_start_time = start_time
         timing_log.log("Start time: {}".format(start_time))
         logger.log("Gen #0, population: {}".format(len(population)))
+
+    for i, ind in enumerate(population):
+        ind.index = i
+
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
     if multithreaded:
@@ -194,20 +203,20 @@ def eaSimple(
         if save_individuals and generation_save_interval == 1:
             fitnesses = toolbox.map(
                 toolbox.evaluate,
-                [(ind, test_name, 0, i, logger) for i, ind in enumerate(invalid_ind)],
+                [(ind, test_name, 0, logger) for i, ind in enumerate(invalid_ind)],
             )
         else:
             fitnesses = toolbox.map(
                 toolbox.evaluate,
-                [(ind, None, None, None, logger) for ind in invalid_ind],
+                [(ind, None, None, logger) for ind in invalid_ind],
             )
     else:
         fitnesses = []
         for i, ind in enumerate(invalid_ind):
             if save_individuals and generation_save_interval == 1:
-                fitnesses.append(toolbox.evaluate(ind, test_name, 0, i, logger))
+                fitnesses.append(toolbox.evaluate(ind, test_name, 0, logger))
             else:
-                fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
+                fitnesses.append(toolbox.evaluate(ind, None, None, logger))
 
     for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
         ind.block_architecture.param_count = fit[-2]
@@ -286,7 +295,7 @@ def eaSimple(
         # Copy existing models to new generation
         from tensornas.core.util import copy_output_model
 
-        for i, ind in enumerate(valid_ind):
+        for ind in valid_ind:
             index = offspring.index(ind)
             copy_output_model(test_name, gen, ind.index, index)
             logger.log(
@@ -306,34 +315,29 @@ def eaSimple(
             set_start_method("spawn", force=True)
 
             if save_individuals and ((gen + 1) % generation_save_interval) == 0:
+                for ind in invalid_ind:
+                    index = offspring.index(ind)
+                    ind.index = index
                 fitnesses = toolbox.map(
                     toolbox.evaluate,
-                    [
-                        (ind, test_name, gen, offspring.index(ind), logger)
-                        for ind in invalid_ind
-                    ],
+                    [(ind, test_name, gen, logger) for ind in invalid_ind],
                 )
             else:
                 fitnesses = toolbox.map(
                     toolbox.evaluate,
-                    [(ind, None, None, None, logger) for ind in invalid_ind],
+                    [(ind, None, None, logger) for ind in invalid_ind],
                 )
         else:
             fitnesses = []
             for ind in invalid_ind:
                 if save_individuals and generation_save_interval == 1:
-                    fitnesses.append(
-                        toolbox.evaluate(
-                            ind, test_name, 0, offspring.index(ind), logger
-                        )
-                    )
+                    fitnesses.append(toolbox.evaluate(ind, test_name, 0, logger))
                 else:
                     fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             ind.block_architecture.param_count = fit[-2]
             ind.block_architecture.accuracy = fit[-1]
-            ind.index = offspring.index(ind)
 
             if filter_function:
                 if filter_function_args:

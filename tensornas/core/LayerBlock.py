@@ -19,7 +19,10 @@ class LayerBlock(Block):
     def __init__(self, input_shape, parent_block, layer_type, args=None):
         if not input_shape:
             input_shape = parent_block._get_cur_output_shape()
-        layer = eval("Layers." + layer_type.name + ".value.Layer")
+        if hasattr(layer_type, "name"):
+            layer = eval("Layers." + layer_type.name + ".value.Layer")
+        else:
+            layer = eval("Layers." + layer_type + ".value.Layer")
         self.layer = layer(input_shape=input_shape, args=args)
 
         super().__init__(
@@ -47,3 +50,12 @@ class LayerBlock(Block):
     def set_input_shape(self, input_shape):
         self.input_shape = input_shape
         self.layer.inputshape.set(input_shape)
+
+    def toJSON(self):
+
+        json_dict = self.get_JSON_dict()
+
+        json_dict["layer"] = self.layer.toJSON()
+        json_dict["args"] = json_dict["layer"]["args"]
+
+        return json_dict

@@ -1,4 +1,4 @@
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.core.block import Block
 from enum import Enum, auto
 from tensornas.layers import SupportedLayers

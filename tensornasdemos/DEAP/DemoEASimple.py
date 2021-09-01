@@ -1,3 +1,17 @@
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "--folder",
+    help="Absolute path to folder where interrupted test's output is stored",
+    default=None,
+)
+parser.add_argument("--gen", help="Generation from which the test should resume")
+
+args = parser.parse_args()
+
+
 def _gen_ba():
 
     global ba_class, input_tensor_shape, class_count
@@ -27,7 +41,7 @@ def _get_block_architecture_class(ba_name):
     return classes[1]
 
 
-def _evaluate_individual(individual, test_name, gen, ind_num, logger):
+def _evaluate_individual(individual, test_name, gen, logger):
     global epochs, batch_size, optimizer, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu, q_aware
 
     ret = individual.evaluate(
@@ -41,7 +55,7 @@ def _evaluate_individual(individual, test_name, gen, ind_num, logger):
         loss=loss,
         metrics=metrics,
         test_name=test_name,
-        model_name="{}/{}".format(gen, ind_num),
+        model_name="{}/{}".format(gen, individual.index),
         use_GPU=use_gpu,
         q_aware=q_aware,
         logger=logger,
@@ -56,25 +70,38 @@ def _mutate_individual(individual):
 
 
 if __name__ == "__main__":
-
     from tensornas.tools.configparse import *
 
-    config_filename = "example"
-    config = LoadConfig(config_filename)
+    existing_generation = None
 
-    from time import gmtime, strftime
+    if args.folder:
+        test_folder = args.folder
+        start_gen = args.gen
+        existing_generation = test_folder + "/Models/{}".format(start_gen)
+
+        config = LoadConfig(GetConfigFile(directory=test_folder))
+    else:
+        config_filename = "example"
+        config = LoadConfig(GetConfigFile(config_filename=config_filename))
 
     ba_name = GetBlockArchitecture(config)
     globals()["class_count"] = GetClassCount(config)
     globals()["ba_class"] = _get_block_architecture_class(ba_name)
 
-    test_name_prefix = GetOutputPrefix(config)
-    test_name = strftime("%d_%m_%Y-%H_%M", gmtime())
-    if test_name_prefix:
-        test_name = test_name_prefix + "_" + test_name
-    test_name += "_" + ba_name
+    if args.folder:
+        from pathlib import Path
 
-    CopyConfig(config_filename, test_name)
+        test_name = Path(args.folder).name
+    else:
+        from time import gmtime, strftime
+
+        test_name_prefix = GetOutputPrefix(config)
+        test_name = strftime("%d_%m_%Y-%H_%M", gmtime())
+        if test_name_prefix:
+            test_name = test_name_prefix + "_" + test_name
+        test_name += "_" + ba_name
+
+        CopyConfig(config_filename, test_name)
 
     training_sample_size = GetTrainingSampleSize(config)
     test_sample_size = GetTestSampleSize(config)
@@ -136,7 +163,6 @@ if __name__ == "__main__":
         thread_count=thread_count,
     )
 
-    # for gen_func in gen_functions:
     register_DEAP_individual_gen_func(
         creator=creator, toolbox=toolbox, ind_gen_func=_gen_ba
     )
@@ -146,7 +172,6 @@ if __name__ == "__main__":
         mutpb=mutpb,
         pop_size=pop_size,
         gen_count=gen_count,
-        gen_individual=_gen_ba,
         evaluate_individual=_evaluate_individual,
         crossover_individual=crossover_individuals_sp,
         mutate_individual=_mutate_individual,
@@ -161,6 +186,7 @@ if __name__ == "__main__":
         comment=comments,
         multithreaded=multithreaded,
         log=log,
+        existing_generation=existing_generation,
     )
 
     print("Done")

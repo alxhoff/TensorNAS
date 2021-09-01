@@ -2,7 +2,7 @@ from enum import Enum, auto
 
 from tensornas.core.layerargs import *
 from tensornas.core.block import Block
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.layers import SupportedLayers
 from tensornas.layers.Conv2D import Args as conv_args
 from tensornas.layers.MaxPool import Args as pool_args

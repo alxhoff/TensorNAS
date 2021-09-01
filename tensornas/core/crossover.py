@@ -52,7 +52,7 @@ def crossover_single_point(b1, b2):
 
 
 def _get_max_depth(ba):
-    from tensornas.core.layerblock import LayerBlock
+    from tensornas.core.LayerBlock import LayerBlock
 
     if isinstance(ba, LayerBlock):
         return 0

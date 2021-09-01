@@ -3,7 +3,7 @@ from tensornas.layers import SupportedLayers
 from tensornas.blocktemplates.subblocks.TwoDClassificationBlock import (
     TwoDClassificationBlock,
 )
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.blocktemplates.subblocks.GhostBlock import GhostBlock
 from tensornas.core.blockarchitecture import BlockArchitecture
 

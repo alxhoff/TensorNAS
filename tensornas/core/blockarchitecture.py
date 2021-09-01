@@ -103,10 +103,12 @@ class BlockArchitecture(Block):
 
         try:
             if test_name and model_name:
-                from tensornas.core.util import save_model
+                from tensornas.core.util import save_model, save_block_architecture
 
                 save_model(model, test_name, model_name, logger)
+                save_block_architecture(self, test_name, model_name, logger)
         except Exception as e:
+            print(e)
             if logger:
                 logger.log("Error running/saving model:{}, {}".format(model_name, e))
 

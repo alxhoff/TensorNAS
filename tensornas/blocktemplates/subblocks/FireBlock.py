@@ -2,7 +2,7 @@ from enum import Enum, auto
 import tensorflow as tf
 
 from tensornas.core.block import Block
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.layers import SupportedLayers
 from tensornas.blocktemplates.subblocks.ExpandBlock import ExpandBlock
 

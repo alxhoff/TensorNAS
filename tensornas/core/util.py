@@ -208,6 +208,20 @@ def list_available_block_architectures():
         print(arch.value)
 
 
+def save_block_architecture(ba, test_name, model_name, logger):
+    from pathlib import Path
+    import os
+    from tensornas.tools.baimporterexporter import ExportBlockArchitectureToJSON
+
+    if logger:
+        logger.log("Saving new model, name:{}".format(model_name))
+
+    path = "Output/{}/Models/{}".format(test_name, model_name)
+    if not os.path.isdir(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
+    ExportBlockArchitectureToJSON(ba, path)
+
+
 def save_model(model, test_name, model_name, logger):
     from pathlib import Path
     import os

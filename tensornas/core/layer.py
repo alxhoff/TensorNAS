@@ -54,7 +54,20 @@ class NetworkLayer(ABC):
     """
 
     def __init__(self, input_shape, args=None):
+
         self.args_enum = self._get_args_enum()
+        if args:
+            if isinstance(args, list):
+                args = dict(args)
+                new_dict = {}
+
+                for key, val in args.items():
+                    if isinstance(key, str):
+                        new_dict[
+                            [i for i in self.args_enum if i.name == key][0]
+                        ] = args[key]
+                args = new_dict
+
         self.args = self._gen_args(input_shape, args)
         self.inputshape = LayerShape()
         self.outputshape = LayerShape()
@@ -158,3 +171,25 @@ class NetworkLayer(ABC):
     @abstractmethod
     def get_keras_layer(self, input_tensor):
         return NotImplementedError
+
+    def _args_to_JSON(self):
+
+        args = dict(self.args)
+
+        ret = []
+
+        for arg in args:
+            ret += [[arg.name, value] for key, value in args.items() if arg == key]
+
+        return ret
+
+    def toJSON(self):
+
+        json_dict = {
+            "input_shape": self.inputshape.get(),
+            "output_shape": self.outputshape.get(),
+            "mutation_funcs": self.mutation_funcs,
+            "args": self._args_to_JSON(),
+        }
+
+        return json_dict

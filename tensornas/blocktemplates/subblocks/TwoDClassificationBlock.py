@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 from tensornas.core.block import Block
-from tensornas.core.layerblock import LayerBlock
+from tensornas.core.LayerBlock import LayerBlock
 from tensornas.layers import SupportedLayers
 
 from tensornas.layers.Dropout import Args as dropout_args

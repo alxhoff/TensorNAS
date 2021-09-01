@@ -1,13 +1,19 @@
-def _GetConfigFile(config_filename):
+def GetConfigFile(config_filename=None, directory=None):
     import os, sys
 
-    script_path = os.path.abspath(os.path.dirname(sys.argv[0]))
+    if directory:
+        script_path = directory
+    else:
+        script_path = os.path.abspath(os.path.dirname(sys.argv[0]))
 
     import glob
 
-    config_file = glob.glob(
-        script_path + "/**/{}.cfg".format(config_filename), recursive=True
-    )
+    if config_filename:
+        config_file = glob.glob(
+            script_path + "/**/{}.cfg".format(config_filename), recursive=True
+        )
+    else:
+        config_file = glob.glob(script_path + "/**/*.cfg", recursive=True)
 
     if len(config_file) == 0:
         import tensornas
@@ -25,10 +31,8 @@ def _GetConfigFile(config_filename):
     return config_file
 
 
-def LoadConfig(config_filename):
+def LoadConfig(config_file):
     import configparser
-
-    config_file = _GetConfigFile(config_filename)
 
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -38,7 +42,7 @@ def LoadConfig(config_filename):
 
 def CopyConfig(config_filename, test_name):
 
-    config_file = _GetConfigFile(config_filename)
+    config_file = GetConfigFile(config_filename)
 
     from shutil import copyfile
     from pathlib import Path
