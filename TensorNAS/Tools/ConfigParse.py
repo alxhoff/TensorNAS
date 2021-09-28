@@ -10,10 +10,15 @@ def GetConfigFile(config_filename=None, directory=None):
 
     if config_filename:
         config_file = glob.glob(
-            script_path + "/**/{}.cfg".format(config_filename), recursive=True
+            script_path + "/{}.cfg".format(config_filename), recursive=False
         )
     else:
-        config_file = glob.glob(script_path + "/**/*.cfg", recursive=True)
+        config_file = glob.glob(script_path + "/**/*.cfg", recursive=False)
+
+    if len(config_file) == 0:
+        config_file = glob.glob(
+            script_path + "/*.cfg", recursive=False
+        )
 
     if len(config_file) == 0:
         import TensorNAS
