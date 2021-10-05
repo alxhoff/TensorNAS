@@ -16,9 +16,7 @@ def GetConfigFile(config_filename=None, directory=None):
         config_file = glob.glob(script_path + "/**/*.cfg", recursive=False)
 
     if len(config_file) == 0:
-        config_file = glob.glob(
-            script_path + "/*.cfg", recursive=False
-        )
+        config_file = glob.glob(script_path + "/*.cfg", recursive=False)
 
     if len(config_file) == 0:
         import TensorNAS

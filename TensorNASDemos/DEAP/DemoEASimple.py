@@ -7,19 +7,21 @@ parser.add_argument(
     help="Absolute path to folder where interrupted test's output is stored",
     default=None,
 )
-parser.add_argument("--gen", help="Generation from which the test should resume", type=int)
+parser.add_argument(
+    "--gen", help="Generation from which the test should resume", type=int
+)
 
 args = parser.parse_args()
 
 
 def _gen_ba():
-    global ba_mod, input_tensor_shape, class_count
+    global ba_mod, input_tensor_shape, class_count, batch_size, optimizer
 
-    return ba_mod.Block(input_tensor_shape, class_count)
+    return ba_mod.Block(input_tensor_shape, class_count, batch_size, optimizer)
 
 
 def _evaluate_individual(individual, test_name, gen, logger):
-    global epochs, batch_size, optimizer, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu, q_aware
+    global epochs, batch_size, loss, metrics, images_train, images_test, labels_train, labels_test, save_individuals, use_gpu, q_aware
 
     param_count, accuracy = individual.evaluate(
         train_data=images_train,
@@ -28,7 +30,6 @@ def _evaluate_individual(individual, test_name, gen, logger):
         test_labels=labels_test,
         epochs=epochs,
         batch_size=batch_size,
-        optimizer=optimizer,
         loss=loss,
         metrics=metrics,
         test_name=test_name,
@@ -166,7 +167,7 @@ if __name__ == "__main__":
         multithreaded=multithreaded,
         log=log,
         existing_generation=existing_generation,
-        start_gen=start_gen
+        start_gen=start_gen,
     )
 
     print("Done")

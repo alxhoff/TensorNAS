@@ -9,13 +9,30 @@ class BlockArchitecture(Block):
     architecture to be created, namely what sort of sub-blocks the block architecture can generate.
     """
 
-    def __init__(self, input_shape, parent_block, layer_type):
+    MAX_BATCH_SIZE = 128
+
+    def __init__(self, input_shape, parent_block, layer_type, batch_size, optimizer):
         self.param_count = 0
         self.accuracy = 0
+
+        from TensorNAS.Optimizers import GetOptimizer
+
+        self.opt = GetOptimizer(optimizer_name=optimizer)
+
+        self.batch_size = batch_size
 
         super().__init__(
             input_shape=input_shape, parent_block=parent_block, layer_type=layer_type
         )
+
+    def _mutate_optimizer_hyperparameters(self, verbose):
+        if self.opt:
+            self.opt.mutate(verbose)
+
+    def _mutate_batch_size(self, verbose):
+        from TensorNAS.Core.Util import mutate_int_square
+
+        self.batch_size = mutate_int_square(self.batch_size, 1, self.MAX_BATCH_SIZE)
 
     def get_keras_model(self, optimizer, loss, metrics):
         import tensorflow as tf
@@ -34,7 +51,6 @@ class BlockArchitecture(Block):
         test_labels,
         epochs,
         batch_size,
-        optimizer,
         loss,
         metrics,
         test_name=None,
@@ -54,9 +70,11 @@ class BlockArchitecture(Block):
 
             os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
+        opt = self.opt.get_optimizer()
+
         try:
             model = self.get_keras_model(
-                optimizer=optimizer,
+                optimizer=opt,
                 loss=loss,
                 metrics=metrics,
             )
@@ -69,7 +87,8 @@ class BlockArchitecture(Block):
                 import tensorflow_model_optimization as tfmot
 
                 q_model = tfmot.quantization.keras.quantize_model(model)
-                q_model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+
+                q_model.compile(optimizer=opt, loss=loss, metrics=metrics)
                 model = q_model
             except Exception as e:
                 print("Error getting QA model: {}".format(e))
@@ -93,7 +112,7 @@ class BlockArchitecture(Block):
                     y=train_labels,
                     validation_data=(test_data, test_labels),
                     epochs=epochs,
-                    batch_size=batch_size,
+                    batch_size=self.batch_size,
                     verbose=1,
                     callbacks=[early_stopper],
                 )

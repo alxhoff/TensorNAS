@@ -12,7 +12,6 @@ class ArgActivations(str, Enum):
     SIGMOID = "sigmoid"
     SOFTMAX = "softmax"
     SOFTPLUS = "softplus"
-    # SOFTSIGN = "softsign"
     TANH = "tanh"
 
 

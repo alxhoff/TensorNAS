@@ -19,10 +19,16 @@ class Block(BlockArchitecture):
 
     SUB_BLOCK_TYPES = ClassificationArchitectureSubBlocks
 
-    def __init__(self, input_shape, class_count):
+    def __init__(self, input_shape, class_count, batch_size, optimizer):
         self.class_count = class_count
 
-        super().__init__(input_shape, parent_block=None, layer_type=None)
+        super().__init__(
+            input_shape,
+            parent_block=None,
+            layer_type=None,
+            batch_size=batch_size,
+            optimizer=optimizer,
+        )
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         return [

@@ -41,6 +41,36 @@ def _generate_permutations(product, item_count):
     return prime_factors
 
 
+def mutate_int_square(val, min_bound, max_bound, operator=MutationOperators.STEP):
+    if operator == MutationOperators.STEP:
+        if random.randrange(0, 2):  # multiplay
+            if val <= max_bound / 2:
+                return val * 2
+        else:  # divide
+            if val > 1:
+                return val / 2
+    elif operator == MutationOperators.RANDOM:
+        max_exponent = math.floor(math.log(max_bound) / math.log(2))
+        exponent = random.randrange(1, max_exponent + 1)
+        return math.pow(2, exponent)
+
+
+def mutate_float(
+    val, min_bound, max_bound, operator=MutationOperators.STEP, step_size=0.001
+):
+
+    if operator == MutationOperators.RANDOM:
+        return round(random.uniform(min_bound, max_bound))
+    elif operator == MutationOperators.STEP:
+        if random.randrange(0, 2) and val < max_bound:
+            return val + step_size
+        else:
+            if val > min_bound:
+                return val - step_size
+            else:
+                return val + step_size
+
+
 def mutate_dimension(intput_dim):
     while True:
         new_dim = _generate_permutations(dimension_mag(intput_dim), len(intput_dim))

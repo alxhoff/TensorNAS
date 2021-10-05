@@ -126,7 +126,7 @@ def eaSimple(
     logger=None,
     generation_save_interval=1,
     multithreaded=False,
-    start_gen=0
+    start_gen=0,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
     presented in chapter 7 of [Back2000]_.
@@ -179,6 +179,8 @@ def eaSimple(
        Basic Algorithms and Operators", 2000.
     """
 
+    pop_size = len(population)
+
     from deap import tools
 
     logbook = tools.Logbook()
@@ -206,7 +208,10 @@ def eaSimple(
         if save_individuals and generation_save_interval == 1:
             fitnesses = toolbox.map(
                 toolbox.evaluate,
-                [(ind, test_name, start_gen, logger) for i, ind in enumerate(invalid_ind)],
+                [
+                    (ind, test_name, start_gen, logger)
+                    for i, ind in enumerate(invalid_ind)
+                ],
             )
         else:
             fitnesses = toolbox.map(
@@ -257,6 +262,10 @@ def eaSimple(
 
     from deap.tools.emo import assignCrowdingDist
 
+    assert len(population) == pop_size, "Initial population not of size {}".format(
+        pop_size
+    )
+
     assignCrowdingDist(population)
 
     if individualrecord:
@@ -282,7 +291,11 @@ def eaSimple(
             logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
         # Select the next generation individuals
-        offspring = toolbox.select(population, len(population))
+        offspring = toolbox.select(population, pop_size)
+
+        assert len(offspring) == pop_size, "Initial population not of size {}".format(
+            pop_size
+        )
 
         # Vary the pool of individuals
         from deap.algorithms import varAnd
