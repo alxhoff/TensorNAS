@@ -60,6 +60,3 @@ def get_dataset():
         test_labels,
         label_names,
     )
-
-
-data = get_dataset()

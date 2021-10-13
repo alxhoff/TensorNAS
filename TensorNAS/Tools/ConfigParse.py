@@ -335,5 +335,5 @@ def GetTFEpochs(config):
     return int(_GetTensorflow(config)["Epochs"])
 
 
-def GetQuantizationAware(config):
+def GetTFQuantizationAware(config):
     return _GetTensorflow(config).getboolean("QuantizationAware")

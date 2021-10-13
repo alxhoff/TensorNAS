@@ -20,7 +20,6 @@ def TestEASimple(
     comment=None,
     multithreaded=True,
     log=None,
-    existing_generation=None,
     start_gen=0,
 ):
     if log:
@@ -35,7 +34,6 @@ def TestEASimple(
         pop_size=pop_size,
         gen_count=gen_count,
         toolbox=toolbox,
-        existing_generation=existing_generation,
     )
 
     test.set_evaluate(toolbox=toolbox, func=evaluate_individual)
