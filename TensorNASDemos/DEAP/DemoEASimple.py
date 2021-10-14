@@ -11,6 +11,13 @@ parser.add_argument(
     "--gen", help="Generation from which the test should resume", type=int
 )
 
+parser.add_argument(
+    "--config",
+    help="Location of config file to be used, default is to use first found config file in current working directory, then parent directories",
+    type=str,
+    default=None,
+)
+
 args = parser.parse_args()
 
 

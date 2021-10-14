@@ -1,11 +1,9 @@
 dataset_name = "VisalWakeWords"
-dataset_zip = "vw_coco2014_96.tar.gz"
-dataset_url = "https://www.silabs.com/public/files/github/machine_learning/benchmarks/datasets/{}".format(
-    dataset_zip
-)
+dataset_zip = "cifar-10-python.tar.gz"
+dataset_url = "https://www.cs.toronto.edu/~kriz/{}".format(dataset_zip)
 
 
-def get_dataset():
+def GetData():
 
     from TensorNASDemos.Datasets import (
         make_dataset_dirs,
@@ -17,53 +15,45 @@ def get_dataset():
 
     make_dataset_dirs(dataset_name)
 
-    wget.download(dataset_url, out=zip_dir, bar=bar_progress)
+    if not os.path.isfile(os.path.join(zip_dir, dataset_zip)):
+        print("Downloading Cifar10 dataset tar")
+        wget.download(dataset_url, out=zip_dir, bar=bar_progress)
+    else:
+        print("Cifar10 tar already exists, skipping download")
 
     output_dir = os.path.join(tmp_dir, dataset_name)
 
     import tarfile
 
-    tar = tarfile.open(zip_dir + "/{}".format(dataset_zip), "r:gz")
-    tar.extractall(path=output_dir)
-    tar.close()
+    if not len(os.listdir(output_dir)):
+        print("Extracting Cifar10 tar")
+        tar = tarfile.open(zip_dir + "/{}".format(dataset_zip), "r:gz")
+        tar.extractall(path=output_dir)
+        tar.close()
 
-    import shutil
+        import shutil
 
-    out_files = os.listdir(output_dir)
+        out_files = os.listdir(output_dir)
 
-    sub_out_files = os.listdir(os.path.join(output_dir, out_files[0]))
+        sub_out_files = os.listdir(os.path.join(output_dir, out_files[0]))
 
-    for file in sub_out_files:
-        shutil.move(os.path.join(output_dir, out_files[0], file), output_dir)
+        for file in sub_out_files:
+            shutil.move(os.path.join(output_dir, out_files[0], file), output_dir)
 
-    shutil.rmtree(os.path.join(output_dir, out_files[0]))
+        shutil.rmtree(os.path.join(output_dir, out_files[0]))
+    else:
+        print("Cifar10 tar already extracted")
 
-    from PIL import Image
-    from numpy import asarray
+    from TensorNASDemos.Datasets.Cifar10.train import load_cifar_10_data
 
-    output_dataset = {}
-    output_dataset["person"] = []
-    output_dataset["non_person"] = []
+    (
+        train_data,
+        train_filenames,
+        train_labels,
+        test_data,
+        test_filenames,
+        test_labels,
+        label_names,
+    ) = load_cifar_10_data(output_dir)
 
-    # person images
-    person_dir = os.path.join(output_dir, "person")
-    peron_images = os.listdir(person_dir)
-
-    for image in peron_images:
-        output_dataset["person"].append(
-            asarray(Image.open(os.path.join(person_dir, image)))
-        )
-
-    # non-person images
-    nonperson_dir = os.path.join(output_dir, "non_person")
-    nonperson_images = os.listdir(nonperson_dir)
-
-    for image in nonperson_images:
-        output_dataset["non_person"].append(
-            asarray(Image.open(os.path.join(nonperson_dir, image)))
-        )
-
-    return output_dataset
-
-
-data = get_dataset()
+    return (test_data, train_data, test_labels, train_labels, test_data[0].shape)

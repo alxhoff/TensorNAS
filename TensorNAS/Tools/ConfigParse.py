@@ -9,9 +9,14 @@ def GetConfigFile(config_filename=None, directory=None):
     import glob
 
     if config_filename:
+        # Relative filename
         config_file = glob.glob(
             script_path + "/{}.cfg".format(config_filename), recursive=False
         )
+
+        # Absolute filename
+        if len(config_file) == 0:
+            config_file = glob.glob(config_filename)
     else:
         config_file = glob.glob(script_path + "/**/*.cfg", recursive=False)
 
