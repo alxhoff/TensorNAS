@@ -12,6 +12,9 @@ download_suffix = "?download=1"
 def _create_subdirs(parent_dir):
 
     # train
+    from TensorNASDemos.Datasets import tmp_dir
+
+    parent_dir = os.path.join(tmp_dir, parent_dir)
     train_dir = parent_dir + "/train_normal"
     if os.path.isdir(train_dir) == False:
         os.mkdir(train_dir)
@@ -72,6 +75,8 @@ def _unzip_zips(zips):
 
     if len(zips):
         output_dir = str(pathlib.Path(zips[0]).parent.resolve()) + "/data"
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir)
     else:
         raise Exception("No zips to unzip")
 
@@ -202,4 +207,15 @@ def get_conveyor_dataset():
     return _get_dataset("conveyor")
 
 
-data = get_train_dataset()
+def GetData():
+
+    from random import randrange
+
+    switch = randrange(0, 3)
+
+    if switch == 0:
+        return get_train_dataset()
+    elif switch == 1:
+        return get_conveyor_dataset()
+    elif switch == 2:
+        return get_car_dataset()

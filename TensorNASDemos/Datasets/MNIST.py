@@ -1,6 +1,8 @@
 def GetData():
     import tensorflow as tf
 
+    mnist_dataset = tf.keras.datasets.mnist
+
     (
         (images_train, labels_train),
         (images_test, labels_test),

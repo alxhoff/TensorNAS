@@ -1,0 +1,98 @@
+def get_config(args=None):
+    from time import gmtime, strftime
+    from TensorNASDemos import get_global, set_global
+    from TensorNASDemos import get_config
+    from TensorNAS.Tools.ConfigParse import (
+        GetOutputPrefix,
+        CopyConfig,
+    )
+
+    config_filename = "example"
+    if args:
+        if args.config:
+            config_filename = args.config
+
+    set_global("existing_generation", None)
+    set_global("start_gen", 0)
+
+    config = get_config(args)
+
+    if not get_global("test_name"):
+        test_name_prefix = GetOutputPrefix(config)
+        set_global("test_name", strftime("%d_%m_%Y-%H_%M", gmtime()))
+        if test_name_prefix:
+            set_global("test_name", test_name_prefix + "_" + get_global("test_name"))
+        set_global("test_name", get_global("test_name") + "_" + get_global("ba_name"))
+        CopyConfig(config_filename, get_global("test_name"))
+
+    return config
+
+
+def load_genetic_params_from_config(config):
+    from TensorNASDemos import set_global
+    from TensorNAS.Tools.ConfigParse import (
+        GetPopulationSize,
+        GetGenerationCount,
+        GetCrossoverProbability,
+        GetMutationProbability,
+        GetTrainingSampleSize,
+        GetTestSampleSize,
+        GetGenerationGap,
+        GetGenerationSaveInterval,
+    )
+
+    set_global("pop_size", GetPopulationSize(config))
+    set_global("gen_count", GetGenerationCount(config))
+    set_global("cxpb", GetCrossoverProbability(config))
+    set_global("mutpb", GetMutationProbability(config))
+    set_global("training_sample_size", GetTrainingSampleSize(config))
+    set_global("test_sample_size", GetTestSampleSize(config))
+    set_global("generation_gap", GetGenerationGap(config))
+    set_global("generation_save_interval", GetGenerationSaveInterval(config))
+
+
+def run_deap_test(evaluate_individual, crossover, mutate):
+    from importlib import import_module
+    from TensorNAS.Tools.DEAPtest import setup_DEAP, register_DEAP_individual_gen_func
+    from TensorNAS.Algorithms.EASimple import TestEASimple
+    from TensorNASDemos import get_global, set_global
+    from TensorNASDemos import gen_ba
+
+    creator = import_module("deap.creator")
+    toolbox = import_module("deap.base").Toolbox()
+
+    setup_DEAP(
+        creator=creator,
+        toolbox=toolbox,
+        objective_weights=get_global("weights"),
+        multithreaded=get_global("multithreaded"),
+        thread_count=get_global("thread_count"),
+    )
+
+    register_DEAP_individual_gen_func(
+        creator=creator, toolbox=toolbox, ind_gen_func=gen_ba
+    )
+
+    pop, logbook, test = TestEASimple(
+        cxpb=get_global("cxpb"),
+        mutpb=get_global("mutpb"),
+        pop_size=get_global("pop_size"),
+        gen_count=get_global("gen_count"),
+        evaluate_individual=evaluate_individual,
+        crossover_individual=crossover,
+        mutate_individual=mutate,
+        toolbox=toolbox,
+        test_name=get_global("test_name"),
+        verbose=get_global("verbose"),
+        filter_function=get_global("filter_function"),
+        filter_function_args=get_global("filter_function_args"),
+        save_individuals=get_global("save_individuals"),
+        generation_gap=get_global("generation_gap"),
+        generation_save=get_global("generation_save_interval"),
+        comment=get_global("comments"),
+        multithreaded=get_global("multithreaded"),
+        log=get_global("log"),
+        start_gen=get_global("start_gen"),
+    )
+
+    return pop, logbook, test

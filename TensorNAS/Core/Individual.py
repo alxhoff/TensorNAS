@@ -22,25 +22,30 @@ class TensorNASIndividual:
 
     def evaluate(
         self,
-        train_data,
-        train_labels,
-        test_data,
-        test_labels,
-        epochs,
-        batch_size,
-        loss,
-        metrics,
+        train_data=None,
+        train_labels=None,
+        test_data=None,
+        test_labels=None,
+        train_generator=None,
+        val_generator=None,
+        epochs=10,
+        batch_size=100,
+        loss=None,
+        metrics="accuracy",
         test_name=None,
         model_name=None,
         use_GPU=False,
         q_aware=False,
         logger=None,
+        steps_per_epoch=None,
     ):
         (param_count, accuracy,) = self.block_architecture.evaluate(
             train_data=train_data,
             train_labels=train_labels,
             test_data=test_data,
             test_labels=test_labels,
+            train_generator=train_generator,
+            val_generator=val_generator,
             epochs=epochs,
             batch_size=batch_size,
             loss=loss,
@@ -50,6 +55,7 @@ class TensorNASIndividual:
             use_GPU=use_GPU,
             q_aware=q_aware,
             logger=logger,
+            steps_per_epoch=steps_per_epoch,
         )
         return param_count, accuracy
 

@@ -40,7 +40,9 @@ class BlockArchitecture(Block):
         inp = tf.keras.Input(shape=self.input_shape)
         out = self.get_keras_layers(inp)
         model = tf.keras.Model(inp, out)
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics, run_eagerly=True)
+        model.compile(
+            optimizer=optimizer, loss=eval(loss), metrics=metrics, run_eagerly=True
+        )
         return model
 
     def evaluate(
@@ -49,6 +51,8 @@ class BlockArchitecture(Block):
         train_labels,
         test_data,
         test_labels,
+        train_generator,
+        val_generator,
         epochs,
         batch_size,
         loss,
@@ -58,6 +62,7 @@ class BlockArchitecture(Block):
         use_GPU=True,
         q_aware=False,
         logger=None,
+        steps_per_epoch=None,
     ):
         import numpy as np
 
@@ -95,27 +100,53 @@ class BlockArchitecture(Block):
 
         try:
             if not batch_size > 0:
-                model.fit(
-                    x=train_data,
-                    y=train_labels,
-                    epochs=epochs,
-                    verbose=1,
-                )
+                if train_data and train_labels:
+                    model.fit(
+                        x=train_data,
+                        y=train_labels,
+                        epochs=epochs,
+                        verbose=1,
+                    )
+                else:
+                    if not steps_per_epoch:
+                        steps_per_epoch = len(train_generator)
+                    model.fit(
+                        train_generator,
+                        steps_per_epoch=steps_per_epoch,
+                        validation_data=val_generator,
+                        validation_steps=len(val_generator),
+                        epochs=epochs,
+                        verbose=1,
+                    )
             else:
                 import tensorflow as tf
 
                 early_stopper = tf.keras.callbacks.EarlyStopping(
                     monitor="val_accuracy", patience=1, mode="max"
                 )
-                model.fit(
-                    x=train_data,
-                    y=train_labels,
-                    validation_data=(test_data, test_labels),
-                    epochs=epochs,
-                    batch_size=self.batch_size,
-                    verbose=1,
-                    callbacks=[early_stopper],
-                )
+                if train_data and train_labels and test_data and test_labels:
+                    model.fit(
+                        x=train_data,
+                        y=train_labels,
+                        validation_data=(test_data, test_labels),
+                        epochs=epochs,
+                        batch_size=self.batch_size,
+                        verbose=1,
+                        callbacks=[early_stopper],
+                    )
+                else:
+                    if not steps_per_epoch:
+                        steps_per_epoch = len(train_generator)
+                    model.fit(
+                        train_generator,
+                        steps_per_epoch=steps_per_epoch,
+                        validation_data=val_generator,
+                        validation_steps=len(val_generator),
+                        epochs=epochs,
+                        batch_size=self.batch_size,
+                        verbose=1,
+                        callbacks=[early_stopper],
+                    )
         except Exception as e:
             print("Error fitting model, {}".format(e))
             return np.inf, 0

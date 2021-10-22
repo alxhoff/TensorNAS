@@ -40,7 +40,7 @@ def register_DEAP_individual_gen_func(creator, toolbox, ind_gen_func):
 
 class DEAPTest:
     def __init__(self, pop_size, gen_count, toolbox):
-        from TensorNASDemos.DEAP.test import get_global
+        from TensorNASDemos import get_global
 
         self.pop_size = pop_size
         self.gen_count = gen_count

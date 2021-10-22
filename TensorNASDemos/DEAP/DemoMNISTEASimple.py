@@ -20,6 +20,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+args.config = "DemoMNISTEASimple"
 
 if __name__ == "__main__":
 
