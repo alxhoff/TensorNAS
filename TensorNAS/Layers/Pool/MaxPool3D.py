@@ -2,7 +2,7 @@ from math import ceil
 
 
 from TensorNAS.Core.LayerArgs import *
-from TensorNAS.Layers.MaxPool import Layer
+from TensorNAS.Layers.Pool import Layer
 
 
 class Layer(Layer):

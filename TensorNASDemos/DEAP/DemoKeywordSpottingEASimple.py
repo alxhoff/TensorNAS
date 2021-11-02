@@ -24,7 +24,8 @@ args.config = "DemoKeywordSpottingEASimple"
 
 if __name__ == "__main__":
 
-    from TensorNASDemos.DEAP.test import *
+    from TensorNASDemos import *
+    from TensorNASDemos.DEAP import load_genetic_params_from_config, run_deap_test
     from TensorNASDemos.Datasets.SpeechCommands import GetData
     from TensorNAS.Core.Crossover import crossover_individuals_sp
 
@@ -34,15 +35,13 @@ if __name__ == "__main__":
     load_genetic_params_from_config(config)
     load_tensorflow_params_from_config(config)
 
-    images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
+    train_generator, val_generator, input_tensor_shape = GetData()
     set_test_train_data(
-        images_train,
-        labels_train,
-        images_test,
-        labels_test,
-        input_tensor_shape,
-        get_global("training_sample_size"),
-        get_global("test_sample_size"),
+        train_generator=train_generator,
+        val_generator=val_generator,
+        input_tensor_shape=input_tensor_shape,
+        training_sample_size=get_global("training_sample_size"),
+        test_sample_size=get_global("test_sample_size"),
     )
 
     pop, logbook, test = run_deap_test(

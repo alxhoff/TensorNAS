@@ -76,7 +76,7 @@ class Block(ABC):
     """
     A property to specify a minimum block count, is not required by each sub-class.
     """
-    MIN_SUB_BLOCK = 1
+    MIN_SUB_BLOCKS = 1
 
     @property
     @classmethod
@@ -157,13 +157,12 @@ class Block(ABC):
         """
         return None
 
-    @abstractmethod
     def generate_random_sub_block(self, input_shape, layer_type):
         """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
         """
-        return NotImplementedError
+        return None
 
     def check_next_layer_type(self, prev_layer_type, next_layer_type):
         """
@@ -233,17 +232,15 @@ class Block(ABC):
         will handle this. Generated blocks that are not valid
         """
         if self.MAX_SUB_BLOCKS:
-            rng = random.choice(range(self.MIN_SUB_BLOCK, self.MAX_SUB_BLOCKS + 1))
+            rng = random.choice(range(self.MIN_SUB_BLOCKS, self.MAX_SUB_BLOCKS + 1))
             for i in range(rng):
                 out_shape = self._get_cur_output_shape()
-                while True:
-                    blocks = self.generate_random_sub_block(
-                        out_shape,
-                        self._get_random_sub_block_type(),
-                    )
-                    if blocks:
-                        self.middle_blocks.extend(blocks)
-                        break
+                blocks = self.generate_random_sub_block(
+                    out_shape,
+                    self._get_random_sub_block_type(),
+                )
+                if blocks:
+                    self.middle_blocks.extend(blocks)
 
     def get_output_shape(self):
         """

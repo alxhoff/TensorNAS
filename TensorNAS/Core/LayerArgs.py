@@ -20,6 +20,12 @@ class ArgPadding(str, Enum):
     SAME = "same"
 
 
+class ArgRegularizers(str, Enum):
+    L1 = "L1"
+    L1L2 = "L1L2"
+    L2 = "L2"
+
+
 def gen_2d_kernel_size(input_size):
     kernel_size = random.choice(range(1, input_size, 2))
     return (kernel_size, kernel_size)

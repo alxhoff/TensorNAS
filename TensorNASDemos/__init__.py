@@ -1,8 +1,13 @@
 def get_config(args=None):
+    from time import gmtime, strftime
     from TensorNAS.Tools.ConfigParse import (
         LoadConfig,
         GetConfigFile,
         GetBlockArchitecture,
+    )
+    from TensorNAS.Tools.ConfigParse import (
+        GetOutputPrefix,
+        CopyConfig,
     )
 
     globals()["test_name"] = None
@@ -22,11 +27,18 @@ def get_config(args=None):
         if args.config:
             config_filename = args.config
             config = LoadConfig(GetConfigFile(config_filename=args.config))
-
     else:
         config = LoadConfig(GetConfigFile(config_filename=config_filename))
 
     globals()["ba_name"] = GetBlockArchitecture(config)
+
+    if not get_global("test_name"):
+        test_name_prefix = GetOutputPrefix(config)
+        set_global("test_name", strftime("%d_%m_%Y-%H_%M", gmtime()))
+        if test_name_prefix:
+            set_global("test_name", test_name_prefix + "_" + get_global("test_name"))
+        set_global("test_name", get_global("test_name") + "_" + get_global("ba_name"))
+        CopyConfig(config_filename, get_global("test_name"))
 
     return config
 
@@ -162,8 +174,10 @@ def load_tensorflow_params_from_config(config):
 
 
 def get_global(var_name):
-
-    return globals()[var_name]
+    try:
+        return globals()[var_name]
+    except:
+        return None
 
 
 def set_global(var_name, val):

@@ -47,16 +47,16 @@ class BlockArchitecture(Block):
 
     def evaluate(
         self,
-        train_data,
-        train_labels,
-        test_data,
-        test_labels,
-        train_generator,
-        val_generator,
-        epochs,
-        batch_size,
-        loss,
-        metrics,
+        train_data=None,
+        train_labels=None,
+        test_data=None,
+        test_labels=None,
+        train_generator=None,
+        val_generator=None,
+        epochs=1,
+        batch_size=1,
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
         test_name=None,
         model_name=None,
         use_GPU=True,
@@ -176,3 +176,16 @@ class BlockArchitecture(Block):
             print("Error evaluating model: {}".format(e))
 
         return params, accuracy
+
+
+class ClassificationBlockArchitecture(BlockArchitecture):
+    def __init__(self, input_shape, class_count, batch_size, optimizer):
+        self.class_count = class_count
+
+        super().__init__(
+            input_shape,
+            parent_block=None,
+            layer_type=None,
+            batch_size=batch_size,
+            optimizer=optimizer,
+        )

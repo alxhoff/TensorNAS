@@ -15,6 +15,7 @@ class Args(Enum):
     DILATION_RATE = auto()
     ACTIVATION = auto()
     GROUPS = auto()
+    KERNEL_REGULARIZER = auto()
 
 
 class Layer(NetworkLayer):

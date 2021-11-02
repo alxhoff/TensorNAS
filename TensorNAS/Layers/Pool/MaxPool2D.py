@@ -1,7 +1,7 @@
 from math import ceil
 
 from TensorNAS.Core.LayerArgs import *
-from TensorNAS.Layers.MaxPool import (
+from TensorNAS.Layers.Pool import (
     Layer,
     valid_pad_output_shape,
     same_pad_output_shape,

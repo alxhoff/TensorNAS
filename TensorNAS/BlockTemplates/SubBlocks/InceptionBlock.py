@@ -27,7 +27,7 @@ class Block(Block):
     """
 
     MAX_SUB_BLOCKS = 4
-    MIN_SUB_BLOCK = 2
+    MIN_SUB_BLOCKS = 2
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):

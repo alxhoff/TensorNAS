@@ -1,5 +1,4 @@
-from TensorNAS.Layers.MaxPool.MaxPool2D import *
-from TensorNAS.Layers.MaxPool import Args
+from TensorNAS.Layers.Pool.MaxPool2D import *
 
 import TensorNAS.Core.LayerArgs as la
 

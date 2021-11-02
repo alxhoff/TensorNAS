@@ -23,4 +23,8 @@ def GetData():
     ds_val = ds_val.shuffle(val_shuffle_buffer_size)
     ds_test = ds_test.shuffle(test_shuffle_buffer_size)
 
-    return ds_train, ds_test, ds_val, None
+    import tensorflow as tf
+
+    shape = tuple(tf.compat.v1.data.get_output_shapes(ds_train)[0].as_list()[1:])
+
+    return ds_train, ds_val, shape

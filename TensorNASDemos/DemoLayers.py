@@ -1,8 +1,10 @@
-from TensorNASDemos.Datasets.MNIST import input_tensor_shape
+from TensorNASDemos.Datasets.MNIST import GetData
+
+a, b, c, d, input_tensor_shape = GetData()
 
 from TensorNAS.Layers import Conv2D, Reshape, Dropout, Flatten
 from TensorNAS.Layers.Dense import HiddenDense, OutputDense
-from TensorNAS.Layers.MaxPool import MaxPool3D, MaxPool2D
+from TensorNAS.Layers.Pool import MaxPool3D, MaxPool2D
 
 print("Unit testing Layers")
 

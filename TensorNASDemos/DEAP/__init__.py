@@ -1,29 +1,11 @@
 def get_config(args=None):
-    from time import gmtime, strftime
-    from TensorNASDemos import get_global, set_global
+    from TensorNASDemos import set_global
     from TensorNASDemos import get_config
-    from TensorNAS.Tools.ConfigParse import (
-        GetOutputPrefix,
-        CopyConfig,
-    )
-
-    config_filename = "example"
-    if args:
-        if args.config:
-            config_filename = args.config
 
     set_global("existing_generation", None)
     set_global("start_gen", 0)
 
     config = get_config(args)
-
-    if not get_global("test_name"):
-        test_name_prefix = GetOutputPrefix(config)
-        set_global("test_name", strftime("%d_%m_%Y-%H_%M", gmtime()))
-        if test_name_prefix:
-            set_global("test_name", test_name_prefix + "_" + get_global("test_name"))
-        set_global("test_name", get_global("test_name") + "_" + get_global("ba_name"))
-        CopyConfig(config_filename, get_global("test_name"))
 
     return config
 
@@ -55,7 +37,7 @@ def run_deap_test(evaluate_individual, crossover, mutate):
     from importlib import import_module
     from TensorNAS.Tools.DEAPtest import setup_DEAP, register_DEAP_individual_gen_func
     from TensorNAS.Algorithms.EASimple import TestEASimple
-    from TensorNASDemos import get_global, set_global
+    from TensorNASDemos import get_global
     from TensorNASDemos import gen_ba
 
     creator = import_module("deap.creator")
