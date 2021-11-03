@@ -13,14 +13,15 @@ from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 # enable GPU
 config_GPU()
 
-train_generator, val_generator, input_tensor_shape = GetData()
-class_count = 10
-batch_size = 512
-epochs = 2
+train_generator, val_generator, input_tensor_shape, train_len, val_len = GetData()
+class_count = 12
+batch_size = 1
+steps_per_epoch = train_len // batch_size // 2
+validation_steps = val_len // batch_size // 2
+epochs = 1
 optimizer = "adam"
 loss = "tf.keras.metrics.sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-
 
 print("##########################################")
 print("Testing classification block architecture")
@@ -37,8 +38,10 @@ model1.print()
 
 out_metrics = model1.evaluate(
     train_generator=train_generator,
-    val_generator=val_generator,
+    validation_generator=val_generator,
     epochs=epochs,
+    steps_per_epoch=steps_per_epoch,
+    validation_steps=validation_steps,
     batch_size=batch_size,
     loss=loss,
     metrics=metrics,
@@ -50,4 +53,21 @@ print(out_metrics)
 
 model1.mutate(verbose=True)
 
-print(model1.get_ascii_tree())
+model1.print()
+
+# out_metrics = model1.evaluate(
+#     train_generator=train_generator,
+#     validation_generator=val_generator,
+#     epochs=epochs,
+#     steps_per_epoch=steps_per_epoch,
+#     validation_steps=validation_steps,
+#     batch_size=batch_size,
+#     loss=loss,
+#     metrics=metrics,
+#     test_name="DemoClassification",
+#     model_name="Model1",
+# )
+#
+# model1.print()
+# print(model1.get_ascii_tree())
+

@@ -27,14 +27,14 @@ class Block(Block):
             DWConv2DBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=DSCNNSubBlocks.DSCNN_DEPTHWISE_CONV_BLOCK,
+                layer_type=DSCNNSubBlocks.DSCNN_DEPTHWISE_CONV_BLOCK.value,
             )
         )
         blocks.append(
             Conv2DBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=DSCNNSubBlocks.DSCNN_CONV_BLOCK,
+                layer_type=DSCNNSubBlocks.DSCNN_CONV_BLOCK.value,
             )
         )
 

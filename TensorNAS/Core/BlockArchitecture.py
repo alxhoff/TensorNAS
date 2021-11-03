@@ -52,7 +52,8 @@ class BlockArchitecture(Block):
         test_data=None,
         test_labels=None,
         train_generator=None,
-        val_generator=None,
+        validation_generator=None,
+        validation_steps=1,
         epochs=1,
         batch_size=1,
         loss="sparse_categorical_crossentropy",
@@ -109,12 +110,13 @@ class BlockArchitecture(Block):
                     )
                 else:
                     if not steps_per_epoch:
-                        steps_per_epoch = len(train_generator)
+                        steps_per_epoch = len(train_generator) // batch_size
                     model.fit(
                         train_generator,
                         steps_per_epoch=steps_per_epoch,
-                        validation_data=val_generator,
-                        validation_steps=len(val_generator),
+                        validation_data=validation_generator,
+                        validation_steps=validation_steps,
+                        batch_size=batch_size,
                         epochs=epochs,
                         verbose=1,
                     )
@@ -129,21 +131,22 @@ class BlockArchitecture(Block):
                         x=train_data,
                         y=train_labels,
                         validation_data=(test_data, test_labels),
+                        validation_steps=validation_steps,
                         epochs=epochs,
-                        batch_size=self.batch_size,
+                        batch_size=batch_size,
                         verbose=1,
                         callbacks=[early_stopper],
                     )
                 else:
                     if not steps_per_epoch:
-                        steps_per_epoch = len(train_generator)
+                        steps_per_epoch = len(train_generator) // batch_size
                     model.fit(
                         train_generator,
                         steps_per_epoch=steps_per_epoch,
-                        validation_data=val_generator,
-                        validation_steps=len(val_generator),
+                        validation_data=validation_generator,
+                        validation_steps=validation_steps,
                         epochs=epochs,
-                        batch_size=self.batch_size,
+                        batch_size=batch_size,
                         verbose=1,
                         callbacks=[early_stopper],
                     )
@@ -158,6 +161,8 @@ class BlockArchitecture(Block):
                 save_model(model, test_name, model_name, logger)
                 save_block_architecture(self, test_name, model_name, logger)
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             if logger:
                 logger.log("Error running/saving model:{}, {}".format(model_name, e))
 

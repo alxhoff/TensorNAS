@@ -432,6 +432,9 @@ class Block(ABC):
 
     def get_JSON_dict(self):
 
+        if isinstance(self.layer_type, int):
+            print("wait here")
+
         json_dict = {
             "class_name": self.__module__.split(".")[-1],
             "input_shape": self.input_shape,

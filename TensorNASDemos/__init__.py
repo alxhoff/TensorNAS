@@ -59,7 +59,7 @@ def evaluate_individual(individual, test_name, gen, logger):
         test_data=images_test,
         test_labels=labels_test,
         train_generator=train_generator,
-        val_generator=val_generator,
+        validation_generator=val_generator,
         epochs=epochs,
         batch_size=batch_size,
         loss=loss,

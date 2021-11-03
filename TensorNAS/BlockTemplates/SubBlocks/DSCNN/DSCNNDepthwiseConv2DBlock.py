@@ -44,6 +44,6 @@ class Block(Block):
             NABlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.BATCH_NORMALIZATION_AND_ACTIVATION,
+                layer_type=self.SUB_BLOCK_TYPES.BATCH_NORMALIZATION_AND_ACTIVATION.value,
             )
         ]

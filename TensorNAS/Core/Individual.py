@@ -45,7 +45,7 @@ class TensorNASIndividual:
             test_data=test_data,
             test_labels=test_labels,
             train_generator=train_generator,
-            val_generator=val_generator,
+            validation_generator=val_generator,
             epochs=epochs,
             batch_size=batch_size,
             loss=loss,
