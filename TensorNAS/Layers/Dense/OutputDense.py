@@ -1,4 +1,4 @@
-import TensorNAS.Core.LayerArgs as la
+import TensorNAS.Core.Layer
 from TensorNAS.Layers.Dense import Layer
 from TensorNAS.Layers.Dense import Args as dense_args
 
@@ -6,11 +6,11 @@ from TensorNAS.Layers.Dense import Args as dense_args
 class Layer(Layer):
     def _gen_args(self, input_shape, args):
         class_count = args.get(dense_args.UNITS)
-        activation = la.ArgActivations.SOFTMAX
+        activation = TensorNAS.Core.Layer.ArgActivations.SOFTMAX
 
         if args:
             if self.get_args_enum().ACTIVATION in args:
-                from TensorNAS.Core.LayerArgs import ArgActivations
+                from TensorNAS.Core.Layer import ArgActivations
 
                 activation = ArgActivations(args.get(self.get_args_enum().ACTIVATION))
             if self.get_args_enum().UNITS:

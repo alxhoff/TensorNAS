@@ -1,7 +1,4 @@
-from math import ceil
-
-
-from TensorNAS.Core.LayerArgs import *
+from TensorNAS.Core.Layer import gen_3d_strides, gen_3d_poolsize, gen_padding
 from TensorNAS.Layers.Pool import Layer
 
 
@@ -14,7 +11,7 @@ class Layer(Layer):
 
         if args:
             if self.get_args_enum().PADDING in args:
-                from TensorNAS.Core.LayerArgs import ArgPadding
+                from TensorNAS.Core.Layer import ArgPadding
 
                 padding = ArgPadding(args.get(self.get_args_enum().PADDING))
             if self.get_args_enum().STRIDES in args:

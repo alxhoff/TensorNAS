@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os, pickle
 
-import TensorNASDemos.Datasets.SpeechCommands.kws_util as kws_util
-import TensorNASDemos.Datasets.SpeechCommands.keras_model as models
+import Demos.Datasets.SpeechCommands.kws_util as kws_util
+import Demos.Datasets.SpeechCommands.keras_model as models
 
 word_labels = [
     "Down",

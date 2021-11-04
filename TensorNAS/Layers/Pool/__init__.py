@@ -1,8 +1,8 @@
 from enum import Enum, auto
 
+import TensorNAS.Core.Layer
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Util import MutationOperators, mutate_tuple, mutate_enum
-import TensorNAS.Core.LayerArgs as la
+from TensorNAS.Core.Mutate import mutate_tuple, mutate_enum, MutationOperators
 
 
 def valid_pad_output_shape(input, pool, stride):
@@ -44,5 +44,5 @@ class Layer(Layer):
 
     def _mutate_padding(self):
         self.args[self.get_args_enum().PADDING] = mutate_enum(
-            self.args[self.get_args_enum().PADDING], la.ArgPadding
+            self.args[self.get_args_enum().PADDING], TensorNAS.Core.Layer.ArgPadding
         )

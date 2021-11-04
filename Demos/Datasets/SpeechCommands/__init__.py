@@ -1,4 +1,4 @@
-from TensorNASDemos.Datasets import tmp_dir
+from Demos.Datasets import tmp_dir
 import os
 
 data_folder = "SpeechCommands"
@@ -7,9 +7,8 @@ data_dir = os.path.join(tmp_dir, data_folder)
 
 def GetData():
 
-    from TensorNASDemos.Datasets.SpeechCommands.kws_util import parse_command
-    from TensorNASDemos.Datasets.SpeechCommands.get_dataset import get_training_data
-    import tensorflow as tf
+    from Demos.Datasets.SpeechCommands.kws_util import parse_command
+    from Demos.Datasets.SpeechCommands.get_dataset import get_training_data
 
     Flags, unparsed = parse_command()
     Flags.data_dir = data_dir
@@ -20,7 +19,6 @@ def GetData():
     val_len = len(ds_val)
     train_shuffle_buffer_size = 85511
     val_shuffle_buffer_size = 10102
-    # test_shuffle_buffer_size = 4890
 
     ds_train = ds_train.take(train_shuffle_buffer_size).repeat()
     ds_val = ds_val.take(val_shuffle_buffer_size).repeat()

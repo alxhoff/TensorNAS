@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from tensorflow import keras
 
-from TensorNAS.Core.ModelUtil import shortcut
+from TensorNAS.Tools.Util import shortcut
 from TensorNAS.Core.Block import Block
 
 

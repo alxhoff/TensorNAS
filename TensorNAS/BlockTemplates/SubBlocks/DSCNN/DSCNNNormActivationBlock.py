@@ -18,7 +18,7 @@ class Block(Block):
         from TensorNAS.Layers.BatchNormalization import Layer as BatchNormalization
         from TensorNAS.Layers.Activation import Layer as Activation
         from TensorNAS.Layers.Activation import Args as activation_args
-        from TensorNAS.Core.LayerArgs import ArgActivations
+        from TensorNAS.Core.Layer import ArgActivations
 
         layers = []
 

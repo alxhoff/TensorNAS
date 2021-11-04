@@ -1,8 +1,7 @@
 from enum import Enum, auto
 
-import TensorNAS.Core.LayerArgs as la
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Util import dimension_mag, mutate_int
+from TensorNAS.Core.Mutate import mutate_int
 
 
 def get_divisors(n):

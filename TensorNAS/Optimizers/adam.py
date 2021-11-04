@@ -28,7 +28,7 @@ class Optimizer:
         return opt
 
     def mutate(self, verbose=False):
-        from TensorNAS.Core.Util import mutate_float
+        from TensorNAS.Core.Mutate import mutate_float
 
         choice = random.randrange(0, 5)
 
@@ -47,7 +47,7 @@ class Optimizer:
         elif choice == 3:
             if verbose:
                 print("[MUTATE] mutating epsilon")
-            from TensorNAS.Core.Util import MutationOperators
+            from TensorNAS.Core.Mutate import MutationOperators
 
             self.epsilon = mutate_float(
                 self.epsilon,

@@ -22,7 +22,9 @@ class Block(Block):
         from TensorNAS.Layers.Conv2D import Args as conv2d_args
         from TensorNAS.Layers.Activation import Args as activation_args
         from TensorNAS.Layers.Dropout import Args as dropout_args
-        from TensorNAS.Core.LayerArgs import ArgPadding, ArgRegularizers, ArgActivations
+        from TensorNAS.Core.Layer import ArgRegularizers
+        from TensorNAS.Core.Layer import ArgPadding
+        from TensorNAS.Core.Layer import ArgActivations
 
         layers = []
 

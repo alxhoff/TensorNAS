@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from TensorNAS.Core.LayerArgs import *
+from TensorNAS.Core.Layer import ArgPadding
 from TensorNAS.Core.Block import Block
 
 from TensorNAS.Layers.Conv2D import Args as conv_args

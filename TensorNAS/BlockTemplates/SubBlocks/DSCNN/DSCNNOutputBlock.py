@@ -25,7 +25,7 @@ class Block(Block):
         from TensorNAS.Layers.Flatten import Layer as Flatten
         from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
         from TensorNAS.Layers.Dense import Args as dense_args
-        from TensorNAS.Core.LayerArgs import ArgActivations
+        from TensorNAS.Core.Layer import ArgActivations
 
         layers = []
 

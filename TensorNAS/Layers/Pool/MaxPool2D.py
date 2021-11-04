@@ -6,11 +6,9 @@ class Layer(Layer):
     MAX_STRIDE_SIZE = 5
 
     def _gen_args(self, input_shape, args):
-        from TensorNAS.Core.LayerArgs import (
-            gen_2d_poolsize,
-            gen_2d_strides,
-            gen_padding,
-        )
+        from TensorNAS.Core.Layer import gen_padding
+        from TensorNAS.Core.Layer import gen_2d_poolsize
+        from TensorNAS.Core.Layer import gen_2d_strides
         import random
 
         pool_size = gen_2d_poolsize(random.randint(1, self.MAX_POOL_SIZE))
@@ -19,7 +17,7 @@ class Layer(Layer):
 
         if args:
             if self.get_args_enum().PADDING in args:
-                from TensorNAS.Core.LayerArgs import ArgPadding
+                from TensorNAS.Core.Layer import ArgPadding
 
                 padding = ArgPadding(args.get(self.get_args_enum().PADDING))
             if self.get_args_enum().STRIDES in args:
@@ -43,7 +41,7 @@ class Layer(Layer):
                 self.args[self.get_args_enum().POOL_SIZE][x] = 1
 
     def get_output_shape(self):
-        from TensorNAS.Core.LayerArgs import ArgPadding
+        from TensorNAS.Core.Layer import ArgPadding
         from TensorNAS.Layers.Pool import (
             valid_pad_output_shape,
             same_pad_output_shape,

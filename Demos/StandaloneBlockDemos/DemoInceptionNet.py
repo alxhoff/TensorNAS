@@ -1,7 +1,7 @@
-from TensorNAS.BlockTemplates.BlockArchitectures.ResNetBlockArchitecture import (
-    Block as ResNetBlockArchitecture,
+from TensorNAS.BlockTemplates.BlockArchitectures.InceptionNetArchitecture import (
+    Block as InceptionNetBlockArchitecture,
 )
-from TensorNAS.Core.Util import list_available_blocks
+from TensorNAS.Tools.Util import list_available_blocks
 
 from TensorNASDemos.Datasets.MNIST import GetData
 
@@ -21,12 +21,12 @@ from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 config_GPU()
 
 print("##########################################")
-print("Testing Res Net block architecture")
+print("Testing Inception Net block architecture")
 print("##########################################")
 
 list_available_blocks()
 
-model = ResNetBlockArchitecture(
+model = InceptionNetBlockArchitecture(
     input_shape=input_tensor_shape,
     class_count=class_count,
     batch_size=batch_size,
@@ -45,7 +45,7 @@ out_metrics = model.evaluate(
     steps_per_epoch=steps_per_epoch,
     loss=loss,
     metrics=metrics,
-    test_name="DemoResNet",
+    test_name="DemoInceptionNet",
     model_name="Model",
 )
 
@@ -64,7 +64,7 @@ out_metrics = model.evaluate(
     steps_per_epoch=steps_per_epoch,
     loss=loss,
     metrics=metrics,
-    test_name="DemoResNet",
+    test_name="DemoInceptionNet",
     model_name="Model",
 )
 

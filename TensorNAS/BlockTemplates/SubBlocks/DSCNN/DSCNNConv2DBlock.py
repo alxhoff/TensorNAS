@@ -17,7 +17,8 @@ class Block(Block):
     def generate_constrained_input_sub_blocks(self, input_shape):
         from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
         from TensorNAS.Layers.Conv2D import Args as conv2d_args
-        from TensorNAS.Core.LayerArgs import ArgPadding, ArgRegularizers
+        from TensorNAS.Core.Layer import ArgRegularizers
+        from TensorNAS.Core.Layer import ArgPadding
 
         args = {
             conv2d_args.FILTERS: 64,

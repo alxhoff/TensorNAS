@@ -1,9 +1,8 @@
-import itertools
 import random
 import re
 from abc import ABC, abstractmethod
 
-from TensorNAS.Core.Util import mutate_enum_i
+from TensorNAS.Core.Mutate import mutate_enum_i
 
 
 def get_block_from_JSON(json_dict, parent_block=None):
@@ -330,7 +329,7 @@ class Block(ABC):
         """
         Returns an ASCII tree representation of the block heirarchy starting from the current block.
         """
-        from TensorNAS.Core.Util import block_width, stack_str_blocks
+        from TensorNAS.Tools.Util import block_width, stack_str_blocks
 
         if not self.parent_block:
             name = "ROOT"

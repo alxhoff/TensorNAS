@@ -1,7 +1,8 @@
 from enum import Enum, auto
+
+import TensorNAS.Core.Layer
 from TensorNAS.Core.Layer import Layer
-import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Util import mutate_enum
+from TensorNAS.Core.Mutate import mutate_enum
 
 
 class Args(Enum):
@@ -12,7 +13,7 @@ class Args(Enum):
 class Layer(Layer):
     def _gen_args(self, input_shape, args):
 
-        activation = la.gen_activation()
+        activation = TensorNAS.Core.Layer.gen_activation()
 
         if args:
             if self.get_args_enum().ACTIVATION in args:
@@ -22,7 +23,8 @@ class Layer(Layer):
 
     def _mutate_activation(self):
         self.args[self.get_args_enum().ACTIVATION] = mutate_enum(
-            self.args[self.get_args_enum().ACTIVATION], la.ArgActivations
+            self.args[self.get_args_enum().ACTIVATION],
+            TensorNAS.Core.Layer.ArgActivations,
         )
 
     def get_output_shape(self):

@@ -1,7 +1,7 @@
 from TensorNAS.BlockTemplates.BlockArchitectures.DSCNNBlockArchitecture import (
     Block as DSCNNBlockArchitecture,
 )
-from TensorNASDemos.Datasets.SpeechCommands import GetData
+from Demos.Datasets.SpeechCommands import GetData
 
 import tensorflow as tf
 

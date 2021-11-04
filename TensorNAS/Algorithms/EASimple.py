@@ -28,7 +28,7 @@ def TestEASimple(
         logger = Logger(test_name)
         logger.log("Starting test {}".format(test_name))
 
-    from TensorNAS.Tools.DEAPtest import DEAPTest
+    from TensorNAS.Tools.DEAPTest import DEAPTest
 
     test = DEAPTest(
         pop_size=pop_size,
@@ -86,7 +86,7 @@ def TestEASimple(
         if len(models):
             pareto_models.append(models[0])
 
-    from TensorNAS.Core.Util import copy_pareto_model
+    from TensorNAS.Tools.Util import copy_pareto_model
 
     for i, pmodel in enumerate(pareto_models):
         copy_pareto_model(test_name, gen_count, pmodel.index, i)
@@ -307,7 +307,7 @@ def eaSimple(
             logger.log("{} existing individuals".format(len(valid_ind)))
 
         # Copy existing models to new generation
-        from TensorNAS.Core.Util import copy_output_model
+        from TensorNAS.Tools.Util import copy_output_model
 
         for ind in valid_ind:
             index = offspring.index(ind)

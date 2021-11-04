@@ -28,7 +28,7 @@ class BlockArchitecture(Block):
             self.opt.mutate(verbose)
 
     def _mutate_batch_size(self, verbose):
-        from TensorNAS.Core.Util import mutate_int_square
+        from TensorNAS.Core.Mutate import mutate_int_square
 
         self.batch_size = mutate_int_square(self.batch_size, 1, self.MAX_BATCH_SIZE)
 
@@ -159,7 +159,7 @@ class BlockArchitecture(Block):
 
         try:
             if test_name and model_name:
-                from TensorNAS.Core.Util import save_model, save_block_architecture
+                from TensorNAS.Tools.Util import save_model, save_block_architecture
 
                 save_model(model, test_name, model_name, logger)
                 save_block_architecture(self, test_name, model_name, logger)

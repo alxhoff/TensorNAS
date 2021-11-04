@@ -1,4 +1,9 @@
-from TensorNAS.Core.LayerArgs import *
+from TensorNAS.Core.Layer import (
+    ArgPadding,
+    gen_1d_strides,
+    gen_1d_poolsize,
+    gen_padding,
+)
 from TensorNAS.Layers.Pool import (
     Layer,
     valid_pad_output_shape,
@@ -20,7 +25,7 @@ class Layer(Layer):
         if self.get_args_enum().STRIDES in args:
             max_stride_size = args.get(self.get_args_enum().STRIDES)
         if self.get_args_enum().PADDING in args:
-            from TensorNAS.Core.LayerArgs import ArgPadding
+            from TensorNAS.Core.Layer import ArgPadding
 
             padding = ArgPadding(args.get(self.get_args_enum().PADDING))
 

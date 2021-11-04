@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Util import mutate_dimension
+from TensorNAS.Core.Mutate import mutate_dimension
 
 
 class Args(Enum):

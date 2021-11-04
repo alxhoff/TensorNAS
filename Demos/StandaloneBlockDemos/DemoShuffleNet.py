@@ -1,7 +1,7 @@
 from TensorNAS.BlockTemplates.BlockArchitectures.ShuffleNetBlockArchitecture import (
     Block as ShuffleNetBlockArchitecture,
 )
-from TensorNAS.Core.Util import list_available_blocks
+from TensorNAS.Tools.Util import list_available_blocks
 
 from TensorNASDemos.Datasets.MNIST import GetData
 

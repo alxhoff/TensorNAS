@@ -1,21 +1,21 @@
 import random
 
+import TensorNAS.Core.Layer
 from TensorNAS.Layers.Conv2D import Layer
-import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Util import MutationOperators
+from TensorNAS.Core.Mutate import MutationOperators
 
 
 class Layer(Layer):
     def _gen_args(self, input_shape, args):
         return {
             self.get_args_enum().FILTERS: random.randint(1, self.MAX_FILTER_COUNT),
-            self.get_args_enum().KERNEL_SIZE: la.gen_2d_kernel_size(
+            self.get_args_enum().KERNEL_SIZE: TensorNAS.Core.Layer.gen_2d_kernel_size(
                 self.MAX_KERNEL_DIMENSION
             ),
             self.get_args_enum().STRIDES: (1, 1),
-            self.get_args_enum().PADDING: la.ArgPadding.SAME,
-            self.get_args_enum().DILATION_RATE: la.gen_2d_dilation(),
-            self.get_args_enum().ACTIVATION: la.gen_activation(),
+            self.get_args_enum().PADDING: TensorNAS.Core.Layer.ArgPadding.SAME,
+            self.get_args_enum().DILATION_RATE: TensorNAS.Core.Layer.gen_2d_dilation(),
+            self.get_args_enum().ACTIVATION: TensorNAS.Core.Layer.gen_activation(),
         }
 
     def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):

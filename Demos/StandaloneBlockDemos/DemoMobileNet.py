@@ -1,7 +1,7 @@
-from TensorNAS.BlockTemplates.BlockArchitectures.SqueezeNetBlockArchitecture import (
-    Block as SqueezeNetBlockArchitecture,
+from TensorNAS.BlockTemplates.BlockArchitectures.MobileNetBlockArchitecture import (
+    Block as MobileNetBlockArchitecture,
 )
-from TensorNAS.Core.Util import list_available_blocks
+from TensorNAS.Tools.Util import list_available_blocks
 
 from TensorNASDemos.Datasets.MNIST import GetData
 
@@ -20,17 +20,13 @@ from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 # enable GPU
 config_GPU()
 
-import tensorflow as tf
-
 print("##########################################")
-print("Testing Squeeze Net block architecture")
+print("Testing Mobile Net block architecture")
 print("##########################################")
-
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 list_available_blocks()
 
-model = SqueezeNetBlockArchitecture(
+model = MobileNetBlockArchitecture(
     input_shape=input_tensor_shape,
     class_count=class_count,
     batch_size=batch_size,
@@ -38,7 +34,6 @@ model = SqueezeNetBlockArchitecture(
 )
 
 model.print()
-print(model.get_ascii_tree())
 
 out_metrics = model.evaluate(
     train_data=images_train,
@@ -50,14 +45,14 @@ out_metrics = model.evaluate(
     steps_per_epoch=steps_per_epoch,
     loss=loss,
     metrics=metrics,
-    test_name="DemoSqueezeNet",
+    test_name="DemoMobileNet",
     model_name="Model",
 )
 
 print(out_metrics)
 model.mutate(verbose=True)
-model.print()
 print(model.get_ascii_tree())
+model.print()
 
 out_metrics = model.evaluate(
     train_data=images_train,
@@ -69,7 +64,7 @@ out_metrics = model.evaluate(
     steps_per_epoch=steps_per_epoch,
     loss=loss,
     metrics=metrics,
-    test_name="DemoSqueezeNet",
+    test_name="DemoMobileNet",
     model_name="Model",
 )
 

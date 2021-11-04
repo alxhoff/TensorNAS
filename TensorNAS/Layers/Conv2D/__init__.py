@@ -1,9 +1,14 @@
 import random
 from enum import Enum, auto
 
-import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Util import mutate_int, mutate_enum, mutate_tuple, MutationOperators
+import TensorNAS.Core.Layer
+from TensorNAS.Core.Layer import Layer, ArgActivations, ArgPadding
+from TensorNAS.Core.Mutate import (
+    mutate_int,
+    mutate_tuple,
+    mutate_enum,
+    MutationOperators,
+)
 
 
 class Args(Enum):
@@ -28,10 +33,10 @@ class Layer(Layer):
         # TODO this could be more generic and neater
 
         filter_count = random.randint(1, self.MAX_FILTER_COUNT)
-        kernel_size = la.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
-        padding = la.gen_padding()
-        activation = la.gen_activation()
-        dilation_rate = la.gen_2d_dilation()
+        kernel_size = TensorNAS.Core.Layer.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
+        padding = TensorNAS.Core.Layer.gen_padding()
+        activation = TensorNAS.Core.Layer.gen_activation()
+        dilation_rate = TensorNAS.Core.Layer.gen_2d_dilation()
         strides = (1, 1)
 
         if args:
@@ -40,12 +45,8 @@ class Layer(Layer):
             if self.get_args_enum().KERNEL_SIZE in args:
                 kernel_size = args.get(self.get_args_enum().KERNEL_SIZE)
             if self.get_args_enum().PADDING in args:
-                from TensorNAS.Core.LayerArgs import ArgPadding
-
                 padding = ArgPadding(args.get(self.get_args_enum().PADDING))
             if self.get_args_enum().ACTIVATION in args:
-                from TensorNAS.Core.LayerArgs import ArgActivations
-
                 activation = ArgActivations(args.get(self.get_args_enum().ACTIVATION))
             if self.get_args_enum().DILATION_RATE in args:
                 dilation_rate = args.get(self.get_args_enum().DILATION_RATE)
@@ -87,7 +88,7 @@ class Layer(Layer):
 
     def _mutate_padding(self):
         self.args[self.get_args_enum().PADDING] = mutate_enum(
-            self.args[self.get_args_enum().PADDING], la.ArgPadding
+            self.args[self.get_args_enum().PADDING], TensorNAS.Core.Layer.ArgPadding
         )
 
     def _mutate_dilation_rate(self, operator=MutationOperators.SYNC_STEP):
@@ -100,7 +101,8 @@ class Layer(Layer):
 
     def _mutate_activation(self):
         self.args[self.get_args_enum().ACTIVATION] = mutate_enum(
-            self.args[self.get_args_enum().ACTIVATION], la.ArgActivations
+            self.args[self.get_args_enum().ACTIVATION],
+            TensorNAS.Core.Layer.ArgActivations,
         )
 
     def _single_stride(self):
@@ -125,11 +127,11 @@ class Layer(Layer):
 
     @staticmethod
     def conv2Doutputshape(input_size, stride, kernel_size, filter_count, padding):
-        if padding == la.ArgPadding.SAME:
+        if padding == TensorNAS.Core.Layer.ArgPadding.SAME:
             X = Layer._same_pad_output_shape(input_size[0], stride[0])
             Y = Layer._same_pad_output_shape(input_size[1], stride[1])
             return (X, Y, filter_count)
-        elif padding == la.ArgPadding.VALID:
+        elif padding == TensorNAS.Core.Layer.ArgPadding.VALID:
             X = Layer._valid_pad_output_shape(input_size[0], kernel_size[0], stride[0])
             Y = Layer._valid_pad_output_shape(input_size[1], kernel_size[1], stride[1])
             return (X, Y, filter_count)

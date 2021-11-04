@@ -3,7 +3,7 @@ from enum import Enum
 
 from setuptools import find_packages
 
-from TensorNAS.Core.Util import find_modules
+from TensorNAS.Tools.Util import find_modules
 
 
 def find_layer_modules():

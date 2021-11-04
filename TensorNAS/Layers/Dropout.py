@@ -1,9 +1,8 @@
 from enum import Enum, auto
 
-import TensorNAS.Core.LayerArgs as la
+import TensorNAS.Core.Layer
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.LayerArgs import *
-from TensorNAS.Core.Util import mutate_unit_interval
+from TensorNAS.Core.Mutate import mutate_unit_interval
 
 
 class Args(Enum):
@@ -16,7 +15,7 @@ class Layer(Layer):
 
     def _gen_args(self, input_shape, args):
 
-        max = la.gen_dropout(self.MAX_RATE)
+        max = TensorNAS.Core.Layer.gen_dropout(self.MAX_RATE)
 
         if args:
             if self.get_args_enum().RATE in args:

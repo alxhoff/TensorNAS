@@ -1,6 +1,6 @@
+import TensorNAS.Core.Layer
 from TensorNAS.Layers.Conv2D import Layer
-import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Util import MutationOperators
+from TensorNAS.Core.Mutate import MutationOperators
 
 
 class Layer(Layer):
@@ -11,9 +11,9 @@ class Layer(Layer):
             self.get_args_enum().FILTERS: filter_count,
             self.get_args_enum().KERNEL_SIZE: (1, 1),
             self.get_args_enum().STRIDES: (1, 1),
-            self.get_args_enum().PADDING: la.gen_padding(),
-            self.get_args_enum().DILATION_RATE: la.gen_2d_dilation(),
-            self.get_args_enum().ACTIVATION: la.gen_activation(),
+            self.get_args_enum().PADDING: TensorNAS.Core.Layer.gen_padding(),
+            self.get_args_enum().DILATION_RATE: TensorNAS.Core.Layer.gen_2d_dilation(),
+            self.get_args_enum().ACTIVATION: TensorNAS.Core.Layer.gen_activation(),
         }
 
     def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
