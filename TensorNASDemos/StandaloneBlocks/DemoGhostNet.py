@@ -1,10 +1,19 @@
-from TensorNAS.BlockTemplates.BlockArchitectures import GhostNetBlockArchitecture
+from TensorNAS.BlockTemplates.BlockArchitectures.GhostNetBlockArchitecture import (
+    Block as GhostNetBlockArchitecture,
+)
 from TensorNAS.Core.Util import list_available_blocks
 
 from TensorNASDemos.Datasets.MNIST import GetData
 
 images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
-mnist_class_count = 10
+class_count = 10
+batch_size = 56
+steps_per_epoch = len(images_train) // batch_size
+validation_steps = len(images_test) // batch_size
+epochs = 1
+optimizer = "adam"
+loss = "tf.keras.metrics.sparse_categorical_crossentropy"
+metrics = ["accuracy"]
 
 from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 
@@ -17,44 +26,46 @@ print("##########################################")
 
 list_available_blocks()
 
-model = GhostNetBlockArchitecture.GhostNetBlockArchitecture(
-    input_tensor_shape, mnist_class_count
+model = GhostNetBlockArchitecture(
+    input_shape=input_tensor_shape,
+    class_count=class_count,
+    batch_size=batch_size,
+    optimizer=optimizer,
 )
 
 model.print()
 
-metrics = model.evaluate(
+out_metrics = model.evaluate(
     train_data=images_train,
     train_labels=labels_train,
     test_data=images_test,
     test_labels=labels_test,
-    epochs=2,
-    batch_size=32,
-    steps=5,
-    optimizer="adam",
-    loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"],
+    epochs=epochs,
+    batch_size=batch_size,
+    steps_per_epoch=steps_per_epoch,
+    loss=loss,
+    metrics=metrics,
+    test_name="DemoGhostNet",
+    model_name="Model",
 )
 
-print(metrics)
-
+print(out_metrics)
 model.mutate(verbose=True)
-
 model.print()
 
-metrics = model.evaluate(
+out_metrics = model.evaluate(
     train_data=images_train,
     train_labels=labels_train,
     test_data=images_test,
     test_labels=labels_test,
-    epochs=2,
-    batch_size=32,
-    steps=5,
-    optimizer="adam",
-    loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"],
+    epochs=epochs,
+    batch_size=batch_size,
+    steps_per_epoch=steps_per_epoch,
+    loss=loss,
+    metrics=metrics,
+    test_name="DemoGhostNet",
+    model_name="Model",
 )
 
-print(metrics)
-
+print(out_metrics)
 print("Done")

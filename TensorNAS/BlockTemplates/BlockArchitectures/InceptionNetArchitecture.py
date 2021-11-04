@@ -22,18 +22,13 @@ class Block(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )
 
     def generate_random_sub_block(self, input_shape, layer_type):
         if layer_type == self.SUB_BLOCK_TYPES.INCEPTION_BLOCK:
-            return [
-                InceptionBlock(
-                    input_shape=input_shape, parent_block=self, layer_type=layer_type
-                )
-            ]
+            return [InceptionBlock(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         return [
@@ -41,6 +36,5 @@ class Block(BlockArchitecture):
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
-                layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
             )
         ]

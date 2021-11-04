@@ -1,9 +1,5 @@
 from enum import Enum, auto
 
-from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
-    Block as TwoDClassificationBlock,
-)
-from TensorNAS.BlockTemplates.SubBlocks.MobilNetBlock import Block as MobileNetBlock
 from TensorNAS.Core.BlockArchitecture import BlockArchitecture
 
 
@@ -22,33 +18,38 @@ class Block(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )
 
     def generate_constrained_input_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.MobilNetBlock import (
+            Block as MobileNetBlock,
+        )
+
         return [
             MobileNetBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.MOBILE_BLOCK,
             )
         ]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
+            Block as TwoDClassificationBlock,
+        )
+
         return [
             TwoDClassificationBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
-                layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
             )
         ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        return [
-            MobileNetBlock(
-                input_shape=input_shape, parent_block=self, layer_type=layer_type
-            )
-        ]
+        from TensorNAS.BlockTemplates.SubBlocks.MobilNetBlock import (
+            Block as MobileNetBlock,
+        )
+
+        return [MobileNetBlock(input_shape=input_shape, parent_block=self)]

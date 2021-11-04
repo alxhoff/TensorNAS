@@ -1,9 +1,5 @@
 from enum import Enum, auto
 
-from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
-    Block as TwoDClassificationBlock,
-)
-from TensorNAS.BlockTemplates.SubBlocks.FireBlock import Block as FireBlock
 from TensorNAS.Core.BlockArchitecture import BlockArchitecture
 
 
@@ -23,12 +19,15 @@ class Block(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )
 
     def generate_constrained_output_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
+            Block as TwoDClassificationBlock,
+        )
+
         return [
             TwoDClassificationBlock(
                 input_shape=input_shape,
@@ -38,10 +37,8 @@ class Block(BlockArchitecture):
         ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.BlockTemplates.SubBlocks.FireBlock import Block as FireBlock
+
         if layer_type == self.SUB_BLOCK_TYPES.FIRE_BLOCK:
-            return [
-                FireBlock(
-                    input_shape=input_shape, parent_block=self, layer_type=layer_type
-                )
-            ]
+            return [FireBlock(input_shape=input_shape, parent_block=self)]
         return []

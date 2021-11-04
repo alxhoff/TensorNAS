@@ -1,11 +1,4 @@
-from math import ceil
-
-from TensorNAS.Core.LayerArgs import *
-from TensorNAS.Layers.Pool import (
-    Layer,
-    valid_pad_output_shape,
-    same_pad_output_shape,
-)
+from TensorNAS.Layers.Pool import Layer
 
 
 class Layer(Layer):
@@ -13,6 +6,13 @@ class Layer(Layer):
     MAX_STRIDE_SIZE = 5
 
     def _gen_args(self, input_shape, args):
+        from TensorNAS.Core.LayerArgs import (
+            gen_2d_poolsize,
+            gen_2d_strides,
+            gen_padding,
+        )
+        import random
+
         pool_size = gen_2d_poolsize(random.randint(1, self.MAX_POOL_SIZE))
         stride_size = gen_2d_strides(random.randint(1, self.MAX_STRIDE_SIZE))
         padding = gen_padding()
@@ -43,6 +43,12 @@ class Layer(Layer):
                 self.args[self.get_args_enum().POOL_SIZE][x] = 1
 
     def get_output_shape(self):
+        from TensorNAS.Core.LayerArgs import ArgPadding
+        from TensorNAS.Layers.Pool import (
+            valid_pad_output_shape,
+            same_pad_output_shape,
+        )
+
         inp = self.inputshape.get()
         pool = self.args[self.get_args_enum().POOL_SIZE]
         stri = self.args[self.get_args_enum().STRIDES]
@@ -51,17 +57,17 @@ class Layer(Layer):
             x = same_pad_output_shape(inp[0], pool[0], stri[0])
             y = same_pad_output_shape(inp[1], pool[1], stri[1])
             try:
-                return (x, y, inp[2])
+                return x, y, inp[2]
             except Exception as e:
                 raise Exception("I/O shapes not able to be made compatible")
         elif pad == ArgPadding.VALID:
             x = valid_pad_output_shape(inp[0], pool[0], stri[0])
             y = valid_pad_output_shape(inp[1], pool[1], stri[1])
             try:
-                return (x, y, inp[2])
+                return x, y, inp[2]
             except Exception as e:
                 raise Exception("I/O shapes not able to be made compatible")
-        return (0, 0, 0)
+        return 0, 0, 0
 
     def get_keras_layers(self, input_tensor):
         import tensorflow as tf

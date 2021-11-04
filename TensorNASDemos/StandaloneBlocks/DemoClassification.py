@@ -49,9 +49,7 @@ out_metrics = model1.evaluate(
 )
 
 print(out_metrics)
-
 model1.mutate(verbose=True)
-
 print(model1.get_ascii_tree())
 
 out_metrics = model1.evaluate(
@@ -77,7 +75,6 @@ model2 = ClassificationBlockArchitecture(
 from TensorNAS.Core.Crossover import crossover_single_point
 
 model1, model2 = crossover_single_point(model1, model2)
-
 print(model1.get_ascii_tree())
 print(model2.get_ascii_tree())
 

@@ -1,6 +1,5 @@
 from enum import Enum, auto
 
-from TensorNAS.BlockTemplates.SubBlocks.GhostBlock import Block as GhostBlock
 from TensorNAS.Core.BlockArchitecture import BlockArchitecture
 
 
@@ -20,7 +19,6 @@ class Block(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )
