@@ -1,4 +1,6 @@
-from TensorNAS.BlockTemplates.BlockArchitectures import ClassificationBlockArchitecture
+from TensorNAS.BlockTemplates.BlockArchitectures.ClassificationBlockArchitecture import (
+    Block as ClassificationBlockArchitecture,
+)
 from TensorNASDemos.Datasets.MNIST import GetData
 
 import tensorflow as tf
@@ -6,27 +8,14 @@ import tensorflow as tf
 print(tf.__version__)
 print(tf.executing_eagerly())
 
-images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
+tr_data, te_data, tr_labels, te_labels, input_tensor_shape = GetData()
 mnist_class_count = 10
 batch_size = 512
 epochs = 2
 data_size = 60000
 optimizer = "adam"
-loss = "sparse_categorical_crossentropy"
+loss = "tf.keras.metrics.sparse_categorical_crossentropy"
 metrics = ["accuracy"]
-
-
-def get_train_data(len, data, labels):
-    assert data.shape[0] == labels.shape[0]
-    assert len <= data.shape[0]
-    import random
-
-    random.seed()
-    len = int(len)
-    data_len = data.shape[0]
-    index = random.randrange(0, data_len + 1 - len)
-    return data[index : index + len], labels[index : index + len]
-
 
 from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 
@@ -37,14 +26,14 @@ print("##########################################")
 print("Testing classification block architecture")
 print("##########################################")
 
-model1 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
-    input_tensor_shape, mnist_class_count
+model1 = ClassificationBlockArchitecture(
+    input_shape=input_tensor_shape,
+    class_count=mnist_class_count,
+    batch_size=batch_size,
+    optimizer=optimizer,
 )
 
 model1.print()
-
-tr_data, tr_labels = get_train_data(data_size, images_train, labels_train)
-te_data, te_labels = get_train_data(data_size / 6, images_test, labels_test)
 
 out_metrics = model1.evaluate(
     train_data=tr_data,
@@ -53,7 +42,6 @@ out_metrics = model1.evaluate(
     test_labels=te_labels,
     epochs=epochs,
     batch_size=batch_size,
-    optimizer=optimizer,
     loss=loss,
     metrics=metrics,
     test_name="DemoClassification",
@@ -73,15 +61,17 @@ out_metrics = model1.evaluate(
     test_labels=te_labels,
     epochs=epochs,
     batch_size=batch_size,
-    optimizer=optimizer,
     loss=loss,
     metrics=metrics,
 )
 
 print(out_metrics)
 
-model2 = ClassificationBlockArchitecture.ClassificationBlockArchitecture(
-    input_tensor_shape, mnist_class_count
+model2 = ClassificationBlockArchitecture(
+    input_shape=input_tensor_shape,
+    class_count=mnist_class_count,
+    batch_size=batch_size,
+    optimizer=optimizer,
 )
 
 from TensorNAS.Core.Crossover import crossover_single_point
@@ -99,7 +89,6 @@ try:
         test_labels=te_labels,
         epochs=epochs,
         batch_size=batch_size,
-        optimizer=optimizer,
         loss=loss,
         metrics=metrics,
     )
@@ -114,7 +103,6 @@ try:
         test_labels=te_labels,
         epochs=epochs,
         batch_size=batch_size,
-        optimizer=optimizer,
         loss=loss,
         metrics=metrics,
     )

@@ -52,9 +52,9 @@ def crossover_single_point(b1, b2):
 
 
 def _get_max_depth(ba):
-    from TensorNAS.Core.LayerBlock import Block as LayerBlock
+    from TensorNAS.Core.Layer import Layer
 
-    if isinstance(ba, LayerBlock):
+    if isinstance(ba, Layer):
         return 0
 
     if ba.input_blocks or ba.middle_blocks or ba.output_blocks:
@@ -155,13 +155,18 @@ def _cross_point(b1, b2, b1_i, b2_i):
 
 def _recurse_select(block, count):
     import random
+    from TensorNAS.Core.Block import Block
 
     ret = None
     if random.randint(0, count) == count:
         ret = block
     count += 1
 
-    for sb in block.input_blocks + block.middle_blocks + block.output_blocks:
+    for sb in [
+        b
+        for b in block.input_blocks + block.middle_blocks + block.output_blocks
+        if issubclass(type(b), Block)
+    ]:
         tmp, count = _recurse_select(sb, count)
         if tmp:
             ret = tmp

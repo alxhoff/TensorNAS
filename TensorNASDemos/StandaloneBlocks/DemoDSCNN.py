@@ -70,4 +70,3 @@ model1.print()
 #
 # model1.print()
 # print(model1.get_ascii_tree())
-

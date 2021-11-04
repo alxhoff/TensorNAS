@@ -3,9 +3,6 @@ from tensorflow import keras
 
 from TensorNAS.Core.ModelUtil import shortcut
 from TensorNAS.Core.Block import Block
-from TensorNAS.BlockTemplates.SubBlocks.FeatureExtractionBlock import (
-    Block as FeatureExtractionBlock,
-)
 
 
 class SubBlockTypes(Enum):
@@ -17,12 +14,12 @@ class Block(Block):
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.BlockTemplates.SubBlocks.FeatureExtractionBlock import (
+            Block as FeatureExtractionBlock,
+        )
+
         if layer_type == self.SUB_BLOCK_TYPES.SAME_CONV2D:
-            return [
-                FeatureExtractionBlock(
-                    input_shape=input_shape, parent_block=self, layer_type=layer_type
-                )
-            ]
+            return [FeatureExtractionBlock(input_shape=input_shape, parent_block=self)]
         return []
 
     def get_keras_layers(self, input_tensor):

@@ -2,7 +2,7 @@ from enum import Enum, auto
 
 import tensorflow as tf
 
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 
 
 class Args(Enum):
@@ -11,11 +11,11 @@ class Args(Enum):
     ACTIVATION = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     def get_output_shape(self):
         return (1, self.args.get(self.get_args_enum().UNITS))
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         return tf.keras.layers.Dense(
             units=self.args.get(self.get_args_enum().UNITS),
             activation=self.args.get(self.get_args_enum().ACTIVATION).value,

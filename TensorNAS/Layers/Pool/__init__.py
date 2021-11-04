@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.Util import MutationOperators, mutate_tuple, mutate_enum
 import TensorNAS.Core.LayerArgs as la
 
@@ -22,7 +22,7 @@ class Args(Enum):
     PADDING = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     MAX_POOL_SIZE = 7
     MAX_STRIDE = 7
 

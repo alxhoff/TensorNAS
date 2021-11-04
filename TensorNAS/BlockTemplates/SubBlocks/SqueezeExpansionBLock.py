@@ -1,9 +1,6 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
-from TensorNAS.Layers import SupportedLayers
-
 from TensorNAS.Layers.Dense import Args as dense_args
 
 
@@ -27,32 +24,36 @@ class Block(Block):
         super().__init__(input_shape, parent_block, layer_type)
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        # TODO do not make it manually append but instead return a list of blocks
+        from TensorNAS.Layers.Pool.GlobalAveragePool2D import (
+            Layer as GlobalAveragePool2D,
+        )
+
         return [
-            LayerBlock(
+            GlobalAveragePool2D(
                 input_shape=None,
                 parent_block=self,
-                layer_type=SupportedLayers.GLOBALAVERAGEPOOL2D,
             )
         ]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
+        from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
+
         return [
-            LayerBlock(
+            OutputDense(
                 input_shape=None,
                 parent_block=self,
-                layer_type=SupportedLayers.OUTPUTDENSE,
                 args={dense_args.UNITS: self.class_count},
             )
         ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.Layers.Dense.HiddenDense import Layer as HiddenDense
+
         return [
-            LayerBlock(
+            HiddenDense(
                 input_shape=None,
                 parent_block=self,
-                layer_type=SupportedLayers.HIDDENDENSE,
                 args={dense_args.UNITS: self.class_count},
             )
         ]

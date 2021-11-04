@@ -2,7 +2,7 @@ import random
 from enum import Enum, auto
 
 import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.Util import mutate_int, mutate_enum, mutate_tuple, MutationOperators
 
 
@@ -18,7 +18,7 @@ class Args(Enum):
     KERNEL_REGULARIZER = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     MAX_FILTER_COUNT = 128
     MAX_KERNEL_DIMENSION = 7
     MAX_STRIDE = 7

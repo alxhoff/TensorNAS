@@ -1,9 +1,5 @@
 from enum import Enum, auto
 
-from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
-    Block as TwoDClassificationBlock,
-)
-from TensorNAS.BlockTemplates.SubBlocks.EffNetBlock import Block as EffNetBlock
 from TensorNAS.Core.BlockArchitecture import BlockArchitecture
 
 
@@ -22,21 +18,25 @@ class Block(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )
 
     def generate_constrained_input_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.EffNetBlock import Block as EffNetBlock
+
         return [
             EffNetBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.EFFNET_BLOCK,
             )
         ]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
+            Block as TwoDClassificationBlock,
+        )
+
         layers = []
         # Layers.append(GlobalAveragePool2D(input_shape=input_shape))
         layers.append(
@@ -44,14 +44,11 @@ class Block(BlockArchitecture):
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
-                layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
             )
         )
         return layers
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        return [
-            EffNetBlock(
-                input_shape=input_shape, parent_block=self, layer_type=layer_type
-            )
-        ]
+        from TensorNAS.BlockTemplates.SubBlocks.EffNetBlock import Block as EffNetBlock
+
+        return [EffNetBlock(input_shape=input_shape, parent_block=self)]

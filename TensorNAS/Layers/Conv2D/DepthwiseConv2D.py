@@ -14,7 +14,7 @@ Given a 4D input tensor ('NHWC' or 'NCHW' data formats) and a filter
 
 
 class Layer(Layer):
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         return tf.keras.layers.DepthwiseConv2D(

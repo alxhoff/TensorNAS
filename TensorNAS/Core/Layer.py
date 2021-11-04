@@ -25,7 +25,7 @@ class LayerShape:
         return tuple(self.dimensions)
 
 
-class NetworkLayer(ABC):
+class Layer(ABC):
     """
     Layers are implemented using an abstract class that must provide a number of abstract methods. This is done such
     that the implemented Layers can be loaded in a plugin fashion from the Layers sub-package. This allows for users
@@ -52,7 +52,7 @@ class NetworkLayer(ABC):
     sub-classed Layers.
     """
 
-    def __init__(self, input_shape, args=None):
+    def __init__(self, input_shape, parent_block, args=None):
 
         self.args_enum = self._get_args_enum()
         if args:
@@ -67,6 +67,7 @@ class NetworkLayer(ABC):
                         ] = args[key]
                 args = new_dict
 
+        self.parent_block = parent_block
         self.args = self._gen_args(input_shape, args)
         self.inputshape = LayerShape()
         self.outputshape = LayerShape()
@@ -131,6 +132,15 @@ class NetworkLayer(ABC):
                     )
                 )
 
+    def set_input_shape(self, input_shape):
+        self.inputshape.set(input_shape)
+
+    def set_output_shape(self, output_shape):
+        self.outputshape.set(output_shape)
+
+    def get_sb_count(self):
+        return 0
+
     def get_args_enum(self):
         return self.args_enum
 
@@ -170,7 +180,7 @@ class NetworkLayer(ABC):
         return NotImplementedError
 
     @abstractmethod
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         return NotImplementedError
 
     def _args_to_JSON(self):
@@ -194,3 +204,6 @@ class NetworkLayer(ABC):
         }
 
         return json_dict
+
+    def get_ascii_tree(self):
+        return str(self)

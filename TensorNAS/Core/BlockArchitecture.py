@@ -11,19 +11,17 @@ class BlockArchitecture(Block):
 
     MAX_BATCH_SIZE = 128
 
-    def __init__(self, input_shape, parent_block, layer_type, batch_size, optimizer):
+    def __init__(self, input_shape, parent_block, batch_size, optimizer):
         self.param_count = 0
         self.accuracy = 0
+        self.batch_size = batch_size
 
         from TensorNAS.Optimizers import GetOptimizer
 
+        self.optimizer = optimizer
         self.opt = GetOptimizer(optimizer_name=optimizer)
 
-        self.batch_size = batch_size
-
-        super().__init__(
-            input_shape=input_shape, parent_block=parent_block, layer_type=layer_type
-        )
+        super().__init__(input_shape=input_shape, parent_block=parent_block)
 
     def _mutate_optimizer_hyperparameters(self, verbose):
         if self.opt:
@@ -126,7 +124,12 @@ class BlockArchitecture(Block):
                 early_stopper = tf.keras.callbacks.EarlyStopping(
                     monitor="val_accuracy", patience=1, mode="max"
                 )
-                if train_data and train_labels and test_data and test_labels:
+                if (
+                    (train_data is not None)
+                    and (train_labels is not None)
+                    and (test_data is not None)
+                    and (test_labels is not None)
+                ):
                     model.fit(
                         x=train_data,
                         y=train_labels,
@@ -162,6 +165,7 @@ class BlockArchitecture(Block):
                 save_block_architecture(self, test_name, model_name, logger)
         except Exception as e:
             import traceback
+
             print(traceback.format_exc())
             if logger:
                 logger.log("Error running/saving model:{}, {}".format(model_name, e))
@@ -190,7 +194,6 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         super().__init__(
             input_shape,
             parent_block=None,
-            layer_type=None,
             batch_size=batch_size,
             optimizer=optimizer,
         )

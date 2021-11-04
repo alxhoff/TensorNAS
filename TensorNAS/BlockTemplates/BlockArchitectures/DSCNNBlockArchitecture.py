@@ -30,7 +30,6 @@ class Block(ClassificationBlockArchitecture):
             DSCNNInputBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.DSCNN_INPUT_BLOCK,
             )
         ]
 
@@ -46,6 +45,5 @@ class Block(ClassificationBlockArchitecture):
             DSCNNMidBlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.DSCNN_SEPERABLE_DEPTHWISE_CONV2D_BLOCK,
             )
         ]

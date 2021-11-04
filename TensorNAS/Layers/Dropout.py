@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.LayerArgs import *
 from TensorNAS.Core.Util import mutate_unit_interval
 
@@ -11,7 +11,7 @@ class Args(Enum):
     RATE = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     MAX_RATE = 0.5
 
     def _gen_args(self, input_shape, args):
@@ -32,7 +32,7 @@ class Layer(NetworkLayer):
     def get_output_shape(self):
         return self.inputshape.get()
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         return tf.keras.layers.Dropout(

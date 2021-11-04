@@ -32,7 +32,7 @@ class Layer(Layer):
         # TODO
         return self.inputshape.get()
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         return tf.keras.layers.MaxPool3D(

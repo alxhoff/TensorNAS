@@ -1,9 +1,5 @@
 from enum import Enum, auto
-from TensorNAS.Layers import SupportedLayers
-from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
-    Block as TwoDClassificationBlock,
-)
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
+
 from TensorNAS.BlockTemplates.SubBlocks.GhostBlock import Block as GhostBlock
 from TensorNAS.Core.BlockArchitecture import BlockArchitecture
 
@@ -30,27 +26,29 @@ class Block(BlockArchitecture):
         )
 
     def generate_constrained_input_sub_blocks(self, input_shape):
+        from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
+
         return [
-            LayerBlock(
+            Conv2D(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.CONV2D,
             )
         ]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
+        from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
+            Block as TwoDClassificationBlock,
+        )
+
         return [
             TwoDClassificationBlock(
                 input_shape=input_shape,
                 parent_block=self,
                 class_count=self.class_count,
-                layer_type=self.SUB_BLOCK_TYPES.CLASSIFICATION_BLOCK,
             )
         ]
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        return [
-            GhostBlock(
-                input_shape=input_shape, parent_block=self, layer_type=layer_type
-            )
-        ]
+        from TensorNAS.BlockTemplates.SubBlocks.GhostBlock import Block as GhostBlock
+
+        return [GhostBlock(input_shape=input_shape, parent_block=self)]

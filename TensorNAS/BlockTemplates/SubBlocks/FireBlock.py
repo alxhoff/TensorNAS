@@ -1,8 +1,7 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
-from TensorNAS.Layers import SupportedLayers
+
 from TensorNAS.BlockTemplates.SubBlocks.ExpandBlock import Block as ExpandBlock
 
 
@@ -23,20 +22,20 @@ class Block(Block):
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        # TODO figure out how to do non sequential models
         """
         Fire blocks consist of a pointwise conv layer followed by any number of parallel separable 2d conv Layers.
         This collection of separable conv Layers is known as an expansion block.
         """
-        pwconv_block = LayerBlock(
+        from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
+        from TensorNAS.BlockTemplates.SubBlocks.ExpandBlock import Block as ExpandBlock
+
+        pwconv_block = PointwiseConv2D(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.POINTWISECONV2D,
         )
         expand_block = ExpandBlock(
             input_shape=pwconv_block.get_output_shape(),
             parent_block=self,
-            layer_type=layer_type,
         )
         return [pwconv_block, expand_block]
 

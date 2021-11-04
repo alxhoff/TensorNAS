@@ -24,7 +24,7 @@ class Layer(Layer):
     def _mutate_padding(self):
         return
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         try:

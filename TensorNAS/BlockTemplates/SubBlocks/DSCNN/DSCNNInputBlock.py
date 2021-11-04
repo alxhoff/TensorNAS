@@ -15,8 +15,10 @@ class Block(Block):
     SUB_BLOCK_TYPES = DSCNNConvBlockLayerTypes
 
     def generate_random_sub_block(self, input_shape, block_type):
-        from TensorNAS.Core.LayerBlock import Block as LayerBlock
-        from TensorNAS.Layers import SupportedLayers
+        from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
+        from TensorNAS.Layers.BatchNormalization import Layer as BatchNormalization
+        from TensorNAS.Layers.Activation import Layer as Activation
+        from TensorNAS.Layers.Dropout import Layer as Dropout
         from TensorNAS.Layers.Conv2D import Args as conv2d_args
         from TensorNAS.Layers.Activation import Args as activation_args
         from TensorNAS.Layers.Dropout import Args as dropout_args
@@ -25,10 +27,9 @@ class Block(Block):
         layers = []
 
         layers.append(
-            LayerBlock(
+            Conv2D(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.CONV2D,
                 args={
                     conv2d_args.FILTERS: 64,
                     conv2d_args.KERNEL_SIZE: (10, 4),
@@ -39,25 +40,22 @@ class Block(Block):
             )
         )
         layers.append(
-            LayerBlock(
+            BatchNormalization(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.BATCHNORMALIZATION,
             )
         )
         layers.append(
-            LayerBlock(
+            Activation(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.ACTIVATION,
                 args={activation_args.ACTIVATION: ArgActivations.RELU},
             )
         )
         layers.append(
-            LayerBlock(
+            Dropout(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.DROPOUT,
                 args={dropout_args.RATE: 0.2},
             )
         )

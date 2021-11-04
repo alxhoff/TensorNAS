@@ -51,7 +51,7 @@ class Layer(Layer):
                 raise Exception("I/O shapes not able to be made compatible")
         return (0, 0)
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         return tf.keras.layers.MaxPool1D(

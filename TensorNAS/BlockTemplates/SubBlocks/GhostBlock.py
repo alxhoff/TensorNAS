@@ -1,8 +1,6 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
-from TensorNAS.Layers import SupportedLayers
 
 
 class SubBlockTypes(Enum):
@@ -25,14 +23,15 @@ class Block(Block):
     """
 
     def generate_random_sub_block(self, input_shape, layer_type):
-        pwconv_block = LayerBlock(
+        from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
+        from TensorNAS.Layers.Conv2D.DepthwiseConv2D import Layer as DepthwiseConv2D
+
+        pwconv_block = PointwiseConv2D(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.POINTWISECONV2D,
         )
-        dwconv_block = LayerBlock(
+        dwconv_block = DepthwiseConv2D(
             input_shape=input_shape,
             parent_block=self,
-            layer_type=SupportedLayers.DEPTHWISECONV2D,
         )
         return [pwconv_block, dwconv_block]

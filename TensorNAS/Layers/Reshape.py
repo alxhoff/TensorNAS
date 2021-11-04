@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.Util import mutate_dimension
 
 
@@ -9,7 +9,7 @@ class Args(Enum):
     TARGET_SHAPE = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     def _gen_args(self, input_shape, target_shape):
         return {self.get_args_enum().TARGET_SHAPE: target_shape}
 
@@ -21,7 +21,7 @@ class Layer(NetworkLayer):
     def get_output_shape(self):
         return self.args[self.get_args_enum().TARGET_SHAPE]
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         import tensorflow as tf
 
         return tf.keras.layers.Reshape(

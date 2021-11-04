@@ -144,7 +144,7 @@ class Block(ABC):
         appended to the output_blocks list. An example of this would be the placement
         of a classification layer at the end of a model.
 
-        @return Must return a list of created LayerBlock objects
+        @return Must return a list of created sub block objects
         """
         return None
 
@@ -153,11 +153,11 @@ class Block(ABC):
         appended to the input_blocks list. An example of this would be the placement
         of a convolution layer at the beginning of a model.
 
-        @return Must return a list of created LayerBlock objects
+        @return Must return a list of created sub block objects
         """
         return None
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_random_sub_block(self, input_shape, subblock_type):
         """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
@@ -184,7 +184,7 @@ class Block(ABC):
         """
         if len(self.middle_blocks):
             return self.check_next_layer_type(
-                self.middle_blocks[-1].layer_type, next_layer_type
+                type(self.middle_blocks[-1]), next_layer_type
             )
         return True
 
@@ -322,7 +322,9 @@ class Block(ABC):
         pass
 
     def _get_name(self):
-        return str(self.layer_type).split(".")[-1]
+        if hasattr(self, "layer"):
+            return self.layer.__module__.split(".")[-1]
+        return self.__module__.split(".")[-1]
 
     def get_ascii_tree(self):
         """
@@ -432,15 +434,9 @@ class Block(ABC):
 
     def get_JSON_dict(self):
 
-        if isinstance(self.layer_type, int):
-            print("wait here")
-
         json_dict = {
             "class_name": self.__module__.split(".")[-1],
             "input_shape": self.input_shape,
-            "layer_type": self.layer_type.name
-            if self.layer_type is not None
-            else "None",
             "mutation_funcs": self.mutation_funcs,
         }
 
@@ -466,8 +462,8 @@ class Block(ABC):
 
         for key in self.__dict__.keys():
             if key not in json_dict.keys():
-                if (
-                    key != "parent_block"
+                if (key != "parent_block") and (
+                    key != "opt"
                 ):  # We want to ignore these memory references as BA will be reconstructed
                     json_dict[key] = self.__dict__[key]
 
@@ -481,7 +477,7 @@ class Block(ABC):
 
         return json_dict
 
-    def __init__(self, input_shape, parent_block, layer_type):
+    def __init__(self, input_shape, parent_block):
         """
         The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.
@@ -490,12 +486,9 @@ class Block(ABC):
         block needs to known the number of output classes that it must classify. Thus such an implementation will
         read in its required init arguments and then invoke the Block.__init__ such that the defined Block init
         sequence is performed.
-
-        The layer type is used by the parent block to identify the block's type from it's enum of valid sub-block types.
         """
         self.input_shape = input_shape
         self.parent_block = parent_block
-        self.layer_type = layer_type
         self.mutation_funcs = [
             func
             for func in dir(self)

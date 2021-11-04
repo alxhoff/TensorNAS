@@ -15,8 +15,7 @@ class Block(Block):
     SUB_BLOCK_TYPES = DSCNNConvBlockLayerTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        from TensorNAS.Core.LayerBlock import Block as LayerBlock
-        from TensorNAS.Layers import SupportedLayers
+        from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
         from TensorNAS.Layers.Conv2D import Args as conv2d_args
         from TensorNAS.Core.LayerArgs import ArgPadding, ArgRegularizers
 
@@ -27,10 +26,9 @@ class Block(Block):
         }
 
         return [
-            LayerBlock(
+            PointwiseConv2D(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.POINTWISECONV2D,
                 args=args,
             )
         ]
@@ -44,6 +42,5 @@ class Block(Block):
             NABlock(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=self.SUB_BLOCK_TYPES.BATCH_NORMALIZATION_AND_ACTIVATION.value,
             )
         ]

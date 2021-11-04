@@ -1,14 +1,8 @@
 from enum import Enum, auto
 
-from TensorNAS.BlockTemplates.SubBlocks.TwoDClassificationBlock import (
-    Block as TwoDClassificationBlock,
-)
-
 from TensorNAS.Core.LayerArgs import ArgActivations, ArgPadding
 from TensorNAS.Core.ModelUtil import shortcut
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import LayerBlock
-from TensorNAS.Layers import SupportedLayers
 from TensorNAS.Layers.Conv2D import Args as conv_args
 
 
@@ -34,11 +28,12 @@ class Block(Block):
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_constrained_input_sub_blocks(self, input_shape):
+        from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
+
         return [
-            LayerBlock(
+            Conv2D(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.CONV2D,
                 args={conv_args.FILTERS: 16, conv_args.PADDING: ArgPadding.SAME},
             )
         ]
@@ -47,15 +42,20 @@ class Block(Block):
         return []
 
     def generate_constrained_output_sub_blocks(self, input_shape):
+        from TensorNAS.Layers.Conv2D.GroupedPointwiseConv2D import (
+            Layer as GroupedPointwiseConv2D,
+        )
+        from TensorNAS.Layers.Shuffle import Layer as Shuffle
+        from TensorNAS.Layers.Conv2D.DepthwiseConv2D import Layer as DepthwiseConv2D
+
         residual_channel_depth = input_shape[-1]
         bottleneck_filters = residual_channel_depth // 4
 
         layers = []
         layers.append(
-            LayerBlock(
+            GroupedPointwiseConv2D(
                 input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.GROUPEDPOINTWISECONV2D,
                 args={
                     conv_args.FILTERS: bottleneck_filters,
                     conv_args.ACTIVATION: ArgActivations.RELU,
@@ -64,17 +64,15 @@ class Block(Block):
             )
         )
         layers.append(
-            LayerBlock(
+            Shuffle(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.SHUFFLE,
             )
         )
         layers.append(
-            LayerBlock(
+            DepthwiseConv2D(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.DEPTHWISECONV2D,
                 args={
                     conv_args.KERNEL_SIZE: (3, 3),
                     conv_args.PADDING: ArgPadding.SAME,
@@ -82,10 +80,9 @@ class Block(Block):
             )
         )
         layers.append(
-            LayerBlock(
+            GroupedPointwiseConv2D(
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
-                layer_type=SupportedLayers.GROUPEDPOINTWISECONV2D,
                 args={
                     conv_args.FILTERS: residual_channel_depth,
                     conv_args.ACTIVATION: ArgActivations.RELU,

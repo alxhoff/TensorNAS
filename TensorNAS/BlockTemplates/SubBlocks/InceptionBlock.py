@@ -5,7 +5,6 @@ from enum import Enum, auto
 import tensorflow as tf
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.BlockTemplates.SubBlocks.FilterBankBlock import Block as FilterBankBlock
 
 """
 An inception block is designed to make the model wider instead of deeper. Thus an inception block is responsible
@@ -31,12 +30,12 @@ class Block(Block):
     SUB_BLOCK_TYPES = SubBlockTypes
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.BlockTemplates.SubBlocks.FilterBankBlock import (
+            Block as FilterBankBlock,
+        )
+
         if layer_type == self.SUB_BLOCK_TYPES.FILTER_BANK:
-            return [
-                FilterBankBlock(
-                    input_shape=input_shape, parent_block=self, layer_type=layer_type
-                )
-            ]
+            return [FilterBankBlock(input_shape=input_shape, parent_block=self)]
 
     def get_keras_layers(self, input_tensor):
         filter_banks = [sb.get_keras_layers(input_tensor) for sb in self.middle_blocks]

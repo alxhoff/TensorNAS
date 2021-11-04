@@ -2,8 +2,6 @@ from enum import Enum, auto
 from tensorflow import keras
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
-from TensorNAS.Layers import SupportedLayers
 
 
 class SubBlockTypes(Enum):
@@ -25,12 +23,13 @@ class Block(Block):
         Care must be taken here that the input shape is the input to the Expand block as all Layers are in parallel
         and thus take the same input, ie. the input to the block.
         """
+        from TensorNAS.Layers.Conv2D.SameConv2D import Layer as SameConv2D
+
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D:
             return [
-                LayerBlock(
+                SameConv2D(
                     input_shape=self.input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.SAMECONV2D,
                 )
             ]
         return []

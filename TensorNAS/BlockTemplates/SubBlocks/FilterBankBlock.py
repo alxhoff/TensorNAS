@@ -1,8 +1,6 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
-from TensorNAS.Layers import SupportedLayers
 
 
 class SubBlockTypes(Enum):
@@ -16,41 +14,41 @@ class Block(Block):
 
     def generate_constrained_input_sub_blocks(self, input_shape):
         import random
+        from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
+        from TensorNAS.Layers.Pool.SameMaxPool2D import Layer as SameMaxPool2D
 
         layers = []
         if random.randint(0, 1):
             layers = [
-                LayerBlock(
+                SameMaxPool2D(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.SAMEMAXPOOL2D,
                 )
             ]
         if len(layers):
             layers.append(
-                LayerBlock(
+                PointwiseConv2D(
                     input_shape=layers[0].get_output_shape(),
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV2D,
                 )
             )
         else:
             layers.append(
-                LayerBlock(
+                PointwiseConv2D(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.POINTWISECONV2D,
                 )
             )
         return layers
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.Layers.Conv2D.SameConv2D import Layer as SameConv2D
+
         if layer_type == self.SUB_BLOCK_TYPES.CONV2D:
             return [
-                LayerBlock(
+                SameConv2D(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.SAMECONV2D,
                 )
             ]
         return []

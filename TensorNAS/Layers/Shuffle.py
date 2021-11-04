@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 import TensorNAS.Core.LayerArgs as la
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.Util import dimension_mag, mutate_int
 
 
@@ -33,7 +33,7 @@ class Args(Enum):
     NUM_GROUPS = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     def _gen_args(self, input_shape, args):
         from random import choice
 
@@ -51,7 +51,7 @@ class Layer(NetworkLayer):
     def get_output_shape(self):
         return self.inputshape.get()
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         return shuffle_channels(
             input_tensor, self.args.get(self.get_args_enum().NUM_GROUPS)
         )

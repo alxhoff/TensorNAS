@@ -1,4 +1,3 @@
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
 from TensorNAS.Core.Block import Block
 from enum import Enum, auto
 from TensorNAS.Layers import SupportedLayers
@@ -15,11 +14,12 @@ class Block(Block):
     # input constrained layer for SqueezeBlock: 1x1xN_c Conv layer
 
     def generate_random_sub_block(self, input_shape, layer_type):
+        from TensorNAS.Layers.Conv2D.SeparableConv2D import Layer as SeperableConv2D
+
         if layer_type == self.SUB_BLOCK_TYPES.SEPARABLE_CONV:
             return [
-                LayerBlock(
+                SeperableConv2D(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.SEPARABLECONV2D,
                 )
             ]

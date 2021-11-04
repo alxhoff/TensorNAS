@@ -1,7 +1,6 @@
 from enum import Enum, auto
 
 from TensorNAS.Core.Block import Block
-from TensorNAS.Core.LayerBlock import Block as LayerBlock
 from TensorNAS.Layers import SupportedLayers
 
 from TensorNAS.Layers.Dropout import Args as dropout_args
@@ -34,26 +33,25 @@ class Block(Block):
     MAX_SUB_BLOCKS = 2
     SUB_BLOCK_TYPES = TwoDClassificationBlockLayerTypes
 
-    def __init__(self, input_shape, parent_block, class_count, layer_type=-1):
+    def __init__(self, input_shape, parent_block, class_count):
         self.class_count = class_count
 
-        super().__init__(input_shape, parent_block, layer_type)
+        super().__init__(input_shape, parent_block)
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-        # TODO do not make it manually append but instead return a list of blocks
-        return [
-            LayerBlock(
-                input_shape=None, parent_block=self, layer_type=SupportedLayers.FLATTEN
-            )
-        ]
+        from TensorNAS.Layers.Flatten import Layer as Flatten
+
+        return [Flatten(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
+
+        from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
+
         return [
-            LayerBlock(
-                input_shape=None,
+            OutputDense(
+                input_shape=input_shape,
                 parent_block=self,
-                layer_type=SupportedLayers.OUTPUTDENSE,
                 args={dense_args.UNITS: self.class_count},
             )
         ]
@@ -72,28 +70,30 @@ class Block(Block):
         return True
 
     def generate_random_sub_block(self, input_shape, layer_type):
+
+        from TensorNAS.Layers.Flatten import Layer as Flatten
+        from TensorNAS.Layers.Dropout import Layer as Dropout
+        from TensorNAS.Layers.Dense.HiddenDense import Layer as HiddenDense
+
         if layer_type == self.SUB_BLOCK_TYPES.FLATTEN:
             return [
-                LayerBlock(
+                Flatten(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.FLATTEN,
                 )
             ]
         elif layer_type == self.SUB_BLOCK_TYPES.HIDDENDENSE:
             return [
-                LayerBlock(
+                HiddenDense(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.HIDDENDENSE,
                 )
             ]
         elif layer_type == self.SUB_BLOCK_TYPES.DROPOUT:
             return [
-                LayerBlock(
+                Dropout(
                     input_shape=input_shape,
                     parent_block=self,
-                    layer_type=SupportedLayers.DROPOUT,
                     args={dropout_args.RATE: self.DROPOUT_RATE_MAX},
                 )
             ]

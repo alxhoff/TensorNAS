@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from TensorNAS.Core.Layer import NetworkLayer
+from TensorNAS.Core.Layer import Layer
 
 
 class Args(Enum):
@@ -8,7 +8,7 @@ class Args(Enum):
     LAYERS = auto()
 
 
-class Layer(NetworkLayer):
+class Layer(Layer):
     def _gen_args(self, input_shape, args):
         axis = -1
         layers = None
@@ -36,12 +36,12 @@ class Layer(NetworkLayer):
 
         return dim
 
-    def get_keras_layer(self, input_tensor):
+    def get_keras_layers(self, input_tensor):
         # TODO
         import tensorflow as tf
 
         keras_layers = [
-            layer.get_keras_layer()
+            layer.get_keras_layers()
             for layer in self.args.get(self.get_args_enum().LAYERS)
         ]
         return [
