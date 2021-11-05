@@ -28,7 +28,7 @@ def TestEASimple(
         logger = Logger(test_name)
         logger.log("Starting test {}".format(test_name))
 
-    from TensorNAS.Tools.DEAPTest import DEAPTest
+    from TensorNAS.Tools.DEAP.Test import DEAPTest
 
     test = DEAPTest(
         pop_size=pop_size,

@@ -1,6 +1,5 @@
 from TensorNAS.Core.Block import Block
 from enum import Enum, auto
-from TensorNAS.Layers import SupportedLayers
 
 
 class SubBlockTypes(Enum):

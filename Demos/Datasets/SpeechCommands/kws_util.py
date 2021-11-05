@@ -130,7 +130,7 @@ def parse_command():
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=100,
+        default=1,
         help="How many items to train with at once",
     )
     parser.add_argument(

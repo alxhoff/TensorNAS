@@ -15,7 +15,7 @@ config_GPU()
 
 train_generator, val_generator, input_tensor_shape, train_len, val_len = GetData()
 class_count = 12
-batch_size = 1
+batch_size = 100
 steps_per_epoch = train_len // batch_size
 validation_steps = val_len // batch_size
 epochs = 1
@@ -49,9 +49,12 @@ out_metrics = model1.evaluate(
     model_name="Model1",
 )
 
+print("end first eval")
 print(out_metrics)
 model1.mutate(verbose=True)
+print("mutated")
 model1.print()
+
 
 out_metrics = model1.evaluate(
     train_generator=train_generator,
@@ -66,6 +69,7 @@ out_metrics = model1.evaluate(
     model_name="Model1",
 )
 
+print("end second eval")
 print(out_metrics)
 model1.print()
 print(model1.get_ascii_tree())

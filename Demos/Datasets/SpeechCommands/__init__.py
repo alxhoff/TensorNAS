@@ -17,11 +17,9 @@ def GetData():
 
     train_len = len(ds_train)
     val_len = len(ds_val)
-    train_shuffle_buffer_size = 85511
-    val_shuffle_buffer_size = 10102
 
-    ds_train = ds_train.take(train_shuffle_buffer_size).repeat()
-    ds_val = ds_val.take(val_shuffle_buffer_size).repeat()
+    ds_train = ds_train.repeat()
+    ds_val = ds_val.repeat()
 
     import tensorflow as tf
 

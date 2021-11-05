@@ -35,7 +35,7 @@ def load_genetic_params_from_config(config):
 
 def run_deap_test(evaluate_individual, crossover, mutate):
     from importlib import import_module
-    from TensorNAS.Tools.DEAPTest import setup_DEAP, register_DEAP_individual_gen_func
+    from TensorNAS.Tools.DEAP.Test import setup_DEAP, register_DEAP_individual_gen_func
     from TensorNAS.Algorithms.EASimple import TestEASimple
     from TensorNASDemos import get_global
     from TensorNASDemos import gen_ba
