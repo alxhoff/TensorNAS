@@ -13,11 +13,20 @@ from TensorNAS.Tools.TensorFlow.GPU import config_GPU
 # enable GPU
 config_GPU()
 
-train_generator, val_generator, input_tensor_shape, train_len, val_len = GetData()
+(
+    train_generator,
+    val_generator,
+    test_generator,
+    input_tensor_shape,
+    train_len,
+    val_len,
+    test_len,
+) = GetData()
 class_count = 12
 batch_size = 100
 steps_per_epoch = train_len // batch_size
 validation_steps = val_len // batch_size
+test_steps = test_len // batch_size
 epochs = 1
 optimizer = "adam"
 loss = "tf.keras.metrics.sparse_categorical_crossentropy"
@@ -39,8 +48,10 @@ model1.print()
 out_metrics = model1.evaluate(
     train_generator=train_generator,
     validation_generator=val_generator,
+    test_generator=test_generator,
     epochs=epochs,
     steps_per_epoch=steps_per_epoch,
+    test_steps=test_steps,
     validation_steps=validation_steps,
     batch_size=batch_size,
     loss=loss,

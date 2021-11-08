@@ -51,6 +51,7 @@ class BlockArchitecture(Block):
         test_labels=None,
         train_generator=None,
         validation_generator=None,
+        test_generator=None,
         validation_steps=1,
         epochs=1,
         batch_size=1,
@@ -62,6 +63,7 @@ class BlockArchitecture(Block):
         q_aware=False,
         logger=None,
         steps_per_epoch=None,
+        test_steps=None,
     ):
         import numpy as np
 
@@ -144,7 +146,7 @@ class BlockArchitecture(Block):
                     if not steps_per_epoch:
                         steps_per_epoch = len(train_generator) // batch_size
                     model.fit(
-                        train_generator,
+                        x=train_generator,
                         steps_per_epoch=steps_per_epoch,
                         validation_data=validation_generator,
                         validation_steps=validation_steps,
@@ -179,7 +181,25 @@ class BlockArchitecture(Block):
             params = np.inf
 
         try:
-            accuracy = model.evaluate(test_data, test_labels)[1] * 100
+            if (
+                (train_data is not None)
+                and (train_labels is not None)
+                and (test_data is not None)
+                and (test_labels is not None)
+            ):
+                accuracy = (
+                    model.evaluate(x=test_data, y=test_labels, batch_size=batch_size)[1]
+                    * 100
+                )
+            else:
+                if not test_steps:
+                    test_steps = len(test_generator) // batch_size
+                accuracy = (
+                    model.evaluate(
+                        x=test_generator, batch_size=batch_size, steps=test_steps
+                    )[1]
+                    * 100
+                )
         except Exception as e:
             accuracy = 0
             print("Error evaluating model: {}".format(e))

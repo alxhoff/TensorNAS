@@ -17,12 +17,14 @@ def GetData():
 
     train_len = len(ds_train)
     val_len = len(ds_val)
+    test_len = len(ds_test)
 
     ds_train = ds_train.repeat()
     ds_val = ds_val.repeat()
+    ds_test = ds_test.repeat()
 
     import tensorflow as tf
 
     shape = tuple(tf.compat.v1.data.get_output_shapes(ds_train)[0].as_list()[1:])
 
-    return ds_train, ds_val, shape, train_len, val_len
+    return ds_train, ds_val, ds_test, shape, train_len, val_len, test_len
