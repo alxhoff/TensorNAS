@@ -23,9 +23,7 @@ args = parser.parse_args()
 args.config = "DemoVisualWakeWordEASimple"
 
 if __name__ == "__main__":
-
-    from TensorNASDemos.DEAP import get_config
-    from TensorNASDemos import (
+    from TensorNAS.Demos import (
         load_globals_from_config,
         load_tensorflow_params_from_config,
         set_test_train_data,
@@ -33,8 +31,12 @@ if __name__ == "__main__":
         evaluate_individual,
         mutate_individual,
     )
-    from TensorNASDemos.DEAP import load_genetic_params_from_config, run_deap_test
-    from TensorNASDemos.Datasets.VWW import GetData
+    from TensorNAS.Demos.DEAP import (
+        load_genetic_params_from_config,
+        run_deap_test,
+        get_config,
+    )
+    from TensorNAS.Demos.Datasets.VWW import GetData
     from TensorNAS.Core.Crossover import crossover_individuals_sp
 
     config = get_config(args=args)

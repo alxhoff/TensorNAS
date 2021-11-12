@@ -1,11 +1,10 @@
-from enum import Enum, auto
-
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Mutate import mutate_dimension
 
 
-class Args(Enum):
-    "Args needed for creating Reshape layer"
+class Args(EnumWithNone):
+    from enum import auto
+
     TARGET_SHAPE = auto()
 
 
@@ -14,6 +13,8 @@ class Layer(Layer):
         return {self.get_args_enum().TARGET_SHAPE: target_shape}
 
     def _mutate_target_shape(self):
+        from TensorNAS.Core.Mutate import mutate_dimension
+
         self.args[self.get_args_enum().TARGET_SHAPE] = mutate_dimension(
             self.args[self.get_args_enum().TARGET_SHAPE]
         )

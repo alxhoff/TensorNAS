@@ -49,15 +49,12 @@ def LoadConfig(config_file):
 
 
 def CopyConfig(config_filename, test_name):
-
-    config_file = GetConfigFile(config_filename)
-
     from shutil import copyfile
     from pathlib import Path
 
     path = "Output/{}".format(test_name)
     Path(path).mkdir(parents=True, exist_ok=True)
-    copyfile(config_file[-1], path + "/config.cfg")
+    copyfile(config_filename[-1], path + "/config.cfg")
 
 
 def _GetGeneral(config):

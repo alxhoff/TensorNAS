@@ -22,13 +22,16 @@ def get_config(args=None):
             globals()["existing_generation"] = args.folder + "/Models/{}".format(
                 args.gen
             )
-
-            config = LoadConfig(GetConfigFile(directory=args.folder))
+            globals()["start_gen"] = args.gen
+            config_loc = GetConfigFile(directory=args.folder)
+            config = LoadConfig(config_loc)
         if args.config:
             config_filename = args.config
-            config = LoadConfig(GetConfigFile(config_filename=args.config))
+            config_loc = GetConfigFile(config_filename=args.config)
+            config = LoadConfig(config_loc)
     else:
-        config = LoadConfig(GetConfigFile(config_filename=config_filename))
+        config_loc = GetConfigFile(config_filename=config_filename)
+        config = LoadConfig(config_loc)
 
     globals()["ba_name"] = GetBlockArchitecture(config)
 
@@ -38,7 +41,7 @@ def get_config(args=None):
         if test_name_prefix:
             set_global("test_name", test_name_prefix + "_" + get_global("test_name"))
         set_global("test_name", get_global("test_name") + "_" + get_global("ba_name"))
-        CopyConfig(config_filename, get_global("test_name"))
+        CopyConfig(config_loc, get_global("test_name"))
 
     return config
 
@@ -46,7 +49,12 @@ def get_config(args=None):
 def gen_ba():
     global ba_mod, input_tensor_shape, class_count, batch_size, optimizer
 
-    return ba_mod.Block(input_tensor_shape, class_count, batch_size, optimizer)
+    return ba_mod.Block(
+        input_shape=input_tensor_shape,
+        batch_size=batch_size,
+        optimizer=optimizer,
+        class_count=class_count,
+    )
 
 
 def evaluate_individual(individual, test_name, gen, logger):
@@ -127,7 +135,13 @@ def set_test_train_data(
     globals()["val_generator"] = val_generator
     steps = 0
 
-    if training_sample_size and train_data and train_labels:
+    if all(
+        [
+            (training_sample_size is not None),
+            (train_data is not None),
+            (train_labels is not None),
+        ]
+    ):
         steps = 1
         globals()["images_train"] = train_data[:training_sample_size]
         globals()["labels_train"] = train_labels[:training_sample_size]
@@ -135,7 +149,13 @@ def set_test_train_data(
         globals()["images_train"] = train_data
         globals()["labels_train"] = train_labels
 
-    if test_sample_size and test_data and test_labels:
+    if all(
+        [
+            (test_sample_size is not None),
+            (test_data is not None),
+            (test_labels is not None),
+        ]
+    ):
         globals()["images_test"] = test_data[:test_sample_size]
         globals()["labels_test"] = test_labels[:test_sample_size]
     else:
@@ -143,9 +163,14 @@ def set_test_train_data(
         globals()["labels_test"] = test_labels
 
     if train_generator:
-        from TensorNASDemos import get_global
+        from TensorNAS.Demos import get_global
 
-        steps = training_sample_size / get_global("batch_size")
+        try:
+            steps = training_sample_size / get_global("batch_size")
+        except Exception as e:
+            raise Exception(
+                "Training sample size or batch size not set properly, '{}'".format(e)
+            )
 
     globals()["input_tensor_shape"] = input_tensor_shape
     globals()["steps_per_epoch"] = steps

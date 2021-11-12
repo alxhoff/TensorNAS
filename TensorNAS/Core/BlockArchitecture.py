@@ -69,10 +69,11 @@ class BlockArchitecture(Block):
                 metrics=metrics,
             )
         except Exception as e:
-            import numpy as np
+            import traceback
 
             print("Error getting keras model: {}".format(e))
-            return np.inf, 0
+            traceback.print_exc()
+            return None
 
         if q_aware:
             try:
@@ -85,6 +86,7 @@ class BlockArchitecture(Block):
                 model = q_model
             except Exception as e:
                 print("Error getting QA model: {}".format(e))
+                return None
 
         return model
 
@@ -146,8 +148,12 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
     def evaluate(
         self,
         train_data=None,
+        train_labels=None,
         test_data=None,
         test_labels=None,
+        train_generator=None,
+        validation_generator=None,
+        test_generator=None,
         validation_split=0.1,
         epochs=1,
         batch_size=1,
@@ -158,6 +164,8 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         use_GPU=True,
         q_aware=False,
         logger=None,
+        steps_per_epoch=None,
+        test_steps=None,
     ):
 
         model = self.prepare_model(
@@ -283,7 +291,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                     )
         except Exception as e:
             print("Error fitting model, {}".format(e))
-            return np.inf, 0
+            return model, np.inf
 
         params = self.save_model(
             model=model, test_name=test_name, model_name=model_name, logger=logger

@@ -6,12 +6,13 @@ def GetOptimizer(optimizer_name=None):
     import os, TensorNAS, glob
 
     framework_path = os.path.dirname(os.path.dirname(TensorNAS.__file__))
-    mod_name = glob.glob(
+    gb = glob.glob(
         "{}/**/{}.py".format(
             framework_path, optimizer_name[0].lower() + optimizer_name[1:]
         ),
         recursive=True,
-    )[0][len(framework_path + "/") : -3].replace("/", ".")
+    )
+    mod_name = gb[0][len(framework_path + "/") : -3].replace("/", ".")
 
     import importlib
 

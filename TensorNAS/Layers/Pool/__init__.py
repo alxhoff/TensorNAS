@@ -1,6 +1,4 @@
-from enum import Enum, auto
-
-import TensorNAS.Core.Layer
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
 from TensorNAS.Core.Mutate import mutate_tuple, mutate_enum, MutationOperators
 
@@ -15,8 +13,9 @@ def same_pad_output_shape(input, pool, stride):
     )
 
 
-class Args(Enum):
-    "Args needed for creating MaxPool2D layer, list not complete"
+class Args(EnumWithNone):
+    from enum import auto
+
     POOL_SIZE = auto()
     STRIDES = auto()
     PADDING = auto()
@@ -43,6 +42,8 @@ class Layer(Layer):
         )
 
     def _mutate_padding(self):
+        from TensorNAS.Core.Layer import ArgPadding
+
         self.args[self.get_args_enum().PADDING] = mutate_enum(
-            self.args[self.get_args_enum().PADDING], TensorNAS.Core.Layer.ArgPadding
+            self.args[self.get_args_enum().PADDING], ArgPadding
         )

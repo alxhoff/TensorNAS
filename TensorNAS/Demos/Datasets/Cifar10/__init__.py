@@ -5,7 +5,7 @@ dataset_url = "https://www.cs.toronto.edu/~kriz/{}".format(dataset_zip)
 
 def GetData():
 
-    from TensorNASDemos.Datasets import (
+    from TensorNAS.Demos.Datasets import (
         make_dataset_dirs,
         tmp_dir,
         zip_dir,
@@ -44,7 +44,7 @@ def GetData():
     else:
         print("Cifar10 tar already extracted")
 
-    from TensorNASDemos.Datasets.Cifar10.train import load_cifar_10_data
+    from TensorNAS.Demos.Datasets.Cifar10.train import load_cifar_10_data
 
     (
         train_data,

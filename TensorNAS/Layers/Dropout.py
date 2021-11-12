@@ -1,12 +1,10 @@
-from enum import Enum, auto
-
-import TensorNAS.Core.Layer
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Core.Mutate import mutate_unit_interval
 
 
-class Args(Enum):
-    "Args needed for creating Dropout layer, list not complete"
+class Args(EnumWithNone):
+    from enum import auto
+
     RATE = auto()
 
 
@@ -14,8 +12,9 @@ class Layer(Layer):
     MAX_RATE = 0.5
 
     def _gen_args(self, input_shape, args):
+        from TensorNAS.Core.Layer import gen_dropout
 
-        max = TensorNAS.Core.Layer.gen_dropout(self.MAX_RATE)
+        max = gen_dropout(self.MAX_RATE)
 
         if args:
             if self.get_args_enum().RATE in args:
@@ -24,6 +23,8 @@ class Layer(Layer):
         return {self.get_args_enum().RATE: max}
 
     def _mutate_rate(self):
+        from TensorNAS.Core.Mutate import mutate_unit_interval
+
         self.args[self.get_args_enum().RATE] = mutate_unit_interval(
             self.args[self.get_args_enum().RATE], 0, self.MAX_RATE
         )

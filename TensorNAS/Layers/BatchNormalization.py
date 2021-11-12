@@ -1,8 +1,9 @@
-from enum import Enum, auto
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
 
 
-class Args(Enum):
+class Args(EnumWithNone):
+    from enum import auto
 
     NONE = auto()
 

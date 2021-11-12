@@ -1,6 +1,5 @@
 def get_config(args=None):
-    from TensorNASDemos import set_global
-    from TensorNASDemos import get_config
+    from TensorNAS.Demos import set_global, get_config
 
     set_global("existing_generation", None)
     set_global("start_gen", 0)
@@ -11,7 +10,7 @@ def get_config(args=None):
 
 
 def load_genetic_params_from_config(config):
-    from TensorNASDemos import set_global
+    from TensorNAS.Demos import set_global
     from TensorNAS.Tools.ConfigParse import (
         GetPopulationSize,
         GetGenerationCount,
@@ -37,8 +36,7 @@ def run_deap_test(evaluate_individual, crossover, mutate):
     from importlib import import_module
     from TensorNAS.Tools.DEAP.Test import setup_DEAP, register_DEAP_individual_gen_func
     from TensorNAS.Algorithms.EASimple import TestEASimple
-    from TensorNASDemos import get_global
-    from TensorNASDemos import gen_ba
+    from TensorNAS.Demos import get_global, gen_ba
 
     creator = import_module("deap.creator")
     toolbox = import_module("deap.base").Toolbox()

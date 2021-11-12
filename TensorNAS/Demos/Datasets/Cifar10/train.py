@@ -13,7 +13,7 @@ import pickle
 import tensorflow as tf
 from tensorflow.keras.callbacks import LearningRateScheduler
 from tensorflow.keras.utils import to_categorical
-import TensorNASDemos.Datasets.Cifar10.keras_model as keras_model
+import TensorNAS.Demos.Datasets.Cifar10.keras_model as keras_model
 
 import datetime
 

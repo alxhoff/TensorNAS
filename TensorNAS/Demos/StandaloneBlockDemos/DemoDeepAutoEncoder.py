@@ -53,7 +53,6 @@ model1.mutate(verbose=True)
 print("mutated")
 model1.print()
 
-
 out_metrics = model1.evaluate(
     train_data=data_vector,
     test_data=test_data,

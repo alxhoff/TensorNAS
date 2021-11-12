@@ -30,11 +30,11 @@ class DatasetLabelWrapper:
 
 def GetData():
     global TARGET_SIZE
-    from TensorNASDemos import get_global
+    from TensorNAS.Demos import get_global
 
     batch_size = get_global("batch_size")
 
-    from TensorNASDemos.Datasets import (
+    from TensorNAS.Demos.Datasets import (
         make_dataset_dirs,
         tmp_dir,
         zip_dir,
@@ -113,7 +113,7 @@ def GetData():
     )
     annotations_output_dir = os.path.join(output_dir, "annotations_out")
 
-    from TensorNASDemos.Datasets.VWW.create_coco_train_minival_split import (
+    from TensorNAS.Demos.Datasets.VWW.create_coco_train_minival_split import (
         create_maxitrain_minival,
     )
 
@@ -129,7 +129,7 @@ def GetData():
             train_annotations_file, val_annotations_file, annotations_output_dir
         )
 
-    from TensorNASDemos.Datasets.VWW.create_visualwakewords_annotations import (
+    from TensorNAS.Demos.Datasets.VWW.create_visualwakewords_annotations import (
         create_visual_wakeword_annotations,
     )
 

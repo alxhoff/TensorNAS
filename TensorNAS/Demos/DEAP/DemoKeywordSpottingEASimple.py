@@ -23,10 +23,20 @@ args = parser.parse_args()
 args.config = "DemoKeywordSpottingEASimple"
 
 if __name__ == "__main__":
-
-    from TensorNASDemos import *
-    from TensorNASDemos.DEAP import load_genetic_params_from_config, run_deap_test
-    from TensorNASDemos.Datasets.SpeechCommands import GetData
+    from TensorNAS.Demos import (
+        load_globals_from_config,
+        load_tensorflow_params_from_config,
+        set_test_train_data,
+        get_global,
+        evaluate_individual,
+        mutate_individual,
+    )
+    from TensorNAS.Demos.DEAP import (
+        load_genetic_params_from_config,
+        run_deap_test,
+        get_config,
+    )
+    from TensorNAS.Demos.Datasets.SpeechCommands import GetData
     from TensorNAS.Core.Crossover import crossover_individuals_sp
 
     config = get_config(args=args)

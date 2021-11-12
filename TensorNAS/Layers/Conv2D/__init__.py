@@ -1,6 +1,4 @@
 import random
-from enum import Enum, auto
-
 import TensorNAS.Core.Layer
 from TensorNAS.Core.Layer import Layer, ArgActivations, ArgPadding
 from TensorNAS.Core.Mutate import (
@@ -9,10 +7,13 @@ from TensorNAS.Core.Mutate import (
     mutate_enum,
     MutationOperators,
 )
+from TensorNAS.Core import EnumWithNone
 
 
-class Args(Enum):
+class Args(EnumWithNone):
     "Args needed for creating Conv2DArgs layer, list not complete"
+    from enum import auto
+
     FILTERS = auto()
     KERNEL_SIZE = auto()
     STRIDES = auto()
@@ -30,8 +31,6 @@ class Layer(Layer):
     MAX_DILATION = 5
 
     def _gen_args(self, input_shape, args):
-        # TODO this could be more generic and neater
-
         filter_count = random.randint(1, self.MAX_FILTER_COUNT)
         kernel_size = TensorNAS.Core.Layer.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
         padding = TensorNAS.Core.Layer.gen_padding()

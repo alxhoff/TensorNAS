@@ -1,12 +1,11 @@
-from enum import Enum, auto
-
-import tensorflow as tf
-
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
 
 
-class Args(Enum):
+class Args(EnumWithNone):
     "Args needed for creating Dense layer, list not complete"
+    from enum import auto
+
     UNITS = auto()
     ACTIVATION = auto()
 
@@ -39,6 +38,8 @@ class Layer(Layer):
         return (1, self.args.get(self.get_args_enum().UNITS))
 
     def get_keras_layers(self, input_tensor):
+        import tensorflow as tf
+
         return tf.keras.layers.Dense(
             units=self.args.get(self.get_args_enum().UNITS),
             activation=self.args.get(self.get_args_enum().ACTIVATION).value(),

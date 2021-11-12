@@ -1,10 +1,10 @@
-from enum import Enum, auto
-
+from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
-from TensorNAS.Tools import dimension_mag
 
 
-class Args(Enum):
+class Args(EnumWithNone):
+    from enum import auto
+
     NONE = auto()
 
 
@@ -13,6 +13,8 @@ class Layer(Layer):
         return {}
 
     def get_output_shape(self):
+        from TensorNAS.Tools import dimension_mag
+
         return (1, dimension_mag(self.inputshape.get()))
 
     def get_keras_layers(self, input_tensor):

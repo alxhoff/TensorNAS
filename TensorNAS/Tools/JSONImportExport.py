@@ -11,26 +11,17 @@ def ImportBlockArchitectureFromJSON(ba_json_loc):
     import json
 
     with open(ba_json_loc, "r") as f:
-        try:
-            ba = json.load(f)
-        except Exception as e:
-            print(e)
-            raise e
+        ba = json.load(f)
 
         from TensorNAS.Core.Block import get_block_from_JSON
 
-        try:
-            ba = get_block_from_JSON(ba)
-        except Exception as e:
-            print(e)
-            raise e
+        ba = get_block_from_JSON(ba)
 
         return ba
     return None
 
 
 def ImportGeneration(gen_folder):
-
     from os import listdir
 
     ind_folders = listdir(gen_folder)
@@ -46,14 +37,20 @@ def ImportGeneration(gen_folder):
 
 
 def GetBlockMod(blk_name):
-
     import TensorNAS, os, glob
 
     framework_path = os.path.dirname(os.path.dirname(TensorNAS.__file__))
-    mod_name = glob.glob(
-        "{}/**/{}.py".format(framework_path, blk_name),
-        recursive=True,
-    )[0][len(framework_path + "/") : -3].replace("/", ".")
+    try:
+        mod_name = glob.glob(
+            "{}/**/{}.py".format(framework_path, blk_name),
+            recursive=True,
+        )[0][len(framework_path + "/") : -3].replace("/", ".")
+    except Exception as e:
+        raise Exception(
+            "Block Architecture module not found, is the correct one specified in test config? '{}'".format(
+                e
+            )
+        )
 
     import importlib
 

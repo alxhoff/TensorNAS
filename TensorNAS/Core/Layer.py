@@ -1,7 +1,7 @@
 import random
 import re
 from abc import ABC, abstractmethod
-from enum import Enum
+from TensorNAS.Core import EnumWithNone
 
 
 class LayerShape:
@@ -210,7 +210,7 @@ class Layer(ABC):
         return str(self)
 
 
-class ArgActivations(str, Enum):
+class ArgActivations(EnumWithNone):
     NONE = None
     ELU = "elu"
     EXPONENTIAL = "exponential"
@@ -222,20 +222,13 @@ class ArgActivations(str, Enum):
     SOFTPLUS = "softplus"
     TANH = "tanh"
 
-    def value(self):
-        ret = self._value_
-        if ret == "None":
-            return None
-        else:
-            return ret
 
-
-class ArgPadding(str, Enum):
+class ArgPadding(EnumWithNone):
     VALID = "valid"
     SAME = "same"
 
 
-class ArgRegularizers(str, Enum):
+class ArgRegularizers(EnumWithNone):
     L1 = "L1"
     L1L2 = "L1L2"
     L2 = "L2"
