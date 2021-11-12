@@ -2,7 +2,7 @@ import math
 import random
 from enum import Enum, auto
 
-from TensorNAS.Tools.Util import _generate_permutations, dimension_mag
+from TensorNAS.Tools import dimension_mag, _generate_permutations
 
 
 class MutationOperators(Enum):

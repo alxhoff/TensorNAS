@@ -51,7 +51,6 @@ class Block(ABC):
 
     Required properties:
         - SUB_BLOCK_TYPES
-        - MAX_SUB_BLOCKS
 
     Required (abstract) methods:
         - Generate random sub block
@@ -76,22 +75,21 @@ class Block(ABC):
     A property to specify a minimum block count, is not required by each sub-class.
     """
     MIN_SUB_BLOCKS = 1
+    MAX_SUB_BLOCKS = 1
+
+    from enum import Enum
 
     @property
     @classmethod
     @abstractmethod
-    def SUB_BLOCK_TYPES(cls):
+    class SubBlocks(Enum):
         """The enum type storing all the possible sub-blocks is required to be passed to the child class as it is
         used during random selection of sub-block blocks
         """
-        return NotImplementedError
 
-    @property
-    @classmethod
-    @abstractmethod
-    def MAX_SUB_BLOCKS(cls):
-        """Constraining attribute of each Block sub-class that must be set"""
-        return NotImplementedError
+        from enum import auto
+
+        NONE = auto()
 
     def _mutate_self(self, verbose=False):
         """
@@ -266,9 +264,9 @@ class Block(ABC):
 
     def _get_random_sub_block_type(self):
         """This method returns a random enum value of the block's possible sub-blocks"""
-        if self.SUB_BLOCK_TYPES:
+        if self.SubBlocks:
             while True:
-                next_type = mutate_enum_i(self.SUB_BLOCK_TYPES)
+                next_type = mutate_enum_i(self.SubBlocks)
                 if self._check_layer_types(next_type):
                     return next_type
         else:
@@ -329,7 +327,8 @@ class Block(ABC):
         """
         Returns an ASCII tree representation of the block heirarchy starting from the current block.
         """
-        from TensorNAS.Tools.Util import block_width, stack_str_blocks
+        from TensorNAS.Tools import stack_str_blocks
+        from TensorNAS.Tools import block_width
 
         if not self.parent_block:
             name = "ROOT"
@@ -476,7 +475,7 @@ class Block(ABC):
 
         return json_dict
 
-    def __init__(self, input_shape, parent_block):
+    def __init__(self, input_shape, parent_block=None):
         """
         The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.

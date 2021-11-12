@@ -211,6 +211,7 @@ class Layer(ABC):
 
 
 class ArgActivations(str, Enum):
+    NONE = None
     ELU = "elu"
     EXPONENTIAL = "exponential"
     HARD_SIGMOID = "hard_sigmoid"
@@ -220,6 +221,13 @@ class ArgActivations(str, Enum):
     SOFTMAX = "softmax"
     SOFTPLUS = "softplus"
     TANH = "tanh"
+
+    def value(self):
+        ret = self._value_
+        if ret == "None":
+            return None
+        else:
+            return ret
 
 
 class ArgPadding(str, Enum):

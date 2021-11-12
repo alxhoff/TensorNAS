@@ -34,5 +34,5 @@ class Layer(Layer):
         import tensorflow as tf
 
         return tf.keras.layers.Activation(
-            activation=self.args.get(self.get_args_enum().ACTIVATION).value
+            activation=self.args.get(self.get_args_enum().ACTIVATION).value()
         )(input_tensor)

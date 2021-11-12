@@ -16,6 +16,8 @@ class Layer(Layer):
     MAX_STRIDE_SIZE = 5
 
     def _gen_args(self, input_shape, args):
+        import random
+
         pool_size = gen_1d_poolsize(random.randint(1, self.MAX_POOL_SIZE))
         max_stride_size = gen_1d_strides(random.randint(1, self.MAX_STRIDE_SIZE))
         padding = gen_padding()
@@ -63,5 +65,5 @@ class Layer(Layer):
             input_shape=self.inputshape.get(),
             pool_size=self.args.get(self.get_args_enum().POOL_SIZE),
             strides=self.args.get(self.get_args_enum().STRIDES),
-            padding=self.args.get(self.get_args_enum().PADDING).value,
+            padding=self.args.get(self.get_args_enum().PADDING).value(),
         )(input_tensor)

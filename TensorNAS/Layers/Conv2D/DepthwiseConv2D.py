@@ -20,8 +20,8 @@ class Layer(Layer):
         return tf.keras.layers.DepthwiseConv2D(
             kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),
             strides=self.args.get(self.get_args_enum().STRIDES),
-            padding=self.args.get(self.get_args_enum().PADDING).value,
+            padding=self.args.get(self.get_args_enum().PADDING).value(),
             dilation_rate=self.args.get(self.get_args_enum().DILATION_RATE),
             depth_multiplier=1,
-            activation=self.args.get(self.get_args_enum().ACTIVATION).value,
+            activation=self.args.get(self.get_args_enum().ACTIVATION).value(),
         )(input_tensor)
