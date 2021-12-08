@@ -1,12 +1,15 @@
-from enum import Enum, auto
 from TensorNAS.Core.BlockArchitecture import ClassificationBlockArchitecture
 
 
 class Block(ClassificationBlockArchitecture):
+    from enum import Enum
+
     MAX_SUB_BLOCKS = 2
     MIN_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
+        from enum import auto
+
         FEATURE_EXTRACTION_BLOCK = auto()
         CLASSIFICATION_BLOCK = auto()
 

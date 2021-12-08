@@ -46,20 +46,41 @@ def get_config(args=None):
     return config
 
 
-def gen_ba():
+def gen_classification_ba():
     global ba_mod, input_tensor_shape, class_count, batch_size, optimizer
 
-    return ba_mod.Block(
-        input_shape=input_tensor_shape,
-        batch_size=batch_size,
-        optimizer=optimizer,
-        class_count=class_count,
-    )
+    try:
+        ba = ba_mod.Block(
+            input_shape=input_tensor_shape,
+            batch_size=batch_size,
+            optimizer=optimizer,
+            class_count=class_count,
+        )
+        return ba
+    except Exception as e:
+        import traceback
+
+        print(traceback.format_exc())
+        raise e
+
+
+def gen_auc_ba():
+    global ba_mod, input_tensor_shape, batch_size, optimizer
+
+    try:
+        ba = ba_mod.Block(
+            input_shape=input_tensor_shape,
+            batch_size=batch_size,
+            optimizer=optimizer,
+        )
+        return ba
+    except Exception as e:
+        raise e
 
 
 def evaluate_individual(individual, test_name, gen, logger):
     global epochs, batch_size, loss, metrics, images_train, images_test, labels_train, labels_test, train_generator
-    global val_generator, save_individuals, use_gpu, q_aware, steps_per_epoch
+    global val_generator, test_generator, save_individuals, q_aware, steps_per_epoch, test_sample_size
 
     param_count, accuracy = individual.evaluate(
         train_data=images_train,
@@ -68,16 +89,17 @@ def evaluate_individual(individual, test_name, gen, logger):
         test_labels=labels_test,
         train_generator=train_generator,
         validation_generator=val_generator,
+        test_generator=test_generator,
         epochs=epochs,
         batch_size=batch_size,
         loss=loss,
         metrics=metrics,
         test_name=test_name,
         model_name="{}/{}".format(gen, individual.index),
-        use_GPU=use_gpu,
         q_aware=q_aware,
         logger=logger,
         steps_per_epoch=steps_per_epoch,
+        test_steps=test_sample_size / batch_size,
     )
 
     return param_count, accuracy
@@ -118,6 +140,25 @@ def load_globals_from_config(config):
     globals()["weights"] = GetWeights(config)
     globals()["comments"] = GetFigureTitle(config)
 
+    if globals()["use_gpu"]:
+        from TensorNAS.Tools.TensorFlow import GPU as GPU
+
+        GPU.config_GPU()
+    else:
+        # import os
+        #
+        # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+        try:
+            import tensorflow as tf
+
+            # Disable all GPUS
+            tf.config.set_visible_devices([], "GPU")
+            visible_devices = tf.config.get_visible_devices()
+            for device in visible_devices:
+                assert device.device_type != "GPU"
+        except Exception as e:
+            raise e
+
 
 def set_test_train_data(
     train_data=None,
@@ -126,14 +167,18 @@ def set_test_train_data(
     test_labels=None,
     train_generator=None,
     val_generator=None,
+    test_generator=None,
     input_tensor_shape=None,
     training_sample_size=None,
     test_sample_size=None,
 ):
+    from TensorNAS.Demos import get_global
 
     globals()["train_generator"] = train_generator
     globals()["val_generator"] = val_generator
+    globals()["test_generator"] = test_generator
     steps = 0
+    batch_size = get_global("batch_size")
 
     if all(
         [
@@ -142,7 +187,7 @@ def set_test_train_data(
             (train_labels is not None),
         ]
     ):
-        steps = 1
+        steps = training_sample_size // batch_size
         globals()["images_train"] = train_data[:training_sample_size]
         globals()["labels_train"] = train_labels[:training_sample_size]
     else:
@@ -163,10 +208,8 @@ def set_test_train_data(
         globals()["labels_test"] = test_labels
 
     if train_generator:
-        from TensorNAS.Demos import get_global
-
         try:
-            steps = training_sample_size / get_global("batch_size")
+            steps = training_sample_size // batch_size
         except Exception as e:
             raise Exception(
                 "Training sample size or batch size not set properly, '{}'".format(e)

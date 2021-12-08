@@ -20,7 +20,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-args.config = "DemoImageClassificationEASimple"
+args.config = "DemoAnomalyDetectionEASimple"
 
 if __name__ == "__main__":
     from TensorNAS.Demos import (
@@ -36,7 +36,7 @@ if __name__ == "__main__":
         run_deap_test,
         get_config,
     )
-    from TensorNAS.Demos.Datasets.ToyADMOS import GetData
+    from TensorNAS.Demos.Datasets.ToyADMOS import GetData, GetTestData
     from TensorNAS.Core.Crossover import crossover_individuals_sp
 
     config = get_config(args=args)
@@ -45,18 +45,22 @@ if __name__ == "__main__":
     load_genetic_params_from_config(config)
     load_tensorflow_params_from_config(config)
 
-    images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
+    images_train, input_tensor_shape = GetData()
+    test_data, test_labels = GetTestData()
+
+    from TensorNAS.Demos import gen_auc_ba
+
     set_test_train_data(
         train_data=images_train,
-        train_labels=labels_train,
-        test_data=images_test,
-        test_labels=labels_test,
+        test_data=test_data,
+        test_labels=test_labels,
         input_tensor_shape=input_tensor_shape,
         training_sample_size=get_global("training_sample_size"),
         test_sample_size=get_global("test_sample_size"),
     )
 
     pop, logbook, test = run_deap_test(
+        generate_individual=gen_auc_ba,
         evaluate_individual=evaluate_individual,
         crossover=crossover_individuals_sp,
         mutate=mutate_individual,

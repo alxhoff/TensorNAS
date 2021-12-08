@@ -258,7 +258,7 @@ def GetData():
         color_mode="rgb",
     )
     val_generator = datagen.flow_from_directory(
-        val_dir,
+        train_dir,
         target_size=(TARGET_SIZE, TARGET_SIZE),
         batch_size=BATCH_SIZE,
         subset="validation",
@@ -277,5 +277,3 @@ def resize_save_image(image, save_index, out_dir):
     hsize = int((float(image.size[1]) * float(wpercent)))
     image = image.resize((TARGET_SIZE, hsize), Image.ANTIALIAS)
     image.save("{}/{}.jpg".format(out_dir, save_index))
-
-    pass

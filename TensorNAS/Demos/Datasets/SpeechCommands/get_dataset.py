@@ -11,8 +11,6 @@ import functools
 import numpy as np
 import os
 
-from TensorNAS import Demos as kws_util, Demos as models
-
 word_labels = [
     "Down",
     "Go",
@@ -296,10 +294,12 @@ def prepare_background_data(bg_path, BACKGROUND_NOISE_DIR_NAME):
 
 
 def get_training_data(Flags, get_waves=False, val_cal_subset=False):
+    from TensorNAS.Demos.Datasets.SpeechCommands.keras_model import (
+        prepare_model_settings,
+    )
+
     label_count = 12
-    background_frequency = Flags.background_frequency
-    background_volume_range_ = Flags.background_volume
-    model_settings = models.prepare_model_settings(label_count, Flags)
+    model_settings = prepare_model_settings(label_count, Flags)
 
     bg_path = Flags.bg_path
     BACKGROUND_NOISE_DIR_NAME = "_background_noise_"
@@ -382,7 +382,9 @@ def get_training_data(Flags, get_waves=False, val_cal_subset=False):
 
 
 if __name__ == "__main__":
-    Flags, unparsed = kws_util.parse_command()
+    from TensorNAS.Demos.Datasets.SpeechCommands.kws_util import parse_command
+
+    Flags, unparsed = parse_command()
     ds_train, ds_test, ds_val = get_training_data(Flags)
 
     for dat in ds_train.take(1):

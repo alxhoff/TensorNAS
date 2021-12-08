@@ -74,8 +74,8 @@ class Block(ABC):
     """
     A property to specify a minimum block count, is not required by each sub-class.
     """
-    MIN_SUB_BLOCKS = 1
-    MAX_SUB_BLOCKS = 1
+    MIN_SUB_BLOCKS = 0
+    MAX_SUB_BLOCKS = 0
 
     from enum import Enum
 
@@ -83,7 +83,7 @@ class Block(ABC):
     @classmethod
     @abstractmethod
     class SubBlocks(Enum):
-        """The enum type storing all the possible sub-blocks is required to be passed to the child class as it is
+        """The enum type storing all the possible middle sub-blocks is required to be passed to the child class as it is
         used during random selection of sub-block blocks
         """
 
@@ -243,12 +243,12 @@ class Block(ABC):
         """
         Returns the output shape of the block
         """
-        try:
+        if len(self.input_blocks + self.middle_blocks + self.output_blocks) >= 1:
             return (self.input_blocks + self.middle_blocks + self.output_blocks)[
                 -1
             ].get_output_shape()
-        except Exception as e:
-            print(e)
+        else:
+            return self.input_shape
 
     def set_output_shape(self, output_shape):
         self.output_shape = output_shape
@@ -296,7 +296,7 @@ class Block(ABC):
         else:
             ret = self.get_input_shape()
         try:
-            assert ret, "Input shape None"
+            assert ret, "Output shape is None"
             return ret
         except Exception as e:
             exit(e)
@@ -402,6 +402,16 @@ class Block(ABC):
                 return index
         return None
 
+    def get_block_architecture(self):
+        parent = self
+        try:
+            while parent.parent_block != None:
+                parent = parent.parent_block
+        except Exception as e:
+            raise e
+
+        return parent
+
     def get_block_index_middle(self, block):
         for index, sb in enumerate(self.middle_blocks):
             if block == sb:
@@ -475,7 +485,7 @@ class Block(ABC):
 
         return json_dict
 
-    def __init__(self, input_shape, parent_block=None):
+    def __init__(self, input_shape, parent_block):
         """
         The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.
@@ -487,11 +497,15 @@ class Block(ABC):
         """
         self.input_shape = input_shape
         self.parent_block = parent_block
-        self.mutation_funcs = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and re.search(r"^_mutate(?!_self)", func)
-        ]
+        try:
+            self.mutation_funcs = [
+                func
+                for func in dir(self)
+                if callable(getattr(self, func))
+                and re.search(r"^_mutate(?!_self)", func)
+            ]
+        except Exception as e:
+            raise e
 
         self.input_blocks = []
         self.middle_blocks = []

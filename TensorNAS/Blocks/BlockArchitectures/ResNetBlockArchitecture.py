@@ -2,32 +2,34 @@ from TensorNAS.Core.BlockArchitecture import ClassificationBlockArchitecture
 
 
 class Block(ClassificationBlockArchitecture):
-    from enum import Enum
 
     MAX_SUB_BLOCKS = 1
+    MIN_SUB_BLOCKS = 1
+
+    from enum import Enum
 
     class SubBlocks(Enum):
         from enum import auto
 
-        RESIDUAL_BLOCK = auto()
-        CLASSIFICATION_BLOCK = auto()
+        NONE = auto()
+
+    def generate_constrained_input_sub_blocks(self, input_shape):
+        from TensorNAS.Blocks.SubBlocks.ResNet.ResNetInputBlock import (
+            Block as InputBlock,
+        )
+
+        return [InputBlock(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-        from TensorNAS.Blocks.SubBlocks.TwoDClassificationBlock import (
-            Block as TwoDClassificationBlock,
+        from TensorNAS.Blocks.SubBlocks.ResNet.ResNetOutputBlock import (
+            Block as OutputBlock,
         )
 
-        return [
-            TwoDClassificationBlock(
-                input_shape=input_shape,
-                parent_block=self,
-                class_count=self.class_count,
-            )
-        ]
+        return [OutputBlock(input_shape=input_shape, parent_block=self)]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
-        from TensorNAS.Blocks.SubBlocks.ResidualBlock import (
-            Block as ResidualBlock,
+    def generate_random_sub_block(self, input_shape, subblock_type):
+        from TensorNAS.Blocks.SubBlocks.ResNet.ResNetMiddleBlockArray import (
+            Block as MidBlock,
         )
 
-        return [ResidualBlock(input_shape=input_shape, parent_block=self)]
+        return [MidBlock(input_shape=input_shape, parent_block=self)]

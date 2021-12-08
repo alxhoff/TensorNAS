@@ -28,16 +28,17 @@ class TensorNASIndividual:
         test_labels=None,
         train_generator=None,
         validation_generator=None,
+        test_generator=None,
         epochs=10,
         batch_size=100,
         loss=None,
         metrics="accuracy",
         test_name=None,
         model_name=None,
-        use_GPU=False,
         q_aware=False,
         logger=None,
         steps_per_epoch=None,
+        test_steps=None,
     ):
         (param_count, accuracy,) = self.block_architecture.evaluate(
             train_data=train_data,
@@ -46,16 +47,17 @@ class TensorNASIndividual:
             test_labels=test_labels,
             train_generator=train_generator,
             validation_generator=validation_generator,
+            test_generator=test_generator,
             epochs=epochs,
             batch_size=batch_size,
             loss=loss,
             metrics=metrics,
             test_name=test_name,
             model_name=model_name,
-            use_GPU=use_GPU,
             q_aware=q_aware,
             logger=logger,
             steps_per_epoch=steps_per_epoch,
+            test_steps=test_steps,
         )
         return param_count, accuracy
 

@@ -52,9 +52,10 @@ class DEAPTest:
 
         self.history = tools.History()
 
-        toolbox.register(
-            "population", tools.initRepeat, list, toolbox.individual, n=pop_size
-        )
+        # toolbox.register(
+        #     "population", tools.initRepeat, list, toolbox.individual, n=self.pop_size
+        # )
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.pop_size)
 

@@ -32,11 +32,11 @@ def load_genetic_params_from_config(config):
     set_global("generation_save_interval", GetGenerationSaveInterval(config))
 
 
-def run_deap_test(evaluate_individual, crossover, mutate):
+def run_deap_test(generate_individual, evaluate_individual, crossover, mutate):
     from importlib import import_module
     from TensorNAS.Tools.DEAP.Test import setup_DEAP, register_DEAP_individual_gen_func
     from TensorNAS.Algorithms.EASimple import TestEASimple
-    from TensorNAS.Demos import get_global, gen_ba
+    from TensorNAS.Demos import get_global
 
     creator = import_module("deap.creator")
     toolbox = import_module("deap.base").Toolbox()
@@ -50,7 +50,7 @@ def run_deap_test(evaluate_individual, crossover, mutate):
     )
 
     register_DEAP_individual_gen_func(
-        creator=creator, toolbox=toolbox, ind_gen_func=gen_ba
+        creator=creator, toolbox=toolbox, ind_gen_func=generate_individual
     )
 
     pop, logbook, test = TestEASimple(

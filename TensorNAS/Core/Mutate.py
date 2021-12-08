@@ -14,17 +14,20 @@ class MutationOperators(Enum):
 
 
 def mutate_int_square(val, min_bound, max_bound, operator=MutationOperators.STEP):
-    if operator == MutationOperators.STEP:
-        if random.randrange(0, 2):  # multiplay
-            if val <= max_bound / 2:
-                return val * 2
-        else:  # divide
-            if val > 1:
-                return val / 2
-    elif operator == MutationOperators.RANDOM:
-        max_exponent = math.floor(math.log(max_bound) / math.log(2))
-        exponent = random.randrange(1, max_exponent + 1)
-        return math.pow(2, exponent)
+    try:
+        if operator == MutationOperators.STEP:
+            if random.randrange(0, 2):  # multiplay
+                if val <= max_bound / 2:
+                    return val * 2
+            else:  # divide
+                if val > 1:
+                    return val / 2
+        elif operator == MutationOperators.RANDOM:
+            max_exponent = math.floor(math.log(max_bound) / math.log(2))
+            exponent = random.randrange(1, max_exponent + 1)
+            return math.pow(2, exponent)
+    except Exception as e:
+        print(e)
 
 
 def mutate_float(

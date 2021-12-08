@@ -3,16 +3,16 @@ from TensorNAS.Blocks.BlockArchitectures.ResNetBlockArchitecture import (
 )
 from TensorNAS.Tools import list_available_blocks
 
-from TensorNAS.Demos.Datasets.MNIST import GetData
+from TensorNAS.Demos.Datasets.Cifar10 import GetData
 
 images_train, images_test, labels_train, labels_test, input_tensor_shape = GetData()
 class_count = 10
-batch_size = 56
+batch_size = 100
 steps_per_epoch = len(images_train) // batch_size
 validation_steps = len(images_test) // batch_size
 epochs = 1
 optimizer = "adam"
-loss = "tf.keras.metrics.sparse_categorical_crossentropy"
+loss = "tf.nn.softmax_cross_entropy_with_logits"
 metrics = ["accuracy"]
 
 from TensorNAS.Tools.TensorFlow.GPU import config_GPU
@@ -56,7 +56,7 @@ model.print()
 
 out_metrics = model.evaluate(
     train_data=images_train,
-    train_labels=labels_train,
+    train_labels=images_train,
     test_data=images_test,
     test_labels=labels_test,
     epochs=epochs,
