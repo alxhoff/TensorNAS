@@ -235,6 +235,7 @@ def GetData():
     # create keras dataset from directory
     import tensorflow as tf
 
+
     BATCH_SIZE = batch_size
     validation_split = 0.1
 
