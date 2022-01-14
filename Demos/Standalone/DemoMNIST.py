@@ -1,3 +1,5 @@
+TensorNAS_repo_dir =
+
 from TensorNAS.Blocks.BlockArchitectures.MNISTBlockArchitecture import (
     Block as ClassificationBlockArchitecture,
 )
