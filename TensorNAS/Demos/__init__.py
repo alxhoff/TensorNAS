@@ -116,6 +116,7 @@ def load_globals_from_config(config):
         GetLog,
         GetVerbose,
         GetMultithreaded,
+        GetDistributed,
         GetThreadCount,
         GetGPU,
         GetSaveIndividual,
@@ -132,6 +133,7 @@ def load_globals_from_config(config):
     globals()["log"] = GetLog(config)
     globals()["verbose"] = GetVerbose(config)
     globals()["multithreaded"] = GetMultithreaded(config)
+    globals()["distributed"] = GetDistributed(config)
     globals()["thread_count"] = GetThreadCount(config)
     globals()["use_gpu"] = GetGPU(config)
     globals()["save_individuals"] = GetSaveIndividual(config)

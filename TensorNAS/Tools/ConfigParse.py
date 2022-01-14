@@ -82,6 +82,11 @@ def GetMultithreaded(config):
     return _GetGeneral(config).getboolean("Multithreaded")
 
 
+def GetDistributed(config):
+
+    return _GetGeneral(config).getboolean("Distributed")
+
+
 def GetThreadCount(config):
 
     return int(_GetGeneral(config)["ThreadCount"])

@@ -1,31 +1,28 @@
-from TensorNAS.Demos.Datasets.MNIST import GetData
+import argparse
 
-images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "--folder",
+    help="Absolute path to folder where interrupted test's output is stored",
+    default=None,
+)
+parser.add_argument(
+    "--gen", help="Generation from which the test should resume", type=int
+)
+
+parser.add_argument(
+    "--config",
+    help="Location of config file to be used, default is to use first found config file in current working directory, then parent directories",
+    type=str,
+    default=None,
+)
+
+args = parser.parse_args()
+
+args.config = "DemoMNISTEASimple"
 
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "--folder",
-        help="Absolute path to folder where interrupted test's output is stored",
-        default=None,
-    )
-    parser.add_argument(
-        "--gen", help="Generation from which the test should resume", type=int
-    )
-
-    parser.add_argument(
-        "--config",
-        help="Location of config file to be used, default is to use first found config file in current working directory, then parent directories",
-        type=str,
-        default=None,
-    )
-
-    args = parser.parse_args()
-
-    args.config = "DemoMNISTEASimple"
 
     from TensorNAS.Demos import (
         load_globals_from_config,
@@ -40,6 +37,7 @@ if __name__ == "__main__":
         run_deap_test,
         get_config,
     )
+    from TensorNAS.Demos.Datasets.MNIST import GetData
     from TensorNAS.Core.Crossover import crossover_individuals_sp
 
     config = get_config(args=args)
@@ -48,6 +46,7 @@ if __name__ == "__main__":
     load_genetic_params_from_config(config)
     load_tensorflow_params_from_config(config)
 
+    images_test, images_train, labels_test, labels_train, input_tensor_shape = GetData()
 
     set_test_train_data(
         train_data=images_train,

@@ -7,7 +7,6 @@ then
     exit 1
 fi
 
-
 while getopts u:k:h: flag
 do
     case "${flag}" in
@@ -40,6 +39,7 @@ fi
 IFS= read -s -p "Password: " password; echo
 
 while IFS= read -r line; do
-    echo "sshpass -p ***** ssh-copy-id -i $pub_key $username@$line"
-    sshpass -p $password ssh-copy-id -i $pub_key $username@$line
+    ip=${line%% *}
+    echo "sshpass -p ***** ssh-copy-id -i $pub_key $username@$ip"
+    sshpass -p $password ssh-copy-id -f -i $pub_key -o StrictHostKeyChecking=no $username@$ip
 done < "hosts"
