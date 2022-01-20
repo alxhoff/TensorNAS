@@ -9,7 +9,3 @@ pip --no-cache-dir install matplotlib
 . venv/bin/activate
 python demos/DemoEASimple.py
 
-
-## TODO
-
-Conv2D args: strides
