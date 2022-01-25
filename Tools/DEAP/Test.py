@@ -13,20 +13,20 @@ def setup_DEAP(creator, toolbox, objective_weights, multithreaded=False, distrib
 
     if distributed:
         from scoop import futures
-
+        print("Running distributed using futures")
         toolbox.register("map", futures.map)
     elif multithreaded:
         if thread_count > 0:
             pool = multiprocessing.Pool(processes=thread_count)
-            print("Running using {} threads".format(thread_count))
+            print("Running on 1 host using {} threads".format(thread_count))
         elif thread_count == -1:
             import os
 
             pool = multiprocessing.Pool(processes=os.cpu_count())
-            print("Running using {} threads".format(os.cpu_count()))
+            print("Running on 1 host using {} threads".format(os.cpu_count()))
         else:
             pool = multiprocessing.Pool()
-            print("Running using no thread count limit")
+            print("Running on 1 host using no thread count limit")
         toolbox.register("map", pool.starmap)
 
 
