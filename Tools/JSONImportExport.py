@@ -39,12 +39,14 @@ def ImportGeneration(gen_folder):
 def GetBlockMod(blk_name):
     import TensorNAS, os, glob
 
-    framework_path = os.path.dirname(os.path.dirname(TensorNAS.__file__))
+    framework_dir = os.path.dirname(os.path.dirname(TensorNAS.__file__))
+    framework_path = os.path.abspath(os.path.dirname(TensorNAS.__file__))
     try:
         mod_name = glob.glob(
             "{}/**/{}.py".format(framework_path, blk_name),
             recursive=True,
-        )[0][len(framework_path + "/") : -3].replace("/", ".")
+        )
+        mod_name = mod_name[0][len(framework_dir + "/") : -3].replace("/", ".")
     except Exception as e:
         raise Exception(
             "Block Architecture module not found, is the correct one specified in test config? '{}'".format(
@@ -53,6 +55,8 @@ def GetBlockMod(blk_name):
         )
 
     import importlib
+
+    print("Importing block module: {}".format(mod_name))
 
     mod = importlib.import_module(mod_name)
 
