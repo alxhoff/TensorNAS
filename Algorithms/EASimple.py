@@ -71,6 +71,9 @@ def TestEASimple(
         comment=comment,
     )
 
+    test.ir.goals(generation_gap,
+               test_name=test_name)
+
     pareto_inds = test.ir.pareto(test_name=test_name)
 
     pareto_models = []
@@ -364,6 +367,7 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
+                        ind.fitness.values
                     )
                 )
             else:
@@ -371,6 +375,7 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
+                        ind.fitness.values
                     )
                 ]
 

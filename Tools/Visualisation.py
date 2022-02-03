@@ -8,7 +8,7 @@ class IndividualRecord:
         self.gens.append([])
         for ind in gen:
             self.gens[self.gen_count].append(
-                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
+                (ind.block_architecture.param_count, ind.block_architecture.accuracy,  ind.fitness.values)
             )
         self.gen_count += 1
 
@@ -29,7 +29,7 @@ class IndividualRecord:
                 subplot_num = i // gen_interval
                 sx = subplot_num // 2
                 sy = subplot_num % 2
-                datax, datay = map(list, zip(*self.gens[i]))
+                datax, datay, goal = map(list, zip(*self.gens[i]))
                 axes[sx, sy].scatter(datax, datay)
                 axes[sx, sy].set_title("Gen {}, count: {}".format(i, len(self.gens[i])))
                 axes[sx, sy].set(xlabel="Param Count", ylabel="Accuracy")
@@ -41,6 +41,48 @@ class IndividualRecord:
         path = "Output/{}/Figures".format(test_name)
         Path(path).mkdir(parents=True, exist_ok=True)
         fig.savefig("Output/{}/Figures/{}".format(test_name, title))
+
+    def goals(self, gen_interval, test_name):
+
+        import matplotlib.pyplot as plt
+        import math
+
+        plot_cols = math.ceil(len(self.gens) / gen_interval / 2)
+        fig, axes = plt.subplots(plot_cols, 2, sharey=True)
+        fig.tight_layout(h_pad=2)
+        fig.set_size_inches(20, 8 * plot_cols)
+
+        goals = []
+        from statistics import mean
+        for i in range(0, self.gen_count, gen_interval):
+            try:
+                datax, datay, goal = map(list, zip(*self.gens[i]))
+
+                goals += [(i, mean(g)) for g in goal]
+            except Exception as e:
+                pass
+
+        import matplotlib.figure
+        import matplotlib.backends.backend_agg as agg
+
+        fig = matplotlib.figure.Figure(figsize=(45, 15))
+        agg.FigureCanvasAgg(fig)
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.title.set_text("Goals")
+
+        ax.scatter(
+            [ind[0] for ind in goals],
+            [ind[1] for ind in goals],
+            facecolor=(0.7, 0.7, 0.7),
+            zorder=-1,
+        )
+
+        from pathlib import Path
+
+        path = "Output/{}/Figures".format(test_name)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        fig.savefig("Output/{}/Figures/goals".format(test_name))
 
     def pareto(self, test_name):
         individuals = [list(ind) for ind in self.gens[-1]]
