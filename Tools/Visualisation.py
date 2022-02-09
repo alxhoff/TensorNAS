@@ -8,7 +8,11 @@ class IndividualRecord:
         self.gens.append([])
         for ind in gen:
             self.gens[self.gen_count].append(
-                (ind.block_architecture.param_count, ind.block_architecture.accuracy,  ind.fitness.values)
+                (
+                    ind.block_architecture.param_count,
+                    ind.block_architecture.accuracy,
+                    ind.fitness.values,
+                )
             )
         self.gen_count += 1
 
@@ -54,6 +58,7 @@ class IndividualRecord:
 
         goals = []
         from statistics import mean
+
         for i in range(0, self.gen_count, gen_interval):
             try:
                 datax, datay, goal = map(list, zip(*self.gens[i]))

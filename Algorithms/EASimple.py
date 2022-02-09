@@ -71,8 +71,7 @@ def TestEASimple(
         comment=comment,
     )
 
-    test.ir.goals(generation_gap,
-               test_name=test_name)
+    test.ir.goals(generation_gap, test_name=test_name)
 
     pareto_inds = test.ir.pareto(test_name=test_name)
 
@@ -179,7 +178,6 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
-
     pop_size = len(population)
 
     from deap import tools
@@ -367,7 +365,7 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.fitness.values
+                        ind.fitness.values,
                     )
                 )
             else:
@@ -375,7 +373,7 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.fitness.values
+                        ind.fitness.values,
                     )
                 ]
 

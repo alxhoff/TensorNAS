@@ -6,12 +6,20 @@ import numpy as np
 from TensorNAS.Core.Individual import TensorNASIndividual
 
 
-def setup_DEAP(creator, toolbox, objective_weights, multithreaded=False, distributed=False, thread_count=0):
+def setup_DEAP(
+    creator,
+    toolbox,
+    objective_weights,
+    multithreaded=False,
+    distributed=False,
+    thread_count=0,
+):
     creator.create("FitnessMulti", base.Fitness, weights=objective_weights)
     creator.create("Individual", TensorNASIndividual, fitness=creator.FitnessMulti)
 
     if distributed:
         from scoop import futures
+
         print("Running distributed using futures")
         toolbox.register("map", futures.map)
     elif multithreaded:
