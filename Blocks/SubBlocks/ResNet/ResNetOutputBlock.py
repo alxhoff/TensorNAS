@@ -20,7 +20,7 @@ class Block(Block):
 
         layers = []
 
-        pool_size = np.amin(input_shape)
+        pool_size = int(np.amin(input_shape))
         pool_size = (pool_size, pool_size)
 
         layers.append(

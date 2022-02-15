@@ -17,7 +17,7 @@ def get_block_from_JSON(json_dict, parent_block=None):
     class_args = inspect.getfullargspec(b_class.__init__).args
 
     class_args = [
-        json_dict[key] if key is not "parent_block" else parent_block
+        json_dict[key] if key != "parent_block" else parent_block
         for key in class_args[1:]
     ]
 

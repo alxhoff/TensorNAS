@@ -4,7 +4,10 @@ def ExportBlockArchitectureToJSON(ba, path):
 
     with open("{}/ba.json".format(path), "w+") as f:
         ba_dict = ba.toJSON()
-        json.dump(ba_dict, f)
+        try:
+            json.dump(ba_dict, f)
+        except Exception as e:
+            print(e)
 
 
 def ImportBlockArchitectureFromJSON(ba_json_loc):

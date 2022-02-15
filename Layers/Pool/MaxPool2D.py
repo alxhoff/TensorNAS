@@ -55,14 +55,14 @@ class Layer(Layer):
             x = same_pad_output_shape(inp[0], pool[0], stri[0])
             y = same_pad_output_shape(inp[1], pool[1], stri[1])
             try:
-                return x, y, inp[2]
+                return int(x), int(y), int(inp[2])
             except Exception as e:
                 raise Exception("I/O shapes not able to be made compatible")
         elif pad == ArgPadding.VALID:
             x = valid_pad_output_shape(inp[0], pool[0], stri[0])
             y = valid_pad_output_shape(inp[1], pool[1], stri[1])
             try:
-                return x, y, inp[2]
+                return int(x), int(y), int(inp[2])
             except Exception as e:
                 raise Exception("I/O shapes not able to be made compatible")
         return 0, 0, 0

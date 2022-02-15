@@ -4,12 +4,13 @@ from TensorNAS.Core.Mutate import mutate_tuple, mutate_enum, MutationOperators
 
 
 def valid_pad_output_shape(input, pool, stride):
-    return ((input - pool) // stride) + 1
+    return int(((input - pool) // stride) + 1)
 
 
 def same_pad_output_shape(input, pool, stride):
-    return valid_pad_output_shape(input, pool, stride) + (
-        1 if ((input - pool) % stride) else 0
+    return int(
+        valid_pad_output_shape(input, pool, stride)
+        + (1 if ((input - pool) % stride) else 0)
     )
 
 

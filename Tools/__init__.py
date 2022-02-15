@@ -1,7 +1,7 @@
 def dimension_mag(dimension):
     from functools import reduce
 
-    return reduce((lambda x, y: x * y), dimension)
+    return int(reduce((lambda x, y: x * y), dimension))
 
 
 def _find_prime_factors(product):

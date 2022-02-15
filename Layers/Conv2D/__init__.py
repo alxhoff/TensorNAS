@@ -129,11 +129,11 @@ class Layer(Layer):
         if padding == TensorNAS.Core.Layer.ArgPadding.SAME:
             X = Layer._same_pad_output_shape(input_size[0], stride[0])
             Y = Layer._same_pad_output_shape(input_size[1], stride[1])
-            return (X, Y, filter_count)
+            return (int(X), int(Y), int(filter_count))
         elif padding == TensorNAS.Core.Layer.ArgPadding.VALID:
             X = Layer._valid_pad_output_shape(input_size[0], kernel_size[0], stride[0])
             Y = Layer._valid_pad_output_shape(input_size[1], kernel_size[1], stride[1])
-            return (X, Y, filter_count)
+            return (int(X), int(Y), int(filter_count))
         else:
             raise Exception("Invalid Conv2D padding for calculating output shape")
 
