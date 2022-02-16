@@ -274,7 +274,7 @@ def gen_2d_dilation():
 
 def gen_dropout(max):
     while True:
-        ret = int(round(random.uniform(0, max), 2))
+        ret = round(random.uniform(0, max), 2)
         if ret != 0.0:
             return ret
 

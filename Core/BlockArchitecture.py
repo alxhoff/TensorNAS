@@ -36,15 +36,22 @@ class BlockArchitecture(Block):
         import tensorflow as tf
 
         inp = tf.keras.Input(shape=self.input_shape)
-        out = self.get_keras_layers(inp)
-        model = tf.keras.Model(inp, out)
-        model.compile(
-            optimizer=self.opt.get_optimizer(),
-            loss=eval(loss),
-            metrics=metrics,
-            # run_eagerly=True,
-        )
-        return model
+        try:
+            out = self.get_keras_layers(inp)
+        except Exception:
+            out = None
+
+        if out != None:
+            model = tf.keras.Model(inp, out)
+            model.compile(
+                optimizer=self.opt.get_optimizer(),
+                loss=eval(loss),
+                metrics=metrics,
+                # run_eagerly=True,
+            )
+            return model
+        else:
+            raise Exception("Getting keras model failed")
 
     def prepare_model(
         self,
