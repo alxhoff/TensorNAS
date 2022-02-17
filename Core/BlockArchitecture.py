@@ -1,3 +1,5 @@
+import math
+
 from TensorNAS.Core.Block import Block
 
 
@@ -70,7 +72,7 @@ class BlockArchitecture(Block):
 
             print("Error getting keras model: {}".format(e))
             traceback.format_exc()
-            raise e
+            return None
 
         if q_aware:
             try:
@@ -83,7 +85,7 @@ class BlockArchitecture(Block):
                 model = q_model
             except Exception as e:
                 print("Error getting QA model: {}".format(e))
-                raise e
+                return None
 
         return model
 
@@ -233,6 +235,11 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         self.print()
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+
+        if model == None:
+            params = math.inf
+            accuracy = 0
+            return params, accuracy
 
         model, params = self.train_model(
             model=model,
