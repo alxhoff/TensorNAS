@@ -182,14 +182,24 @@ def _GetVariableGoal(config):
     return _GetGoals(config).getboolean("VariableGoal")
 
 
-def _GetNormalizationVectorStart(config):
+def _GetNormalizationParamVectorStart(config):
 
-    return int(_GetGoals(config)["NormalizationVectorStart"])
+    return int(_GetGoals(config)["NormalizationParamVectorStart"])
 
 
-def _GetNormalizationVectorEnd(config):
+def _GetNormalizationParamVectorEnd(config):
 
-    return int(_GetGoals(config)["NormalizationVectorEnd"])
+    return int(_GetGoals(config)["NormalizationParamVectorEnd"])
+
+
+def _GetNormalizationAccVectorStart(config):
+
+    return float(_GetGoals(config)["NormalizationAccVectorStart"])
+
+
+def _GetNormalizationAccVectorEnd(config):
+
+    return float(_GetGoals(config)["NormalizationAccVectorEnd"])
 
 
 def _GetNormalizationVectorSteps(config):
@@ -204,14 +214,24 @@ def _GetGoalVector(config):
     return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
 
 
-def _GetGoalVectorStart(config):
+def _GetGoalParamVectorStart(config):
 
-    return int(_GetGoals(config)["GoalVectorStart"])
+    return int(_GetGoals(config)["GoalParamVectorStart"])
 
 
-def _GetGoalVectorEnd(config):
+def _GetGoalParamVectorEnd(config):
 
-    return int(_GetGoals(config)["GoalVectorEnd"])
+    return int(_GetGoals(config)["GoalParamVectorEnd"])
+
+
+def _GetGoalAccVectorStart(config):
+
+    return int(_GetGoals(config)["GoalAccVectorStart"])
+
+
+def _GetGoalAccVectorEnd(config):
+
+    return int(_GetGoals(config)["GoalAccVectorEnd"])
 
 
 def _GetGoalVectorSteps(config):
@@ -259,28 +279,53 @@ def GetWeights(config):
         return [n.strip() for n in ast.literal_eval(config_arg)]
 
 
-def _GenVectorsVaribleGoal(g_start, g_stop, g_step, n1, n2):
+def _GenVector(start, stop, steps):
 
-    if g_start == g_stop:
-        goal_vectors = [(g_start, 100)]
+    if isinstance(start, float) or isinstance(stop, float):
+        step = (stop - start) / (steps - 1)
     else:
-        goal_vectors = [
-            (i, 100)
-            for i in range(g_start, g_stop + g_step, 1 if not g_step else g_step)
-        ]
+        step = int((stop - start) / (steps - 1))
+
+    if start == stop:
+        return [start for i in range(steps)]
+    else:
+        if isinstance(start, float) or isinstance(stop, float):
+            import numpy as np
+
+            return [i for i in np.arange(start, stop + step, 1 if step == 0 else step)]
+        else:
+            return [i for i in range(start, stop + step, 1 if step == 0 else step)]
+
+
+def _GenVariableVectors(p1_start, p1_stop, p2_start, p2_stop, steps):
+
+    v1 = _GenVector(p1_start, p1_stop, steps)
+    v2 = _GenVector(p2_start, p2_stop, steps)
+
+    return list(zip(v1, v2))
+
+
+def _GenVectorsVariableGoal(
+    g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
+):
+
+    goal_vectors = _GenVariableVectors(
+        g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps
+    )
+
     normalization_vectors = [(n1, n2) for _ in range(len(goal_vectors))]
 
     return goal_vectors, normalization_vectors
 
 
-def _GenVectorsVariableNormilization(n_start, n_stop, n_step, g1, g2):
+def _GenVectorsVariableNormilization(
+    n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
+):
 
-    if n_start == n_stop:
-        normalization_vectors = [(n_start, 1)]
-    else:
-        normalization_vectors = [
-            (i, 1) for i in range(n_start, n_stop + n_step, 1 if not n_step else n_step)
-        ]
+    normalization_vectors = _GenVariableVectors(
+        n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps
+    )
+
     goal_vectors = [(g1, g2) for _ in range(len(normalization_vectors))]
 
     return goal_vectors, normalization_vectors
@@ -290,17 +335,25 @@ def GetFilterFunctionArgs(config):
 
     if _GetVariableGoal(config):
         # Goal vector varies, normilization vector is static
-        g_start = _GetGoalVectorStart(config)
-        g_stop = _GetGoalVectorEnd(config)
-        g_step = int((g_stop - g_start) / (_GetGoalVectorSteps(config) - 1))
+        g_param_start = _GetGoalParamVectorStart(config)
+        g_param_stop = _GetGoalParamVectorEnd(config)
+        g_acc_start = _GetGoalAccVectorStart(config)
+        g_acc_stop = _GetGoalAccVectorEnd(config)
+        steps = _GetGoalVectorSteps(config)
         n1, n2 = _GetNormalizationVector(config)
-        return _GenVectorsVaribleGoal(g_start, g_stop, g_step, n1, n2)
+        return _GenVectorsVariableGoal(
+            g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
+        )
     else:
-        n_start = _GetNormalizationVectorStart(config)
-        n_stop = _GetNormalizationVectorEnd(config)
-        n_step = int((n_stop - n_start) / (_GetNormalizationVectorSteps(config) - 1))
+        n_param_start = _GetNormalizationParamVectorStart(config)
+        n_param_stop = _GetNormalizationParamVectorEnd(config)
+        n_acc_start = _GetNormalizationAccVectorStart(config)
+        n_acc_stop = _GetNormalizationAccVectorEnd(config)
+        steps = _GetNormalizationVectorSteps(config)
         g1, g2 = _GetGoalVector(config)
-        return _GenVectorsVariableNormilization(n_start, n_stop, n_step, g1, g2)
+        return _GenVectorsVariableNormilization(
+            n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
+        )
 
 
 def _GetTensorflow(config):
