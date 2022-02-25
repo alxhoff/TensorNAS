@@ -183,6 +183,8 @@ def eaSimple(
     from deap import tools
     from Demos import set_global, get_global
 
+    retrain = get_global("retrain_every_generation")
+
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
@@ -309,7 +311,11 @@ def eaSimple(
         offspring = varAnd(offspring, toolbox, cxpb, mutpb)
 
         valid_ind = [ind for ind in offspring if ind.fitness.valid]
-        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+
+        if retrain == False:
+            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        else:
+            invalid_ind = offspring
 
         if logger:
             logger.log("{} existing individuals".format(len(valid_ind)))

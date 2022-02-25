@@ -135,7 +135,13 @@ def GetVariableMutationGenerationalChange(config):
 
 
 def GetMutationAttempts(config):
+
     return int(_GetEvolution(config)["MutationAttempts"])
+
+
+def GetRetrainEveryGeneration(config):
+
+    return _GetEvolution(config).getboolean("RetrainEveryGeneration")
 
 
 def GetMutationProbability(config):
