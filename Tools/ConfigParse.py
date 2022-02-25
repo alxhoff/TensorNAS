@@ -112,6 +112,11 @@ def GetCrossoverProbability(config):
     return float(_GetEvolution(config)["CrossoverProbability"])
 
 
+def GetVerboseMutation(config):
+
+    return _GetEvolution(config).getboolean("VerboseMutation")
+
+
 def GetMutationMethod(config):
 
     val = _GetEvolution(config)["MutationMethod"]
@@ -122,6 +127,11 @@ def GetMutationMethod(config):
         return False
     else:
         raise Exception("Invalid mutation method given in config")
+
+
+def GetVariableMutationGenerationalChange(config):
+
+    return float(_GetEvolution(config)["VariableMutationGenerationalChange"])
 
 
 def GetMutationAttempts(config):
@@ -186,7 +196,7 @@ def GetFigureTitle(config):
 
 def GetSaveIndividual(config):
 
-    return _GetOutput(config)["SaveIndividuals"]
+    return _GetOutput(config).getboolean("SaveIndividuals")
 
 
 def GetOutputPrefix(config):

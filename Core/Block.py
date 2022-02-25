@@ -108,7 +108,7 @@ class Block(ABC):
         """
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
-            if verbose:
+            if verbose == True:
                 print("Removing middle block #{}".format(choice_index))
             del self.middle_blocks[choice_index]
             self.reset_ba_input_shapes()
@@ -136,7 +136,7 @@ class Block(ABC):
         except Exception as e:
             new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
 
-        if verbose:
+        if verbose == True:
             print(
                 "Inserted a block of type: {} at index {}".format(
                     new_block_class, index
@@ -155,7 +155,7 @@ class Block(ABC):
     def _invoke_random_mutation_function(self, verbose=False):
         if self.mutation_funcs:
             mutate_eval = "self." + random.choice(self.mutation_funcs)
-            if verbose:
+            if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
             eval(mutate_eval)(verbose=verbose)
             return True

@@ -181,6 +181,7 @@ def eaSimple(
     pop_size = len(population)
 
     from deap import tools
+    from Demos import set_global, get_global
 
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
@@ -285,6 +286,12 @@ def eaSimple(
 
     # Begin the generational process
     for gen in range(start_gen + 1, ngen + 1):
+
+        set_global(
+            "self_mutation_probability",
+            get_global("self_mutation_probability")
+            + gen * get_global("variable_mutation_generational_change"),
+        )
 
         if logger:
             logger.log("Gen #{}, population: {}".format(gen, len(population)))

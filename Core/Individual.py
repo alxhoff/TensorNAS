@@ -15,7 +15,13 @@ class TensorNASIndividual:
         self.block_architecture = next(block_architecture)
         self.index = None
 
-    def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
+    def mutate(
+        self,
+        mutate_equally=True,
+        mutation_probability=0.0,
+        verbose=False,
+        generation_change=0.0,
+    ):
         self.index = None
         self.block_architecture.mutate(
             mutate_equally=mutate_equally,
