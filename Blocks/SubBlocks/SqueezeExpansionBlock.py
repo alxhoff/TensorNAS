@@ -12,7 +12,6 @@ class Block(Block):
 
         GLOBAL_AVERAGE_POOLING2D = auto()
         HIDDENDENSE = auto()
-        OUTPUTDENSE = auto()
 
     def __init__(self, input_shape, parent_block, class_count, layer_type=-1):
         self.class_count = class_count
@@ -47,11 +46,17 @@ class Block(Block):
     def generate_random_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Dense.HiddenDense import Layer as HiddenDense
         from TensorNAS.Layers.Dense import Args as dense_args
+        from TensorNAS.Layers.Pool.GlobalAveragePool2D import (
+            Layer as GlovalAveragePool2D,
+        )
 
-        return [
-            HiddenDense(
-                input_shape=None,
-                parent_block=self,
-                args={dense_args.UNITS: self.class_count},
-            )
-        ]
+        if layer_type == self.SubBlocks.HIDDENDENSE:
+            return [
+                HiddenDense(
+                    input_shape=None,
+                    parent_block=self,
+                    args={dense_args.UNITS: self.class_count},
+                )
+            ]
+        elif layer_type == self.SubBlocks.GLOBAL_AVERAGE_POOLING2D:
+            return [GlovalAveragePool2D(input_shape=input_shape, parent_block=self)]

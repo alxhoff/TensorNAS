@@ -30,7 +30,18 @@ class Block(ClassificationBlockArchitecture):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
             Block as FeatureExtractionBlock,
         )
+        from TensorNAS.Blocks.SubBlocks.TwoDClassificationBlock import (
+            Block as ClassificationBlock,
+        )
 
         if subblock_type == self.SubBlocks.FEATURE_EXTRACTION_BLOCK:
             return [FeatureExtractionBlock(input_shape=input_shape, parent_block=self)]
+        elif subblock_type == self.SubBlocks.CLASSIFICATION_BLOCK:
+            return [
+                ClassificationBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                    class_count=self.class_count,
+                )
+            ]
         return []

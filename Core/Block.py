@@ -1,6 +1,7 @@
 import random
 import re
 from abc import ABC, abstractmethod
+from enum import auto
 
 from TensorNAS.Core.Mutate import mutate_enum_i
 
@@ -87,15 +88,19 @@ class Block(ABC):
         used during random selection of sub-block blocks
         """
 
-        from enum import auto
-
         NONE = auto()
 
     def _mutate_self(self, verbose=False):
         """
-        An optional function that allows for the block to mutate itself during mutation
+        An optional function that allows for the block to mutate itself during mutation, by default this function
+        simply invokes mutation of a random mutation function and if that is not possible then
+         random mutation of a sub block by invoking _mutate_subblock
         """
-        return False
+        if self._invoke_random_mutation_function(verbose=verbose):
+            return
+        else:
+            self._mutate_subblock(verbose=verbose)
+        return True
 
     def _mutate_drop_subblock(self, verbose=False):
         """
@@ -103,6 +108,42 @@ class Block(ABC):
         """
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
+            if verbose:
+                print("Removing middle block #{}".format(choice_index))
+            del self.middle_blocks[choice_index]
+            self.reset_ba_input_shapes()
+
+    def _mutate_add_subblock(self, verbose=False):
+        """
+        Randomly adds a sub-block from the provided list of valid sub-blocks
+        """
+        if len(self.middle_blocks):
+            index = random.choice(range(len(self.middle_blocks) + 1))
+        else:
+            index = 0
+
+        if index > 0:
+            input_shape = self.middle_blocks[index - 1].get_output_shape()
+        else:
+            input_shape = self.input_shape
+
+        new_block_class = self._get_random_subblock_class()
+        new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
+
+        try:
+            if len(new_blocks):
+                self.middle_blocks.insert(index, new_blocks[0])
+        except Exception as e:
+            new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
+
+        if verbose:
+            print(
+                "Inserted a block of type: {} at index {}".format(
+                    new_block_class, index
+                )
+            )
+
+        self.reset_ba_input_shapes()
 
     def _mutate_subblock(self, verbose=False):
         if len(self.middle_blocks):
@@ -111,7 +152,16 @@ class Block(ABC):
                 print("[MUTATE] middle block #{}".format(choice_index))
             self.middle_blocks[choice_index].mutate(verbose=verbose)
 
-    def mutate(self, self_mutate_rate=0.0, verbose=False):
+    def _invoke_random_mutation_function(self, verbose=False):
+        if self.mutation_funcs:
+            mutate_eval = "self." + random.choice(self.mutation_funcs)
+            if verbose:
+                print("[MUTATE] invoking `{}`".format(mutate_eval))
+            eval(mutate_eval)(verbose=verbose)
+            return True
+        return False
+
+    def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
         this includes the defaul `_mutate_subblock`.
 
@@ -125,15 +175,15 @@ class Block(ABC):
         If one wishes to implement `_mutate_self` then it should return True to stop the subsequent
         re-invoking of mutate.
 
-        The probability of mutating the block itself instead of it's sub-block is pass in as self_mutate_rate."""
-        if random.random() < self_mutate_rate:
-            if self._mutate_self(verbose=verbose):
-                return
-        if self.mutation_funcs:
-            mutate_eval = "self." + random.choice(self.mutation_funcs)
-            if verbose:
-                print("[MUTATE] invoking `{}`".format(mutate_eval))
-            eval(mutate_eval)(verbose=verbose)
+        The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
+        if mutate_equally:
+            block = self._get_random_sub_block_inc_self()
+            block._mutate_self(verbose=verbose)
+        else:
+            if random.random() < mutation_probability:
+                if self._mutate_self(verbose=verbose):
+                    return
+            self._invoke_random_mutation_function(verbose=verbose)
         self.reset_ba_input_shapes()
 
     def generate_constrained_output_sub_blocks(self, input_shape):
@@ -143,7 +193,7 @@ class Block(ABC):
 
         @return Must return a list of created sub block objects
         """
-        return None
+        return []
 
     def generate_constrained_input_sub_blocks(self, input_shape):
         """This method is called before the sub-blocks have been generated to generate the required blocks which are
@@ -152,14 +202,14 @@ class Block(ABC):
 
         @return Must return a list of created sub block objects
         """
-        return None
+        return []
 
     def generate_random_sub_block(self, input_shape, subblock_type):
         """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
         """
-        return None
+        return []
 
     def check_next_layer_type(self, prev_layer_type, next_layer_type):
         """
@@ -402,6 +452,24 @@ class Block(ABC):
                 return index
         return None
 
+    def _get_random_sub_block_inc_self(self):
+        blocks = self._get_all_sub_blocks_inc_self()
+
+        return random.choice(blocks)
+
+    def _get_all_sub_blocks_inc_self(self):
+        blocks = [self]
+
+        for block in self.input_blocks + self.middle_blocks + self.output_blocks:
+            from TensorNAS.Core.Layer import Layer
+
+            if isinstance(block, Layer):
+                return blocks
+            else:
+                blocks += block._get_all_sub_blocks_inc_self()
+
+        return blocks
+
     def get_block_architecture(self):
         parent = self
         try:
@@ -437,6 +505,9 @@ class Block(ABC):
             if index < len(self.output_blocks):
                 self.output_blocks[index] = block
 
+    def _get_random_subblock_class(self):
+        return random.choice([e for e in self.SubBlocks if isinstance(e.value, int)])
+
     def get_sb_count(self):
         return len(self.input_blocks + self.middle_blocks + self.output_blocks)
 
@@ -470,8 +541,8 @@ class Block(ABC):
 
         for key in self.__dict__.keys():
             if key not in json_dict.keys():
-                if (key != "parent_block") and (
-                    key != "opt"
+                if (
+                    (key != "parent_block") and (key != "opt") and (key != "model")
                 ):  # We want to ignore these memory references as BA will be reconstructed
                     json_dict[key] = self.__dict__[key]
 

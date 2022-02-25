@@ -112,9 +112,36 @@ def GetCrossoverProbability(config):
     return float(_GetEvolution(config)["CrossoverProbability"])
 
 
+def GetMutationMethod(config):
+
+    val = _GetEvolution(config)["MutationMethod"]
+
+    if val == "EQUAL":
+        return True
+    elif val == "PROBABILITY":
+        return False
+    else:
+        raise Exception("Invalid mutation method given in config")
+
+
+def GetMutationAttempts(config):
+    return int(_GetEvolution(config)["MutationAttempts"])
+
+
 def GetMutationProbability(config):
 
-    return float(_GetEvolution(config)["MutationProbability"])
+    try:
+        return float(_GetEvolution(config)["MutationProbability"])
+    except Exception:
+        return 0.0
+
+
+def GetSelfMutationProbability(config):
+
+    try:
+        return float(_GetEvolution(config)["SelfMutationProbability"])
+    except Exception:
+        return 0.2
 
 
 def GetPopulationSize(config):

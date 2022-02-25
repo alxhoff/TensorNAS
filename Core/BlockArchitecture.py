@@ -17,6 +17,7 @@ class BlockArchitecture(Block):
         self.param_count = 0
         self.accuracy = 0
         self.batch_size = batch_size
+        self.model = None
 
         from TensorNAS.Optimizers import GetOptimizer
 
@@ -40,18 +41,21 @@ class BlockArchitecture(Block):
         inp = tf.keras.Input(shape=self.input_shape)
         try:
             out = self.get_keras_layers(inp)
-        except Exception:
-            out = None
+        except Exception as e:
+            raise e
 
         if out != None:
-            model = tf.keras.Model(inp, out)
-            model.compile(
-                optimizer=self.opt.get_optimizer(),
-                loss=eval(loss),
-                metrics=metrics,
-                # run_eagerly=True,
-            )
-            return model
+            try:
+                model = tf.keras.Model(inp, out)
+                model.compile(
+                    optimizer=self.opt.get_optimizer(),
+                    loss=eval(loss),
+                    metrics=metrics,
+                    # run_eagerly=True,
+                )
+                return model
+            except Exception as e:
+                raise e
         else:
             raise Exception("Getting keras model failed")
 
@@ -87,6 +91,7 @@ class BlockArchitecture(Block):
                 print("Error getting QA model: {}".format(e))
                 return None
 
+        self.model = model
         return model
 
     def save_model(self, model, test_name, model_name, logger):
@@ -140,10 +145,12 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         test_steps=None,
     ):
 
-        model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+        self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+
+        assert self.model != None, "Failed preparing keras model"
 
         model, params = self.train_model(
-            model=model,
+            model=self.model,
             train_data=train_data,
             validation_split=validation_split,
             epochs=epochs,
@@ -303,16 +310,22 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
     ):
         import numpy as np
+        import tensorflow as tf
+
+        early_stopper = tf.keras.callbacks.EarlyStopping(
+            monitor="val_accuracy", patience=1, mode="max"
+        )
 
         try:
             if not batch_size > 0:
-                if train_data and train_labels:
+                if (train_data is not None) and (train_labels is not None):
                     model.fit(
                         x=train_data,
                         y=train_labels,
                         validation_split=validation_split,
                         epochs=epochs,
                         verbose=1,
+                        callbacks=[early_stopper],
                     )
                 else:
                     if not steps_per_epoch:
@@ -325,13 +338,10 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         batch_size=batch_size,
                         epochs=epochs,
                         verbose=1,
+                        callbacks=[early_stopper],
                     )
             else:
-                import tensorflow as tf
 
-                early_stopper = tf.keras.callbacks.EarlyStopping(
-                    monitor="val_accuracy", patience=1, mode="max"
-                )
                 if (
                     (train_data is not None)
                     and (train_labels is not None)
