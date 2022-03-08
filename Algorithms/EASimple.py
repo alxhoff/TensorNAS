@@ -182,6 +182,7 @@ def eaSimple(
 
     from deap import tools
     from Demos import set_global, get_global
+    from tqdm import tqdm
 
     retrain = get_global("retrain_every_generation")
 
@@ -202,6 +203,9 @@ def eaSimple(
 
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
+
+    print("GEN #0, evaluating {} new individuals".format(len(invalid_ind)))
+
     if multithreaded:
         from multiprocessing import set_start_method
 
@@ -222,11 +226,12 @@ def eaSimple(
             )
     else:
         fitnesses = []
-        for i, ind in enumerate(invalid_ind):
+        for i, ind in enumerate(tqdm(invalid_ind)):
             if save_individuals and generation_save_interval == 1:
-                fitnesses.append(toolbox.evaluate(ind, test_name, start_gen, logger))
+                ret = toolbox.evaluate(ind, test_name, start_gen, logger)
             else:
-                fitnesses.append(toolbox.evaluate(ind, None, None, logger))
+                ret = toolbox.evaluate(ind, None, None, logger)
+            fitnesses.append(ret)
 
     for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
         ind.block_architecture.param_count = fit[-2]
@@ -337,6 +342,8 @@ def eaSimple(
         if logger:
             logger.log("{} new individuals".format(len(invalid_ind)))
 
+        print("GEN #{}, evaluating {} new individuals".format(gen, len(invalid_ind)))
+
         if multithreaded:
             from multiprocessing import set_start_method
 
@@ -357,7 +364,7 @@ def eaSimple(
                 )
         else:
             fitnesses = []
-            for ind in invalid_ind:
+            for ind in tqdm(invalid_ind):
                 if save_individuals and generation_save_interval == 1:
                     fitnesses.append(toolbox.evaluate(ind, test_name, 0, logger))
                 else:

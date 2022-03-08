@@ -1,6 +1,16 @@
+import gc
 import math
 
 from TensorNAS.Core.Block import Block
+
+from tensorflow.keras import backend as k
+from tensorflow.keras.callbacks import Callback
+
+
+class ClearMemory(Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        gc.collect()
+        k.clear_session()
 
 
 class BlockArchitecture(Block):
@@ -17,7 +27,6 @@ class BlockArchitecture(Block):
         self.param_count = 0
         self.accuracy = 0
         self.batch_size = batch_size
-        self.model = None
 
         from TensorNAS.Optimizers import GetOptimizer
 
@@ -51,7 +60,6 @@ class BlockArchitecture(Block):
                     optimizer=self.opt.get_optimizer(),
                     loss=eval(loss),
                     metrics=metrics,
-                    # run_eagerly=True,
                 )
                 return model
             except Exception as e:
@@ -91,7 +99,6 @@ class BlockArchitecture(Block):
                 print("Error getting QA model: {}".format(e))
                 return None
 
-        self.model = model
         return model
 
     def save_model(self, model, test_name, model_name, logger):
@@ -144,13 +151,17 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
         test_steps=None,
     ):
+        from Demos import get_global
 
-        self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+        if get_global("verbose"):
+            verbose = 1
+        else:
+            verbose = 0
 
-        assert self.model != None, "Failed preparing keras model"
+        model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
 
         model, params = self.train_model(
-            model=self.model,
+            model=model,
             train_data=train_data,
             validation_split=validation_split,
             epochs=epochs,
@@ -158,6 +169,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             test_name=test_name,
             model_name=model_name,
             logger=logger,
+            verbose=verbose,
         )
 
         try:
@@ -190,7 +202,9 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         test_name=None,
         model_name=None,
         logger=None,
+        verbose=0,
     ):
+
         model.fit(
             x=train_data,
             y=train_data,
@@ -198,6 +212,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             batch_size=batch_size,
             validation_split=validation_split,
             shuffle=True,
+            verbose=verbose,
         )
 
         params = self.save_model(
@@ -238,8 +253,12 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
         test_steps=None,
     ):
+        from Demos import get_global
 
-        self.print()
+        if get_global("verbose"):
+            verbose = 1
+        else:
+            verbose = 0
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
 
@@ -263,6 +282,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             model_name=model_name,
             logger=logger,
             steps_per_epoch=steps_per_epoch,
+            verbose=verbose,
         )
 
         try:
@@ -273,7 +293,12 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 and (test_labels is not None)
             ):
                 accuracy = (
-                    model.evaluate(x=test_data, y=test_labels, batch_size=batch_size)[1]
+                    model.evaluate(
+                        x=test_data,
+                        y=test_labels,
+                        batch_size=batch_size,
+                        verbose=verbose,
+                    )[1]
                     * 100
                 )
             else:
@@ -288,6 +313,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         except Exception as e:
             accuracy = 0
             print("Error evaluating model: {}".format(e))
+
+        gc.collect()
 
         return params, accuracy
 
@@ -308,6 +335,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         model_name=None,
         logger=None,
         steps_per_epoch=None,
+        verbose=0,
     ):
         import numpy as np
         import tensorflow as tf
@@ -324,8 +352,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         y=train_labels,
                         validation_split=validation_split,
                         epochs=epochs,
-                        verbose=1,
-                        callbacks=[early_stopper],
+                        verbose=verbose,
+                        callbacks=[early_stopper, ClearMemory()],
                     )
                 else:
                     if not steps_per_epoch:
@@ -337,8 +365,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         validation_steps=validation_steps,
                         batch_size=batch_size,
                         epochs=epochs,
-                        verbose=1,
-                        callbacks=[early_stopper],
+                        verbose=verbose,
+                        callbacks=[early_stopper, ClearMemory()],
                     )
             else:
 
@@ -355,8 +383,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         validation_steps=validation_steps,
                         epochs=epochs,
                         batch_size=batch_size,
-                        verbose=1,
-                        callbacks=[early_stopper],
+                        verbose=verbose,
+                        callbacks=[early_stopper, ClearMemory()],
                     )
                 else:
                     if not steps_per_epoch:
@@ -368,8 +396,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         validation_steps=validation_steps,
                         epochs=epochs,
                         batch_size=batch_size,
-                        verbose=1,
-                        callbacks=[early_stopper],
+                        verbose=verbose,
+                        callbacks=[early_stopper, ClearMemory()],
                     )
         except Exception as e:
             print("Error fitting model, {}".format(e))
@@ -379,4 +407,5 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             model=model, test_name=test_name, model_name=model_name, logger=logger
         )
 
+        gc.collect()
         return model, params

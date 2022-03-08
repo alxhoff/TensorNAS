@@ -35,6 +35,7 @@ def setup_DEAP(
             pool = multiprocessing.Pool()
             print("Running on 1 host using no thread count limit")
         toolbox.register("map", pool.starmap)
+        # toolbox.register("map", pool.imap_unordered)
 
 
 def register_DEAP_individual_gen_func(creator, toolbox, ind_gen_func):
