@@ -20,10 +20,10 @@ class IndividualRecord:
         import matplotlib.pyplot as plt
         import math
 
-        plot_cols = math.ceil(len(self.gens) / gen_interval / 2)
-        fig, axes = plt.subplots(plot_cols, 2, sharey=True)
-        fig.tight_layout(h_pad=2)
-        fig.set_size_inches(20, 8 * plot_cols)
+        plot_rows = math.ceil(len(self.gens) / gen_interval / 2)
+        fig, axes = plt.subplots(
+            plot_rows, 2, sharey=True, sharex=True, figsize=(20, 10 * plot_rows)
+        )
         if title:
             if comment:
                 title = title + "_{}".format(comment)
