@@ -27,6 +27,7 @@ class TensorNASIndividual:
             mutate_equally=mutate_equally,
             mutation_probability=mutation_probability,
             verbose=verbose,
+            generation_change=generation_change,
         )
         return self
 

@@ -1,9 +1,9 @@
 from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
+from enum import auto
 
 
 class Args(EnumWithNone):
-    from enum import auto
 
     LAYERS = auto()
 

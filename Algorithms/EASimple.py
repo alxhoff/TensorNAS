@@ -101,6 +101,14 @@ def TestEASimple(
                 )
             )
             logger.log(str(pmodel))
+            for mutation in pmodel.block_architecture.mutations:
+                logger.log(
+                    "{} param diff: {} acc diff: {}".format(
+                        mutation.mutation_operation,
+                        mutation.param_diff,
+                        mutation.accuracy_diff,
+                    )
+                )
 
     if logger:
         logger.log("Done")
@@ -201,6 +209,7 @@ def eaSimple(
     for i, ind in enumerate(population):
         ind.index = i
 
+    print(population[0])
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
 
@@ -371,8 +380,21 @@ def eaSimple(
                     fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
+            ind.block_architecture.prev_param_count = ind.block_architecture.param_count
             ind.block_architecture.param_count = fit[-2]
+            ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
             ind.block_architecture.accuracy = fit[-1]
+            if len(ind.block_architecture.mutations):
+                if ind.block_architecture.mutations[-1].accuracy_diff == None:
+                    ind.block_architecture.mutations[-1].accuracy_diff = (
+                        ind.block_architecture.accuracy
+                        - ind.block_architecture.prev_accuracy
+                    )
+                if ind.block_architecture.mutations[-1].param_diff == None:
+                    ind.block_architecture.mutations[-1].param_diff = (
+                        ind.block_architecture.param_count
+                        - ind.block_architecture.prev_param_count
+                    )
 
             if filter_function:
                 if filter_function_args:

@@ -1,4 +1,5 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 """
 An inception block is designed to make the model wider instead of deeper. Thus an inception block is responsible
@@ -14,10 +15,7 @@ class Block(Block):
     MAX_SUB_BLOCKS = 4
     MIN_SUB_BLOCKS = 2
 
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         FILTER_BANK = auto()
 

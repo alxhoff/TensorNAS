@@ -1,14 +1,12 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 
 class Block(Block):
 
     MAX_SUB_BLOCKS = 0
 
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         NONE = auto()
 

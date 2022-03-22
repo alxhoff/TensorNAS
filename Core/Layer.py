@@ -26,7 +26,10 @@ class LayerShape:
         return tuple(self.dimensions)
 
 
-class Layer(ABC):
+from TensorNAS.Core.Block import Block
+
+
+class Layer(Block):
     """
     Layers are implemented using an abstract class that must provide a number of abstract methods. This is done such
     that the implemented Layers can be loaded in a plugin fashion from the Layers sub-package. This allows for users
@@ -53,52 +56,20 @@ class Layer(ABC):
     sub-classed Layers.
     """
 
+    class SubBlocks:
+        """
+        Required by parent class Block
+        """
+
     def __init__(self, input_shape, parent_block, args=None):
+        super().__init__(input_shape=input_shape, parent_block=parent_block, args=args)
 
-        self.args_enum = self._get_args_enum()
-        if args:
-            if isinstance(args, list):
-                args = dict(args)
-                new_dict = {}
-
-                for key, val in args.items():
-                    if isinstance(key, str):
-                        new_dict[
-                            [i for i in self.args_enum if i.name == key][0]
-                        ] = args[key]
-                args = new_dict
-
-        self.parent_block = parent_block
         self.args = self._gen_args(input_shape, args)
         self.inputshape = LayerShape()
         self.outputshape = LayerShape()
-        self.mutation_funcs = [
-            func
-            for func in dir(self)
-            if callable(getattr(self, func)) and re.search(r"^_mutate", func)
-        ]
 
         self.inputshape.set(input_shape)
         self.outputshape.set(self.get_output_shape())
-
-    @classmethod
-    def _get_module(cls):
-        return cls.__module__
-
-    @classmethod
-    def _get_m_name(cls):
-        ret = re.findall(r"^(.*)\.([a-zA-Z0-9]*$)", cls._get_module())
-        if len(ret):
-            return ret[0]
-        else:
-            return None
-
-    @classmethod
-    def _get_parent_module(cls):
-        ret = cls._get_m_name()
-        if ret:
-            if len(ret) >= 2:
-                return ret[0]
 
     @classmethod
     def get_parent_name(cls):
@@ -115,24 +86,6 @@ class Layer(ABC):
             if len(ret) >= 2:
                 return ret[1]
 
-    @classmethod
-    def _get_args_enum(cls):
-        from importlib import import_module
-
-        try:
-            args = import_module(cls._get_module()).Args
-            return args
-        except Exception:
-            try:
-                args = import_module(cls._get_parent_module()).Args
-                return args
-            except Exception as e:
-                raise (
-                    "{} doesn't have args enum.Enum 'Args' implemented".format(
-                        cls.get_name()
-                    )
-                )
-
     def set_input_shape(self, input_shape):
         self.inputshape.set(input_shape)
 
@@ -141,9 +94,6 @@ class Layer(ABC):
 
     def get_sb_count(self):
         return 0
-
-    def get_args_enum(self):
-        return self.args_enum
 
     def __str__(self):
         ret = "Layer:{} {}-> {}, ".format(
@@ -165,12 +115,13 @@ class Layer(ABC):
     def print(self):
         print(str(self))
 
-    def mutate(self, verbose=False):
+    def mutate(self, verbose=False, **kwargs):
         if self.mutation_funcs:
             mutate_eval = "self." + random.choice(self.mutation_funcs)
             if verbose:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
-            eval(mutate_eval)()
+            return eval(mutate_eval)()
+        return "Null mutation"
 
     @abstractmethod
     def _gen_args(self, input_shape, args):
@@ -183,28 +134,6 @@ class Layer(ABC):
     @abstractmethod
     def get_keras_layers(self, input_tensor):
         return NotImplementedError
-
-    def _args_to_JSON(self):
-
-        args = dict(self.args)
-
-        ret = []
-
-        for arg in args:
-            ret += [[arg.name, value] for key, value in args.items() if arg == key]
-
-        return ret
-
-    def toJSON(self):
-
-        json_dict = {
-            "input_shape": self.inputshape.get(),
-            "output_shape": self.outputshape.get(),
-            "mutation_funcs": self.mutation_funcs,
-            "args": self._args_to_JSON(),
-        }
-
-        return json_dict
 
     def get_ascii_tree(self):
         return str(self)
@@ -229,9 +158,17 @@ class ArgPadding(EnumWithNone):
 
 
 class ArgRegularizers(EnumWithNone):
+    NONE = None
     L1 = "L1"
     L1L2 = "L1L2"
     L2 = "L2"
+
+
+# Given the large number, only those used were added
+class ArgInitializers(EnumWithNone):
+    HE_NORMAL = "he_normal"
+    HE_UNIFORM = "he_uniform"
+    GLOROT_UNIFORM = "glorot_uniform"
 
 
 def gen_2d_kernel_size(input_size):
@@ -281,6 +218,22 @@ def gen_dropout(max):
 
 def gen_padding():
     return random.choice(list(ArgPadding))
+
+
+# Desired regularizer needs to be provided as a tuple containing the regularizer's name as a list of it's init arguments
+def gen_regularizer(value=None):
+    if value:
+        import tensorflow as tf
+
+        value = eval("tf.keras.regularizers.{}".format(value[0]))(
+            *(value[1] if isinstance(value[1], list) else [value[1]])
+        )
+
+    return value
+
+
+def gen_initializer(value="glorot_uniform"):
+    return value
 
 
 def gen_activation():

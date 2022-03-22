@@ -90,6 +90,10 @@ class IndividualRecord:
         fig.savefig("Output/{}/Figures/goals".format(test_name))
 
     def pareto(self, test_name):
+        from Demos import get_global
+
+        filter_funcs = get_global("filter_function_args")
+
         individuals = [list(ind) for ind in self.gens[-1]]
         best_models = [
             [param_count, 0]
@@ -133,7 +137,6 @@ class IndividualRecord:
         agg.FigureCanvasAgg(fig)
 
         ax = fig.add_subplot(1, 3, 1)
-        ax.set_xscale("log")
         ax.title.set_text("Population")
         ax.set_ylim(bottom=0, top=100)
         ax.scatter(
@@ -142,6 +145,12 @@ class IndividualRecord:
             facecolor=(0.7, 0.7, 0.7),
             zorder=-1,
         )
+        for x, y in filter_funcs[0]:
+            x_points = [x, 0]
+            y_points = [0, y]
+            ax.plot(x_points, y_points)
+        # ax.set_xscale("log")
+
         ax = fig.add_subplot(1, 3, 2)
         ax.set_xscale("log")
         ax.title.set_text("Best for Each Param Count")
@@ -152,10 +161,11 @@ class IndividualRecord:
             facecolor=(0.7, 0.7, 0.7),
             zorder=-1,
         )
+
         ax = fig.add_subplot(1, 3, 3)
         ax.plot(x, y)
         ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
-        ax.set_xscale("log")
+        # ax.set_xscale("log")
         ax.title.set_text("Pareto Front")
         ax.set_ylim(bottom=0, top=100)
 

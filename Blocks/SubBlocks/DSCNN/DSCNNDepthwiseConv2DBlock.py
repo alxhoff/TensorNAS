@@ -6,10 +6,7 @@ class Block(Block):
 
     MAX_SUB_BLOCKS = 1
 
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         DEPTHWISE_CONV2D = auto()
         BATCH_NORMALIZATION_AND_ACTIVATION = auto()
@@ -23,7 +20,7 @@ class Block(Block):
         args = {
             conv2d_args.FILTERS: 64,
             conv2d_args.PADDING: ArgPadding.SAME,
-            conv2d_args.KERNEL_REGULARIZER: (ArgRegularizers.L2, 1e-4),
+            conv2d_args.REGULARIZER: (ArgRegularizers.L2, 1e-4),
         }
 
         return [

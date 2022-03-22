@@ -13,6 +13,17 @@ class ClearMemory(Callback):
         k.clear_session()
 
 
+class Mutation:
+    def __init__(
+        self, mutation_operation, accuracy_diff=None, param_diff=None, notes=None
+    ):
+
+        self.mutation_operation = mutation_operation
+        self.accuracy_diff = accuracy_diff
+        self.param_diff = param_diff
+        self.notes = notes
+
+
 class BlockArchitecture(Block):
     """
     A block architectures, eg. a classification architecture is one that provides a specified
@@ -25,7 +36,10 @@ class BlockArchitecture(Block):
 
     def __init__(self, input_shape, batch_size, optimizer):
         self.param_count = 0
+        self.prev_param_count = 0
         self.accuracy = 0
+        self.prev_accuracy = 0
+        self.mutations = []
         self.batch_size = batch_size
 
         from TensorNAS.Optimizers import GetOptimizer
@@ -35,14 +49,27 @@ class BlockArchitecture(Block):
 
         super().__init__(input_shape=input_shape, parent_block=None)
 
+    def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
+
+        mutation = super().mutate(
+            mutate_equally=mutate_equally,
+            mutation_probability=mutation_probability,
+            verbose=verbose,
+        )
+
+        self.mutations.append(Mutation(mutation_operation=mutation))
+
     def _mutate_optimizer_hyperparameters(self, verbose):
         if self.opt:
-            self.opt.mutate(verbose)
+            return self.opt.mutate(verbose)
+        return "Null mutation"
 
     def _mutate_batch_size(self, verbose):
         from TensorNAS.Core.Mutate import mutate_int_square
 
+        prev_batch = self.batch_size
         self.batch_size = mutate_int_square(self.batch_size, 1, self.MAX_BATCH_SIZE)
+        return "Mutated batch size: {} -> {}".format(prev_batch, self.batch_size)
 
     def get_keras_model(self, loss, metrics):
         import tensorflow as tf

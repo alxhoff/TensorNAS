@@ -1,11 +1,9 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 
 class Block(Block):
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         NONE = auto()
 
@@ -31,7 +29,7 @@ class Block(Block):
                     conv2d_args.FILTERS: 64,
                     conv2d_args.KERNEL_SIZE: (10, 4),
                     conv2d_args.STRIDES: (2, 2),
-                    conv2d_args.KERNEL_REGULARIZER: (ArgRegularizers.L2, 1e-4),
+                    conv2d_args.REGULARIZER: (ArgRegularizers.L2, 1e-4),
                     conv2d_args.PADDING: ArgPadding.SAME,
                 },
             )

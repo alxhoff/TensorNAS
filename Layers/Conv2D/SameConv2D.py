@@ -19,10 +19,10 @@ class Layer(Layer):
         }
 
     def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
-        return
+        return "Null mutation"
 
     def _mutate_padding(self):
-        return
+        return "Null mutation"
 
     def get_keras_layers(self, input_tensor):
         import tensorflow as tf

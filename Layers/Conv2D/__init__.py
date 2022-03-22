@@ -1,18 +1,26 @@
 import random
 import TensorNAS.Core.Layer
-from TensorNAS.Core.Layer import Layer, ArgActivations, ArgPadding
-from TensorNAS.Core.Mutate import (
-    mutate_int,
-    mutate_tuple,
-    mutate_enum,
-    MutationOperators,
+from TensorNAS.Core.Layer import (
+    Layer,
+    ArgActivations,
+    ArgPadding,
+    ArgInitializers,
+    ArgRegularizers,
 )
 from TensorNAS.Core import EnumWithNone
+from TensorNAS.Core.LayerMutations import (
+    MutateFilters,
+    MutateKernelSize,
+    MutatePadding,
+    MutateActivation,
+    MutateDilationRate,
+    MutateStrides,
+)
+from enum import auto
 
 
 class Args(EnumWithNone):
     "Args needed for creating Conv2DArgs layer, list not complete"
-    from enum import auto
 
     FILTERS = auto()
     KERNEL_SIZE = auto()
@@ -21,10 +29,20 @@ class Args(EnumWithNone):
     DILATION_RATE = auto()
     ACTIVATION = auto()
     GROUPS = auto()
-    KERNEL_REGULARIZER = auto()
+    REGULARIZER = auto()
+    INITIALIZER = auto()
 
 
-class Layer(Layer):
+class Layer(
+    Layer,
+    MutateFilters,
+    MutateKernelSize,
+    MutatePadding,
+    MutateActivation,
+    MutateDilationRate,
+    MutateStrides,
+):
+
     MAX_FILTER_COUNT = 128
     MAX_KERNEL_DIMENSION = 7
     MAX_STRIDE = 7
@@ -34,8 +52,11 @@ class Layer(Layer):
         filter_count = random.randint(1, self.MAX_FILTER_COUNT)
         kernel_size = TensorNAS.Core.Layer.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
         padding = TensorNAS.Core.Layer.gen_padding()
-        activation = TensorNAS.Core.Layer.gen_activation()
+        # Since Relu is the standard activation, we will start with Relu and let the EA mutate it
+        activation = ArgActivations.RELU
         dilation_rate = TensorNAS.Core.Layer.gen_2d_dilation()
+        initializer = ArgInitializers.GLOROT_UNIFORM
+        regularizer = ArgRegularizers.NONE, 0
         strides = (1, 1)
 
         if args:
@@ -51,6 +72,10 @@ class Layer(Layer):
                 dilation_rate = args.get(self.get_args_enum().DILATION_RATE)
             if self.get_args_enum().STRIDES in args:
                 strides = args.get(self.get_args_enum().STRIDES)
+            if self.get_args_enum().REGULARIZER in args:
+                regularizer = args.get(self.get_args_enum().REGULARIZER)
+            if self.get_args_enum().INITIALIZER in args:
+                initializer = args.get(self.get_args_enum().INITIALIZER)
 
         return {
             self.get_args_enum().FILTERS: filter_count,
@@ -59,62 +84,9 @@ class Layer(Layer):
             self.get_args_enum().PADDING: padding,
             self.get_args_enum().DILATION_RATE: dilation_rate,
             self.get_args_enum().ACTIVATION: activation,
+            self.get_args_enum().REGULARIZER: regularizer,
+            self.get_args_enum().INITIALIZER: initializer,
         }
-
-    def _mutate_filters(self, operator=MutationOperators.STEP):
-        self.args[self.get_args_enum().FILTERS] = mutate_int(
-            self.args[self.get_args_enum().FILTERS],
-            1,
-            self.MAX_FILTER_COUNT,
-            operator,
-        )
-
-    def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
-        self.args[self.get_args_enum().KERNEL_SIZE] = mutate_tuple(
-            self.args[self.get_args_enum().KERNEL_SIZE],
-            1,
-            self.MAX_KERNEL_DIMENSION,
-            operator,
-        )
-
-    def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
-        self.args[self.get_args_enum().STRIDES] = mutate_tuple(
-            self.args[self.get_args_enum().STRIDES],
-            1,
-            self.MAX_STRIDE,
-            operator,
-        )
-
-    def _mutate_padding(self):
-        self.args[self.get_args_enum().PADDING] = mutate_enum(
-            self.args[self.get_args_enum().PADDING], TensorNAS.Core.Layer.ArgPadding
-        )
-
-    def _mutate_dilation_rate(self, operator=MutationOperators.SYNC_STEP):
-        self.args[self.get_args_enum().DILATION_RATE] = mutate_tuple(
-            self.args[self.get_args_enum().DILATION_RATE],
-            1,
-            self.MAX_DILATION,
-            operator,
-        )
-
-    def _mutate_activation(self):
-        self.args[self.get_args_enum().ACTIVATION] = mutate_enum(
-            self.args[self.get_args_enum().ACTIVATION],
-            TensorNAS.Core.Layer.ArgActivations,
-        )
-
-    def _single_stride(self):
-        st = self.args[self.get_args_enum().STRIDES]
-        if st[0] == 1 and st[1] == 1:
-            return True
-        return False
-
-    def _single_dilation_rate(self):
-        dr = self.args[self.get_args_enum().DILATION_RATE]
-        if dr[0] == 1 and dr[1] == 1:
-            return True
-        return False
 
     @staticmethod
     def _same_pad_output_shape(input, stride):

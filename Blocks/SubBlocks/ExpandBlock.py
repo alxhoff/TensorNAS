@@ -1,4 +1,5 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 
 class Block(Block):
@@ -10,10 +11,7 @@ class Block(Block):
     MAX_SUB_BLOCKS = 5
     MIN_SUB_BLOCKS = 2
 
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         CONV2D = auto()
 

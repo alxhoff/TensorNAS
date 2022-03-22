@@ -1,11 +1,9 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 
 class Block(Block):
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         DENSE = auto()
         BATCH_NORMALIZATION = auto()

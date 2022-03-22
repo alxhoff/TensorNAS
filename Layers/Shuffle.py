@@ -1,5 +1,7 @@
 from TensorNAS.Core import EnumWithNone
+from enum import auto
 from TensorNAS.Core.Layer import Layer
+from TensorNAS.Core.LayerMutations import MutateNumGroups
 
 
 def get_divisors(n):
@@ -26,12 +28,11 @@ def shuffle_channels(input_tensor, num_groups):
 
 
 class Args(EnumWithNone):
-    from enum import auto
 
     NUM_GROUPS = auto()
 
 
-class Layer(Layer):
+class Layer(Layer, MutateNumGroups):
     def _gen_args(self, input_shape, args):
         from random import choice
 
@@ -42,11 +43,6 @@ class Layer(Layer):
                 groups = args.get(self.get_args_enum().NUM_GROUPS)
 
         return {self.get_args_enum().NUM_GROUPS: groups}
-
-    def _mutate_num_groups(self):
-        from TensorNAS.Core.Mutate import mutate_int
-
-        self.args[self.get_args_enum().NUM_GROUPS] = mutate_int(1, self.MAX_NUM_GROUPS)
 
     def get_output_shape(self):
         return self.inputshape.get()

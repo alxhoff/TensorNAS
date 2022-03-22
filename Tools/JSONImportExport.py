@@ -4,8 +4,25 @@ def ExportBlockArchitectureToJSON(ba, path):
 
     with open("{}/ba.json".format(path), "w+") as f:
         ba_dict = ba.toJSON()
+        walk_dict_for_invalid_json_type(ba_dict)
         try:
             json.dump(ba_dict, f)
+        except Exception as e:
+            print(e)
+
+
+def walk_dict_for_invalid_json_type(input_dict):
+    for item in input_dict.items():
+        if isinstance(item[1], list):
+            if len(item[1]) > 0:
+                if isinstance(item[1][0], dict):
+                    for i in item[1]:
+                        walk_dict_for_invalid_json_type(i)
+                    continue
+        try:
+            import json
+
+            json.dumps(item)
         except Exception as e:
             print(e)
 

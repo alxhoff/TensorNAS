@@ -21,7 +21,7 @@ class Layer(Layer):
         A pointwise conv requires a 1x1 kernel, thus we cannot mutate it. This function is here to override the
         standard conv mutations found in the super class.
         """
-        return
+        return "Null mutation"
 
     def get_keras_layers(self, input_tensor):
         import tensorflow as tf

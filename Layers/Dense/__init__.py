@@ -1,13 +1,14 @@
 from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
+from enum import auto
 
 
 class Args(EnumWithNone):
     "Args needed for creating Dense layer, list not complete"
-    from enum import auto
 
     UNITS = auto()
     ACTIVATION = auto()
+    INITIALIZER = auto()
 
 
 class Layer(Layer):

@@ -1,12 +1,9 @@
 from TensorNAS.Core.BlockArchitecture import AreaUnderCurveBlockArchitecture
+from enum import Enum, auto
 
 
 class Block(AreaUnderCurveBlockArchitecture):
-
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         AUTO_ENCODER_BLOCK = auto()
 

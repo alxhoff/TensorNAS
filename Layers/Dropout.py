@@ -1,9 +1,9 @@
 from TensorNAS.Core import EnumWithNone
 from TensorNAS.Core.Layer import Layer
+from enum import auto
 
 
 class Args(EnumWithNone):
-    from enum import auto
 
     RATE = auto()
 
@@ -21,13 +21,6 @@ class Layer(Layer):
                 max = args.get(self.get_args_enum().RATE)
 
         return {self.get_args_enum().RATE: max}
-
-    def _mutate_rate(self):
-        from TensorNAS.Core.Mutate import mutate_unit_interval
-
-        self.args[self.get_args_enum().RATE] = mutate_unit_interval(
-            self.args[self.get_args_enum().RATE], 0, self.MAX_RATE
-        )
 
     def get_output_shape(self):
         return self.inputshape.get()

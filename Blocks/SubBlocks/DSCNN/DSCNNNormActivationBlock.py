@@ -1,14 +1,12 @@
 from TensorNAS.Core.Block import Block
+from enum import Enum, auto
 
 
 class Block(Block):
 
     MAX_SUB_BLOCKS = 1
 
-    from enum import Enum
-
     class SubBlocks(Enum):
-        from enum import auto
 
         BATCH_NORMILIZATION = auto()
         ACTIVATION = auto()

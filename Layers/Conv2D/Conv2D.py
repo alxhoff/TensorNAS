@@ -4,13 +4,14 @@ from TensorNAS.Layers.Conv2D import Layer
 class Layer(Layer):
     def get_keras_layers(self, input_tensor):
         import tensorflow as tf
+        from TensorNAS.Core.Layer import gen_regularizer
 
-        kernel_regularizer = None
-        if self.get_args_enum().KERNEL_REGULARIZER in self.args:
-            r_args = self.args.get(self.get_args_enum().KERNEL_REGULARIZER)
-            kernel_regularizer = eval("tf.keras.regularizers.{}".format(r_args[0]))(
-                *list(r_args)
-            )
+        # kernel_regularizer = None
+        # if self.get_args_enum().REGULARIZER in self.args:
+        #     r_args = self.args.get(self.get_args_enum().REGULARIZER)
+        #     kernel_regularizer = eval("tf.keras.regularizers.{}".format(r_args[0]))(
+        #         *r_args[1]
+        #     )
 
         return tf.keras.layers.Conv2D(
             filters=self.args.get(self.get_args_enum().FILTERS),
@@ -20,5 +21,8 @@ class Layer(Layer):
             activation=self.args.get(self.get_args_enum().ACTIVATION).value(),
             padding=self.args.get(self.get_args_enum().PADDING).value(),
             dilation_rate=self.args.get(self.get_args_enum().DILATION_RATE),
-            kernel_regularizer=kernel_regularizer,
+            kernel_regularizer=gen_regularizer(
+                self.args.get(self.get_args_enum().REGULARIZER)
+            ),
+            kernel_initializer=self.args.get(self.get_args_enum().INITIALIZER).value(),
         )(input_tensor)

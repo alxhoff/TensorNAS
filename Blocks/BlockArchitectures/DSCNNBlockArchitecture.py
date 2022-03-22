@@ -1,14 +1,13 @@
 from TensorNAS.Core.BlockArchitecture import ClassificationBlockArchitecture
+from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-    from enum import Enum
 
     MIN_SUB_BLOCKS = 4
     MAX_SUB_BLOCKS = 4
 
     class SubBlocks(Enum):
-        from enum import auto
 
         DSCNN_INPUT_BLOCK = auto()
         DSCNN_SEPERABLE_DEPTHWISE_CONV2D_BLOCK = auto()

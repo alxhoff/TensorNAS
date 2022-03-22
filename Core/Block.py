@@ -1,7 +1,7 @@
 import random
 import re
 from abc import ABC, abstractmethod
-from enum import auto
+from enum import Enum, auto
 
 from TensorNAS.Core.Mutate import mutate_enum_i
 
@@ -78,8 +78,6 @@ class Block(ABC):
     MIN_SUB_BLOCKS = 0
     MAX_SUB_BLOCKS = 0
 
-    from enum import Enum
-
     @property
     @classmethod
     @abstractmethod
@@ -96,11 +94,10 @@ class Block(ABC):
         simply invokes mutation of a random mutation function and if that is not possible then
          random mutation of a sub block by invoking _mutate_subblock
         """
-        if self._invoke_random_mutation_function(verbose=verbose):
-            return
+        if len(self.mutation_funcs) > 0:
+            return self._invoke_random_mutation_function(verbose=verbose)
         else:
-            self._mutate_subblock(verbose=verbose)
-        return True
+            return self._mutate_subblock(verbose=verbose)
 
     def _mutate_drop_subblock(self, verbose=False):
         """
@@ -108,10 +105,13 @@ class Block(ABC):
         """
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
-            if verbose == True:
-                print("Removing middle block #{}".format(choice_index))
+            block_type = type(self.middle_blocks[choice_index])
             del self.middle_blocks[choice_index]
+            ret = "Removed middle block #{} of type {}".format(choice_index, block_type)
+            if verbose == True:
+                print(ret)
             self.reset_ba_input_shapes()
+            return ret
 
     def _mutate_add_subblock(self, verbose=False):
         """
@@ -130,36 +130,41 @@ class Block(ABC):
         new_block_class = self._get_random_subblock_class()
         new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
 
-        try:
-            if len(new_blocks):
-                self.middle_blocks.insert(index, new_blocks[0])
-        except Exception as e:
-            new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
+        if len(new_blocks):
+            self.middle_blocks.insert(index, new_blocks[0])
+
+        ret = "Inserted a block of type: {} at index {}".format(new_block_class, index)
 
         if verbose == True:
-            print(
-                "Inserted a block of type: {} at index {}".format(
-                    new_block_class, index
-                )
-            )
+            print(ret)
 
         self.reset_ba_input_shapes()
 
-    def _mutate_subblock(self, verbose=False):
+        return ret
+
+    def _mutate_subblock(
+        self, mutate_equally=True, mutation_probability=0.0, verbose=False
+    ):
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
             if verbose:
-                print("[MUTATE] middle block #{}".format(choice_index))
-            self.middle_blocks[choice_index].mutate(verbose=verbose)
+                print(
+                    "[MUTATE] middle block #{} of type {}".format(
+                        choice_index, type(self.middle_blocks[choice_index])
+                    )
+                )
+            return self.middle_blocks[choice_index].mutate(
+                mutate_equally=mutate_equally,
+                mutation_probability=mutation_probability,
+                verbose=verbose,
+            )
 
     def _invoke_random_mutation_function(self, verbose=False):
         if self.mutation_funcs:
             mutate_eval = "self." + random.choice(self.mutation_funcs)
             if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
-            eval(mutate_eval)(verbose=verbose)
-            return True
-        return False
+            return eval(mutate_eval)(verbose=verbose)
 
     def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
@@ -178,15 +183,22 @@ class Block(ABC):
         The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
         if mutate_equally:
             block = self._get_random_sub_block_inc_self()
-            block._mutate_self(verbose=verbose)
+            ret = block._mutate_self(verbose=verbose)
         else:
-            if random.random() < mutation_probability:
-                if self._mutate_self(verbose=verbose):
-                    return
-            self._invoke_random_mutation_function(verbose=verbose)
+            prob = random.random()
+            if (prob < mutation_probability) and (len(self.middle_blocks) > 0):
+                ret = self._mutate_subblock(
+                    mutate_equally=mutate_equally,
+                    mutation_probability=mutation_probability,
+                    verbose=verbose,
+                )
+            else:
+                ret = self._invoke_random_mutation_function(verbose=verbose)
         self.reset_ba_input_shapes()
 
-    def generate_constrained_output_sub_blocks(self, input_shape):
+        return ret
+
+    def generate_constrained_output_sub_blocks(self, input_shape, args=None):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are
         appended to the output_blocks list. An example of this would be the placement
         of a classification layer at the end of a model.
@@ -195,7 +207,7 @@ class Block(ABC):
         """
         return []
 
-    def generate_constrained_input_sub_blocks(self, input_shape):
+    def generate_constrained_input_sub_blocks(self, input_shape, args=None):
         """This method is called before the sub-blocks have been generated to generate the required blocks which are
         appended to the input_blocks list. An example of this would be the placement
         of a convolution layer at the beginning of a model.
@@ -204,7 +216,15 @@ class Block(ABC):
         """
         return []
 
-    def generate_random_sub_block(self, input_shape, subblock_type):
+    def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
+        """
+        Different to constrained input and output sub blocks, mid sub blocks are up for mutation and can be modified.
+        This function helps to generate a specific set of blocks originally instead of calling generate_random_sub_block
+        which returns a random block.
+        """
+        return []
+
+    def generate_random_sub_block(self, input_shape, subblock_type, args=None):
         """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
@@ -278,8 +298,13 @@ class Block(ABC):
         """Subclasses of Block should not populate their sub-block lists but instead implement this function which
         will handle this. Generated blocks that are not valid
         """
-        if self.MAX_SUB_BLOCKS:
-            rng = random.choice(range(self.MIN_SUB_BLOCKS, self.MAX_SUB_BLOCKS + 1))
+        mb_count = len(self.middle_blocks)
+        if self.MAX_SUB_BLOCKS and (self.MAX_SUB_BLOCKS > mb_count):
+            rng = random.choice(
+                range(
+                    self.MIN_SUB_BLOCKS - mb_count, self.MAX_SUB_BLOCKS - mb_count + 1
+                )
+            )
             for i in range(rng):
                 out_shape = self._get_cur_output_shape()
                 blocks = self.generate_random_sub_block(
@@ -511,12 +536,27 @@ class Block(ABC):
     def get_sb_count(self):
         return len(self.input_blocks + self.middle_blocks + self.output_blocks)
 
+    def _args_to_JSON(self):
+
+        if self.args:
+            args = dict(self.args)
+
+            ret = []
+
+            for arg in args:
+                ret += [[arg.name, value] for key, value in args.items() if arg == key]
+
+            return ret
+
+        return []
+
     def get_JSON_dict(self):
 
         json_dict = {
             "class_name": self.__module__.split(".")[-1],
             "input_shape": self.input_shape,
             "mutation_funcs": self.mutation_funcs,
+            "args": self._args_to_JSON(),
         }
 
         ib_json = []
@@ -539,10 +579,20 @@ class Block(ABC):
 
     def subclass_get_JSON(self, json_dict):
 
+        ignored_args = [
+            "parent_block",
+            "opt",
+            "model",
+            "args_enum",
+            "inputshape",
+            "outputshape",
+            "mutations",
+        ]
+
         for key in self.__dict__.keys():
             if key not in json_dict.keys():
                 if (
-                    (key != "parent_block") and (key != "opt") and (key != "model")
+                    key not in ignored_args
                 ):  # We want to ignore these memory references as BA will be reconstructed
                     json_dict[key] = self.__dict__[key]
 
@@ -556,7 +606,43 @@ class Block(ABC):
 
         return json_dict
 
-    def __init__(self, input_shape, parent_block):
+    @classmethod
+    def _get_module(cls):
+        return cls.__module__
+
+    @classmethod
+    def _get_m_name(cls):
+        ret = re.findall(r"^(.*)\.([a-zA-Z0-9]*$)", cls._get_module())
+        if len(ret):
+            return ret[0]
+        else:
+            return None
+
+    @classmethod
+    def _get_parent_module(cls):
+        ret = cls._get_m_name()
+        if ret:
+            if len(ret) >= 2:
+                return ret[0]
+
+    def get_args_enum(self):
+        return self.args_enum
+
+    @classmethod
+    def _get_args_enum(cls):
+        from importlib import import_module
+
+        try:
+            args = import_module(cls._get_module()).Args
+            return args
+        except Exception:
+            try:
+                args = import_module(cls._get_parent_module()).Args
+                return args
+            except Exception as e:
+                return None
+
+    def __init__(self, input_shape, parent_block, args=None):
         """
         The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.
@@ -568,6 +654,21 @@ class Block(ABC):
         """
         self.input_shape = input_shape
         self.parent_block = parent_block
+        self.args_enum = self._get_args_enum()
+        self.args = args
+
+        if args:
+            if isinstance(args, list):
+                args = dict(args)
+                new_dict = {}
+
+                for key, val in args.items():
+                    if isinstance(key, str):
+                        new_dict[
+                            [i for i in self.args_enum if i.name == key][0]
+                        ] = args[key]
+                args = new_dict
+
         try:
             self.mutation_funcs = [
                 func
@@ -582,13 +683,39 @@ class Block(ABC):
         self.middle_blocks = []
         self.output_blocks = []
 
-        ib = self.generate_constrained_input_sub_blocks(input_shape)
+        if args:
+            ib = self.generate_constrained_input_sub_blocks(
+                input_shape=input_shape, args=args
+            )
+        else:
+            ib = self.generate_constrained_input_sub_blocks(input_shape=input_shape)
+
         if ib:
             self.input_blocks.extend(ib)
+
+        if args:
+            mb = self.generate_constrained_middle_sub_blocks(
+                input_shape=self._get_cur_output_shape(), args=args
+            )
+        else:
+            mb = self.generate_constrained_middle_sub_blocks(
+                input_shape=self._get_cur_output_shape()
+            )
+
+        if mb:
+            self.middle_blocks.extend(mb)
 
         if self.MAX_SUB_BLOCKS:
             self._generate_sub_blocks()
 
-        ob = self.generate_constrained_output_sub_blocks(self._get_cur_output_shape())
+        if args:
+            ob = self.generate_constrained_output_sub_blocks(
+                input_shape=self._get_cur_output_shape(), args=args
+            )
+        else:
+            ob = self.generate_constrained_output_sub_blocks(
+                input_shape=self._get_cur_output_shape()
+            )
+
         if ob:
             self.output_blocks.extend(ob)

@@ -1,4 +1,0 @@
-scoop
-tenorflow
-keras
-deap
