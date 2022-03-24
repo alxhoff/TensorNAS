@@ -99,9 +99,6 @@ def save_block_architecture(ba, test_name, model_name, logger):
     import os
     from TensorNAS.Tools.JSONImportExport import ExportBlockArchitectureToJSON
 
-    if logger:
-        logger.log("Saving new model, name:{}".format(model_name))
-
     path = "Output/{}/Models/{}".format(test_name, model_name)
     if not os.path.isdir(path):
         Path(path).mkdir(parents=True, exist_ok=True)

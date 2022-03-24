@@ -6,13 +6,6 @@ class Layer(Layer):
         import tensorflow as tf
         from TensorNAS.Core.Layer import gen_regularizer
 
-        # kernel_regularizer = None
-        # if self.get_args_enum().REGULARIZER in self.args:
-        #     r_args = self.args.get(self.get_args_enum().REGULARIZER)
-        #     kernel_regularizer = eval("tf.keras.regularizers.{}".format(r_args[0]))(
-        #         *r_args[1]
-        #     )
-
         return tf.keras.layers.Conv2D(
             filters=self.args.get(self.get_args_enum().FILTERS),
             kernel_size=self.args.get(self.get_args_enum().KERNEL_SIZE),

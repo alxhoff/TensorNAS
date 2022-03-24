@@ -90,18 +90,19 @@ def TestEASimple(
 
     from TensorNAS.Tools import copy_pareto_model
 
-    for i, pmodel in enumerate(pareto_models):
-        copy_pareto_model(test_name, gen_count, pmodel.index, i)
+    for i, pind in enumerate(pareto_models):
+        copy_pareto_model(test_name, gen_count, pind.index, i)
         if logger:
             logger.log("Pareto Ind #{}".format(i))
             logger.log(
                 "Acc: {}, Param Count: {}".format(
-                    pmodel.block_architecture.accuracy,
-                    pmodel.block_architecture.param_count,
+                    pind.block_architecture.accuracy,
+                    pind.block_architecture.param_count,
                 )
             )
-            logger.log(str(pmodel))
-            for mutation in pmodel.block_architecture.mutations:
+            logger.log(str(pind))
+            logger.log("Mutations:")
+            for mutation in pind.block_architecture.mutations:
                 logger.log(
                     "{} param diff: {} acc diff: {}".format(
                         mutation.mutation_operation,
@@ -275,6 +276,15 @@ def eaSimple(
                 )
             )
             logger.log(str(ind))
+            logger.log("Mutations:")
+            for mutation in ind.block_architecture.mutations:
+                logger.log(
+                    "{} param diff: {} acc diff: {}".format(
+                        mutation.mutation_operation,
+                        mutation.param_diff,
+                        mutation.accuracy_diff,
+                    )
+                )
 
     from deap.tools.emo import assignCrowdingDist
 

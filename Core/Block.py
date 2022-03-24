@@ -45,7 +45,7 @@ def _import_subblocks_from_json(blk, json_dict):
     return blk
 
 
-class Block(ABC):
+class BaseBlock(ABC):
     """
     An abstract class that all model blocks are derived from. Thus all model blocks, regardless of their depth within
     the model architecture binary tree they must implement all of the abstract methods defined within this class.
@@ -88,61 +88,25 @@ class Block(ABC):
 
         NONE = auto()
 
-    def _mutate_self(self, verbose=False):
+    def _invoke_random_mutation_function(self, verbose=False):
+        if self.mutation_funcs:
+            mutate_eval = "self." + random.choice(self.mutation_funcs)
+            if verbose == True:
+                print("[MUTATE] invoking `{}`".format(mutate_eval))
+            return eval(mutate_eval)(verbose=verbose)
+
+    def mutate_self(self, verbose=False):
         """
         An optional function that allows for the block to mutate itself during mutation, by default this function
         simply invokes mutation of a random mutation function and if that is not possible then
-         random mutation of a sub block by invoking _mutate_subblock
+         random mutation of a sub block by invoking mutate_subblock
         """
         if len(self.mutation_funcs) > 0:
             return self._invoke_random_mutation_function(verbose=verbose)
         else:
-            return self._mutate_subblock(verbose=verbose)
+            return self.mutate_subblock(verbose=verbose)
 
-    def _mutate_drop_subblock(self, verbose=False):
-        """
-        Randomly drops a middle sub-block
-        """
-        if len(self.middle_blocks):
-            choice_index = random.choice(range(len(self.middle_blocks)))
-            block_type = type(self.middle_blocks[choice_index])
-            del self.middle_blocks[choice_index]
-            ret = "Removed middle block #{} of type {}".format(choice_index, block_type)
-            if verbose == True:
-                print(ret)
-            self.reset_ba_input_shapes()
-            return ret
-
-    def _mutate_add_subblock(self, verbose=False):
-        """
-        Randomly adds a sub-block from the provided list of valid sub-blocks
-        """
-        if len(self.middle_blocks):
-            index = random.choice(range(len(self.middle_blocks) + 1))
-        else:
-            index = 0
-
-        if index > 0:
-            input_shape = self.middle_blocks[index - 1].get_output_shape()
-        else:
-            input_shape = self.input_shape
-
-        new_block_class = self._get_random_subblock_class()
-        new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
-
-        if len(new_blocks):
-            self.middle_blocks.insert(index, new_blocks[0])
-
-        ret = "Inserted a block of type: {} at index {}".format(new_block_class, index)
-
-        if verbose == True:
-            print(ret)
-
-        self.reset_ba_input_shapes()
-
-        return ret
-
-    def _mutate_subblock(
+    def mutate_subblock(
         self, mutate_equally=True, mutation_probability=0.0, verbose=False
     ):
         if len(self.middle_blocks):
@@ -159,35 +123,28 @@ class Block(ABC):
                 verbose=verbose,
             )
 
-    def _invoke_random_mutation_function(self, verbose=False):
-        if self.mutation_funcs:
-            mutate_eval = "self." + random.choice(self.mutation_funcs)
-            if verbose == True:
-                print("[MUTATE] invoking `{}`".format(mutate_eval))
-            return eval(mutate_eval)(verbose=verbose)
-
     def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
-        this includes the defaul `_mutate_subblock`.
+        this includes the defaul `mutate_subblock`.
 
         The implementation of a block should as such then present the possible mutation possibilities as a collection
-        of `_mutate` functions. Generally mutation will call the default `_mutate_subblock` method to invoke mutation
+        of `_mutate` functions. Generally mutation will call the default `mutate_subblock` method to invoke mutation
         in a randomly selected sub-block.
 
         If specific mutation operations are thus required they can be implemented. Among the default mutation functions
-        is the `_mutate_self` function which directly mutates the block instead of calling mutate in a sub-block.
+        is the `mutate_self` function which directly mutates the block instead of calling mutate in a sub-block.
         The function by default does nothing and returns False, in such a case another mutate function is called.
-        If one wishes to implement `_mutate_self` then it should return True to stop the subsequent
+        If one wishes to implement `mutate_self` then it should return True to stop the subsequent
         re-invoking of mutate.
 
         The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
         if mutate_equally:
             block = self._get_random_sub_block_inc_self()
-            ret = block._mutate_self(verbose=verbose)
+            ret = block.mutate_self(verbose=verbose)
         else:
             prob = random.random()
             if (prob < mutation_probability) and (len(self.middle_blocks) > 0):
-                ret = self._mutate_subblock(
+                ret = self.mutate_subblock(
                     mutate_equally=mutate_equally,
                     mutation_probability=mutation_probability,
                     verbose=verbose,
@@ -719,3 +676,48 @@ class Block(ABC):
 
         if ob:
             self.output_blocks.extend(ob)
+
+
+class Block(BaseBlock):
+    def _mutate_drop_subblock(self, verbose=False):
+        """
+        Randomly drops a middle sub-block
+        """
+        if len(self.middle_blocks):
+            choice_index = random.choice(range(len(self.middle_blocks)))
+            block_type = type(self.middle_blocks[choice_index])
+            del self.middle_blocks[choice_index]
+            ret = "Removed middle block #{} of type {}".format(choice_index, block_type)
+            if verbose == True:
+                print(ret)
+            self.reset_ba_input_shapes()
+            return ret
+
+    def _mutate_add_subblock(self, verbose=False):
+        """
+        Randomly adds a sub-block from the provided list of valid sub-blocks
+        """
+        if len(self.middle_blocks):
+            index = random.choice(range(len(self.middle_blocks) + 1))
+        else:
+            index = 0
+
+        if index > 0:
+            input_shape = self.middle_blocks[index - 1].get_output_shape()
+        else:
+            input_shape = self.input_shape
+
+        new_block_class = self._get_random_subblock_class()
+        new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
+
+        if len(new_blocks):
+            self.middle_blocks.insert(index, new_blocks[0])
+
+        ret = "Inserted a block of type: {} at index {}".format(new_block_class, index)
+
+        if verbose == True:
+            print(ret)
+
+        self.reset_ba_input_shapes()
+
+        return ret

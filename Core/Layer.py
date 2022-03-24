@@ -26,10 +26,10 @@ class LayerShape:
         return tuple(self.dimensions)
 
 
-from TensorNAS.Core.Block import Block
+from TensorNAS.Core.Block import BaseBlock
 
 
-class Layer(Block):
+class Layer(BaseBlock):
     """
     Layers are implemented using an abstract class that must provide a number of abstract methods. This is done such
     that the implemented Layers can be loaded in a plugin fashion from the Layers sub-package. This allows for users
@@ -62,6 +62,7 @@ class Layer(Block):
         """
 
     def __init__(self, input_shape, parent_block, args=None):
+
         super().__init__(input_shape=input_shape, parent_block=parent_block, args=args)
 
         self.args = self._gen_args(input_shape, args)
