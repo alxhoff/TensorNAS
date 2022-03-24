@@ -331,21 +331,25 @@ def eaSimple(
         else:
             invalid_ind = offspring
 
+        for i, ind in enumerate(invalid_ind):
+            ind.index = i
+
         if logger:
             logger.log("{} existing individuals".format(len(valid_ind)))
 
         # Copy existing models to new generation
         from TensorNAS.Tools import copy_output_model
 
-        for ind in valid_ind:
-            index = offspring.index(ind)
-            copy_output_model(test_name, gen, ind.index, index)
+        for i, ind in enumerate(valid_ind):
+            copy_output_model(test_name, gen, ind.index, len(invalid_ind) + i)
             logger.log(
                 "Copying existing model, index:{}/{}->{}/{}".format(
-                    gen - 1, ind.index, gen, index
+                    gen - 1, ind.index, gen, len(invalid_ind) + i
                 )
             )
-            ind.index = index
+            ind.index = len(invalid_ind) + i
+
+        offspring[:] = invalid_ind + valid_ind
 
         # Evaluate the individuals with an invalid fitness
         if logger:
@@ -375,7 +379,7 @@ def eaSimple(
             fitnesses = []
             for ind in tqdm(invalid_ind):
                 if save_individuals and generation_save_interval == 1:
-                    fitnesses.append(toolbox.evaluate(ind, test_name, 0, logger))
+                    fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
                 else:
                     fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
