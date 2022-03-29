@@ -93,7 +93,7 @@ def TestEASimple(
     for i, pind in enumerate(pareto_models):
         copy_pareto_model(test_name, gen_count, pind.index, i)
         if logger:
-            logger.log("Pareto Ind #{}".format(i))
+            logger.log("####\nPareto Ind #{}".format(i))
             logger.log(
                 "Acc: {}, Param Count: {}".format(
                     pind.block_architecture.accuracy,
@@ -110,6 +110,7 @@ def TestEASimple(
                         mutation.accuracy_diff,
                     )
                 )
+            logger.log("####")
 
     if logger:
         logger.log("Done")
@@ -151,7 +152,7 @@ def eaSimple(
                        contain the best individuals, optional.
     :param verbose: Whether or not to log the statistics.
     :returns: The final population
-    :returns: A class:`~deap.Tools.Logbook` with the statistics of the
+    :returns: A class:`deap.Tools.Logbook` with the statistics of the
               evolution
     The algorithm takes in a population and evolves it in place using the
     :meth:`varAnd` method. It returns the optimized population and a
@@ -210,7 +211,6 @@ def eaSimple(
     for i, ind in enumerate(population):
         ind.index = i
 
-    print(population[0])
     # Evaluate the individuals with an invalid fitness
     invalid_ind = [ind for ind in population if not ind.fitness.valid]
 
@@ -269,7 +269,7 @@ def eaSimple(
     if logger:
         for x, ind in enumerate(population):
             logger.log(
-                "Ind #{}, params:{}, acc:{}%".format(
+                "####\nInd #{}, params:{}, acc:{}%".format(
                     x,
                     ind.block_architecture.param_count,
                     ind.block_architecture.accuracy,
@@ -285,6 +285,7 @@ def eaSimple(
                         mutation.accuracy_diff,
                     )
                 )
+            logger.log("####")
 
     from deap.tools.emo import assignCrowdingDist
 
@@ -316,7 +317,7 @@ def eaSimple(
         set_global(
             "self_mutation_probability",
             get_global("self_mutation_probability")
-            + gen * get_global("variable_mutation_generational_change"),
+            + (gen - 1) * get_global("variable_mutation_generational_change"),
         )
 
         if logger:
@@ -448,13 +449,23 @@ def eaSimple(
         if logger:
             for x, ind in enumerate(population):
                 logger.log(
-                    "Ind #{}, params:{}, acc:{}%".format(
+                    "####\nInd #{}, params:{}, acc:{}%".format(
                         x,
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
                     )
                 )
                 logger.log(str(ind))
+                logger.log("Mutations:")
+                for mutation in ind.block_architecture.mutations:
+                    logger.log(
+                        "{} param diff: {} acc diff: {}".format(
+                            mutation.mutation_operation,
+                            mutation.param_diff,
+                            mutation.accuracy_diff,
+                        )
+                    )
+                logger.log("####")
 
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}

@@ -1,3 +1,6 @@
+import math
+
+
 class IndividualRecord:
     def __init__(self):
 
@@ -108,24 +111,26 @@ class IndividualRecord:
 
         pareto_inds = [best_models[0]]
 
-        for ind in best_models[1:]:
+        for ind_to_compare in best_models[1:]:
 
             is_dominated = False
 
-            for s_ind in pareto_inds:
+            for existing_ind in pareto_inds:
 
-                if a_dominates_b(s_ind, ind, [0], [1]):
+                if a_dominates_b(existing_ind, ind_to_compare) or (
+                    set(ind_to_compare) == set(existing_ind)
+                ):
 
                     is_dominated = True
                     break
 
-                elif a_dominates_b(ind, s_ind, [0], [1]):
-                    pareto_inds.remove(s_ind)
+                elif a_dominates_b(ind_to_compare, existing_ind):
+                    pareto_inds.remove(existing_ind)
 
             if is_dominated:
                 continue
             else:
-                pareto_inds.append(ind)
+                pareto_inds.append(ind_to_compare)
 
         x = [ind[0] for ind in pareto_inds]
         y = [ind[1] for ind in pareto_inds]
@@ -178,22 +183,21 @@ class IndividualRecord:
         return pareto_inds
 
 
-def a_dominates_b(a, b, to_min, to_max):
+def a_dominates_b(a, b):
 
     n_better = 0
 
-    for f in to_min:
-        if a[f] > b[f]:
-            return False
-        n_better += a[f] < b[f]
+    # First index is parameter count, thus we want a[0] < b[0]
+    if a[0] < b[0]:
+        n_better += 1
 
-    for f in to_max:
-        if a[f] < b[f]:
-            return False
-        n_better += a[f] > b[f]
+    # Second index is accuracy, thus we want a[1] > b[1]
+    if a[1] > b[1]:
+        n_better += 1
 
-    if n_better > 0:
+    if n_better == 2:
         return True
+
     return False
 
 

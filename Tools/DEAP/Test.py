@@ -60,14 +60,9 @@ class DEAPTest:
         self.mutate = None
         self.select = None
         self.ir = IndividualRecord()
-
         self.history = tools.History()
 
-        # toolbox.register(
-        #     "population", tools.initRepeat, list, toolbox.individual, n=self.pop_size
-        # )
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-
         self.pop = toolbox.population(n=self.pop_size)
 
         if get_global("existing_generation"):
