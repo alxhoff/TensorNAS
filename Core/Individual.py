@@ -50,6 +50,7 @@ class TensorNASIndividual:
         logger=None,
         steps_per_epoch=None,
         test_steps=None,
+        early_stopper=False,
     ):
         (param_count, accuracy,) = self.block_architecture.evaluate(
             train_data=train_data,
@@ -69,6 +70,7 @@ class TensorNASIndividual:
             logger=logger,
             steps_per_epoch=steps_per_epoch,
             test_steps=test_steps,
+            early_stopper=early_stopper,
         )
         return param_count, accuracy
 

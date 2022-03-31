@@ -177,6 +177,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         logger=None,
         steps_per_epoch=None,
         test_steps=None,
+        early_stopper=None,
     ):
         from Demos import get_global
 
@@ -197,6 +198,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             model_name=model_name,
             logger=logger,
             verbose=verbose,
+            early_stopper=early_stopper,
         )
 
         try:
@@ -230,6 +232,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         model_name=None,
         logger=None,
         verbose=0,
+        early_stopper=False,
     ):
 
         model.fit(
@@ -279,6 +282,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         logger=None,
         steps_per_epoch=None,
         test_steps=None,
+        early_stopper=False,
     ):
         from Demos import get_global
 
@@ -310,6 +314,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             logger=logger,
             steps_per_epoch=steps_per_epoch,
             verbose=verbose,
+            early_stopper=early_stopper,
         )
 
         try:
@@ -363,13 +368,22 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         logger=None,
         steps_per_epoch=None,
         verbose=0,
+        early_stopper=False,
     ):
         import numpy as np
         import tensorflow as tf
 
-        early_stopper = tf.keras.callbacks.EarlyStopping(
-            monitor="val_accuracy", patience=1, mode="max"
-        )
+        if early_stopper:
+            early_stopper = tf.keras.callbacks.EarlyStopping(
+                monitor="val_accuracy", patience=10, mode="max"
+            )
+            callbacks = [early_stopper, ClearMemory()]
+        else:
+            callbacks = [ClearMemory()]
+
+        # early_stopper = tf.keras.callbacks.EarlyStopping(
+        #     monitor="val_loss", patience=1, mode="min"
+        # )
 
         try:
             if not batch_size > 0:
@@ -380,7 +394,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         validation_split=validation_split,
                         epochs=epochs,
                         verbose=verbose,
-                        callbacks=[early_stopper, ClearMemory()],
+                        callbacks=callbacks,
                     )
                 else:
                     if not steps_per_epoch:
@@ -393,7 +407,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         batch_size=batch_size,
                         epochs=epochs,
                         verbose=verbose,
-                        callbacks=[early_stopper, ClearMemory()],
+                        callbacks=callbacks,
                     )
             else:
 
@@ -411,7 +425,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         epochs=epochs,
                         batch_size=batch_size,
                         verbose=verbose,
-                        callbacks=[early_stopper, ClearMemory()],
+                        callbacks=callbacks,
                     )
                 else:
                     if not steps_per_epoch:
@@ -424,7 +438,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         epochs=epochs,
                         batch_size=batch_size,
                         verbose=verbose,
-                        callbacks=[early_stopper, ClearMemory()],
+                        callbacks=callbacks,
                     )
         except Exception as e:
             print("Error fitting model, {}".format(e))

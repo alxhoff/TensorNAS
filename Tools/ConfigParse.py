@@ -429,6 +429,11 @@ def GetTFMetrics(config):
     return [_GetTensorflow(config)["Metrics"]]
 
 
+def GetTFEarlyStopper(config):
+
+    return _GetTensorflow(config).getboolean("EarlyStopper")
+
+
 def GetTFBatchSize(config):
 
     return int(_GetTensorflow(config)["BatchSize"])
