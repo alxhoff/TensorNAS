@@ -132,8 +132,8 @@ class IndividualRecord:
             else:
                 pareto_inds.append(ind_to_compare)
 
-        x = [ind[0] for ind in pareto_inds]
-        y = [ind[1] for ind in pareto_inds]
+        pareto_x = [ind[0] for ind in pareto_inds]
+        pareto_y = [ind[1] for ind in pareto_inds]
 
         import matplotlib.backends.backend_agg as agg
         import matplotlib.figure
@@ -150,11 +150,13 @@ class IndividualRecord:
             facecolor=(0.7, 0.7, 0.7),
             zorder=-1,
         )
-        for x, y in filter_funcs[0]:
-            x_points = [x, 0]
-            y_points = [0, y]
-            ax.plot(x_points, y_points)
-        # ax.set_xscale("log")
+        for ff in filter_funcs[0]:
+            m = -filter_funcs[1][0][1] / filter_funcs[1][0][0]
+            c = ff[1] - (m * ff[0])
+            y_point = [0, c]
+            x_point = [-c / m, 0]
+            ax.plot(ff[0], ff[1], "go")
+            ax.plot(x_point, y_point)
 
         ax = fig.add_subplot(1, 3, 2)
         ax.set_xscale("log")
@@ -168,8 +170,8 @@ class IndividualRecord:
         )
 
         ax = fig.add_subplot(1, 3, 3)
-        ax.plot(x, y)
-        ax.scatter(x, y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
+        ax.plot(pareto_x, pareto_y)
+        ax.scatter(pareto_x, pareto_y, facecolor=(0.7, 0.7, 0.7), zorder=-1)
         # ax.set_xscale("log")
         ax.title.set_text("Pareto Front")
         ax.set_ylim(bottom=0, top=100)

@@ -27,23 +27,24 @@ class Block(Block):
 
         super().__init__(input_shape, parent_block)
 
-    def generate_constrained_input_sub_blocks(self, input_shape):
-        from TensorNAS.Layers.Flatten import Layer as Flatten
-
-        return [Flatten(input_shape=input_shape, parent_block=self)]
-
     def generate_constrained_output_sub_blocks(self, input_shape):
-        """Use of input_shape=None causes the input shape to be resolved from the previous layer."""
+
+        from TensorNAS.Layers.Flatten import Layer as Flatten
         from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
         from TensorNAS.Layers.Dense import Args as dense_args
 
-        return [
+        blocks = []
+
+        blocks.append(Flatten(input_shape=input_shape, parent_block=self))
+        blocks.append(
             OutputDense(
-                input_shape=input_shape,
+                input_shape=blocks[-1].get_output_shape(),
                 parent_block=self,
                 args={dense_args.UNITS: self.class_count},
             )
-        ]
+        )
+
+        return blocks
 
     def check_next_layer_type(self, prev_layer_type, next_layer_type):
         from TensorNAS.Layers import SupportedLayers

@@ -117,12 +117,7 @@ class Layer(BaseBlock):
         print(str(self))
 
     def mutate(self, verbose=False, **kwargs):
-        if self.mutation_funcs:
-            mutate_eval = "self." + random.choice(self.mutation_funcs)
-            if verbose:
-                print("[MUTATE] invoking `{}`".format(mutate_eval))
-            return eval(mutate_eval)()
-        return "Null mutation"
+        return self._invoke_random_mutation_function()
 
     @abstractmethod
     def _gen_args(self, input_shape, args):
@@ -223,14 +218,17 @@ def gen_padding():
 
 # Desired regularizer needs to be provided as a tuple containing the regularizer's name as a list of it's init arguments
 def gen_regularizer(value=None):
+    from TensorNAS.Core.Layer import ArgRegularizers
+
     if value:
-        import tensorflow as tf
+        if value[0] != ArgRegularizers.NONE:
+            import tensorflow as tf
 
-        value = eval("tf.keras.regularizers.{}".format(value[0]))(
-            *(value[1] if isinstance(value[1], list) else [value[1]])
-        )
+            value = eval("tf.keras.regularizers.{}".format(value[0]))(
+                *(value[1] if isinstance(value[1], list) else [value[1]])
+            )
 
-    return value
+    return None
 
 
 def gen_initializer(value="glorot_uniform"):

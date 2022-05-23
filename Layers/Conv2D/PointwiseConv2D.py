@@ -1,6 +1,7 @@
 import TensorNAS.Core.Layer
 from TensorNAS.Layers.Conv2D import Layer
 from TensorNAS.Core.Mutate import MutationOperators
+from TensorNAS.Core.LayerMutations import layer_mutation
 
 
 class Layer(Layer):
@@ -16,12 +17,13 @@ class Layer(Layer):
             self.get_args_enum().ACTIVATION: TensorNAS.Core.Layer.gen_activation(),
         }
 
-    def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
+    @layer_mutation
+    def _mutate_kernel_size(self, operator=MutationOperators.RANDOM):
         """
         A pointwise conv requires a 1x1 kernel, thus we cannot mutate it. This function is here to override the
         standard conv mutations found in the super class.
         """
-        return "Null mutation"
+        return "_mutate_kernel_size", "Null mutation"
 
     def get_keras_layers(self, input_tensor):
         import tensorflow as tf

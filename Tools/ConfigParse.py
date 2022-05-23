@@ -11,7 +11,7 @@ def GetConfigFile(config_filename=None, directory=None):
     if config_filename:
         # Relative filename
         config_file = glob.glob(
-            script_path + "/{}.cfg".format(config_filename), recursive=False
+            script_path + "/{}".format(config_filename), recursive=False
         )
 
         # Absolute filename
@@ -28,7 +28,7 @@ def GetConfigFile(config_filename=None, directory=None):
 
         tensornas_path = os.path.dirname(TensorNAS.__file__)
         config_file = glob.glob(
-            tensornas_path + "/**/{}.cfg".format(config_filename), recursive=True
+            tensornas_path + "/**/{}".format(config_filename), recursive=True
         )
 
     if len(config_file) == 0:
@@ -87,6 +87,16 @@ def GetDistributed(config):
     return _GetGeneral(config).getboolean("Distributed")
 
 
+def GetDatasetModule(config):
+
+    return _GetGeneral(config)["DatasetModule"]
+
+
+def GetGenBlockArchitecture(config):
+
+    return _GetGeneral(config)["GenBlockArchitecture"]
+
+
 def GetThreadCount(config):
 
     return int(_GetGeneral(config)["ThreadCount"])
@@ -142,6 +152,11 @@ def GetMutationAttempts(config):
 def GetRetrainEveryGeneration(config):
 
     return _GetEvolution(config).getboolean("RetrainEveryGeneration")
+
+
+def GetAlpha(config):
+
+    return float(_GetEvolution(config)["Alpha"])
 
 
 def GetMutationProbability(config):
@@ -324,20 +339,30 @@ def GetWeights(config):
 
 def _GenVector(start, stop, steps):
 
-    if isinstance(start, float) or isinstance(stop, float):
-        step = (stop - start) / (steps - 1)
-    else:
-        step = int((stop - start) / (steps - 1))
+    if steps > 1:
 
-    if start == stop:
-        return [start for i in range(steps)]
-    else:
         if isinstance(start, float) or isinstance(stop, float):
-            import numpy as np
-
-            return [i for i in np.arange(start, stop + step, 1 if step == 0 else step)]
+            step = (stop - start) / (steps - 1)
         else:
-            return [i for i in range(start, stop + step, 1 if step == 0 else step)]
+            step = int((stop - start) / (steps - 1))
+
+        if start == stop:
+            return [start for i in range(steps)]
+        else:
+            if isinstance(start, float) or isinstance(stop, float):
+                import numpy as np
+
+                return [
+                    i for i in np.arange(start, stop + step, 1 if step == 0 else step)
+                ]
+            else:
+                return [i for i in range(start, stop + step, 1 if step == 0 else step)]
+
+    else:
+
+        return [
+            (start + stop) / 2,
+        ]
 
 
 def _GenVariableVectors(p1_start, p1_stop, p2_start, p2_stop, steps):
@@ -432,6 +457,11 @@ def GetTFMetrics(config):
 def GetTFEarlyStopper(config):
 
     return _GetTensorflow(config).getboolean("EarlyStopper")
+
+
+def GetTFPatience(config):
+
+    return int(_GetTensorflow(config)["Patience"])
 
 
 def GetTFBatchSize(config):

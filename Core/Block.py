@@ -45,6 +45,52 @@ def _import_subblocks_from_json(blk, json_dict):
     return blk
 
 
+class MutationTable:
+    def __init__(self, cls_obj):
+
+        # Class name for debugging purposes
+        self.class_name = str(cls_obj.__class__)  # .__bases__
+        self.mutations = {}
+
+        if hasattr(cls_obj, "mutation_funcs"):
+            self.mutation_funs = cls_obj.mutation_funcs
+
+    def get_mutation_table_ref(self, mutation):
+
+        if not mutation in self.mutations:
+            self.mutations[mutation] = [0, 0]
+
+        ret = self.mutations[mutation]
+
+        return ret
+
+    def get_mutation_probability(self, function_name, index=0):
+        """
+        Choosing the Q value is then done by taking the tanh of each Q, normalizing and shifting to fit between
+        0 and 1, thus, P = 0.5 * tanh(Q) + 0.5
+        """
+        from numpy import tanh as th
+
+        q = self.mutations.get(function_name, (0, 0))[index]
+
+        ret = 0.5 * th(q) + 0.5
+
+        return ret
+
+
+def add_mutation_table(func):
+    """
+    Function decorator used to decorate the block init function to create a PER-CLASS mutation table
+    """
+
+    def wrapper(self, input_shape, parent_block, args=None):
+        func(self, input_shape, parent_block, args)
+        if not hasattr(self.__class__, "mutation_table"):
+            setattr(self.__class__, "mutation_table", MutationTable(self))
+
+    return wrapper
+
+
 class BaseBlock(ABC):
     """
     An abstract class that all model blocks are derived from. Thus all model blocks, regardless of their depth within
@@ -88,42 +134,120 @@ class BaseBlock(ABC):
 
         NONE = auto()
 
-    def _invoke_random_mutation_function(self, verbose=False):
+    @add_mutation_table
+    def __init__(self, input_shape, parent_block, args=None):
+        """
+        The init sequence of the Block class should always be called at the end of a subclass's __init__, via
+        super().__init__ if a subclass is to implement its own __init__ method.
+
+        This can be required if the block needs to take in additional parameters when being created, eg. a classification
+        block needs to know the number of output classes that it must classify. Thus, such an implementation will
+        read in its required init arguments and then invoke the Block.__init__ such that the defined Block init
+        sequence is performed.
+        """
+        self.input_shape = input_shape
+        self.parent_block = parent_block
+        self.args_enum = self._get_args_enum()
+        self.args = args
+
+        if args:
+            if isinstance(args, list):
+                args = dict(args)
+                new_dict = {}
+
+                for key, val in args.items():
+                    if isinstance(key, str):
+                        new_dict[
+                            [i for i in self.args_enum if i.name == key][0]
+                        ] = args[key]
+                args = new_dict
+
+        try:
+            self.mutation_funcs = [
+                func
+                for func in dir(self)
+                if callable(getattr(self, func))
+                and re.search(r"^_mutate(?!_self)", func)
+            ]
+
+        except Exception as e:
+            raise e
+
+        self.input_blocks = []
+        self.middle_blocks = []
+        self.output_blocks = []
+
+        if args:
+            ib = self.generate_constrained_input_sub_blocks(
+                input_shape=input_shape, args=args
+            )
+        else:
+            ib = self.generate_constrained_input_sub_blocks(input_shape=input_shape)
+
+        if ib:
+            self.input_blocks.extend(ib)
+
+        if args:
+            mb = self.generate_constrained_middle_sub_blocks(
+                input_shape=self._get_cur_output_shape(), args=args
+            )
+        else:
+            mb = self.generate_constrained_middle_sub_blocks(
+                input_shape=self._get_cur_output_shape()
+            )
+
+        if mb:
+            self.middle_blocks.extend(mb)
+
+        if self.MAX_SUB_BLOCKS:
+            self._generate_sub_blocks()
+
+        if args:
+            ob = self.generate_constrained_output_sub_blocks(
+                input_shape=self._get_cur_output_shape(), args=args
+            )
+        else:
+            ob = self.generate_constrained_output_sub_blocks(
+                input_shape=self._get_cur_output_shape()
+            )
+
+        if ob:
+            self.output_blocks.extend(ob)
+
+    def _invoke_random_mutation_function(self, mutation_goal_index=0, verbose=False):
         if self.mutation_funcs:
-            mutate_eval = "self." + random.choice(self.mutation_funcs)
+            weights = [
+                self.mutation_table.get_mutation_probability(func)
+                for func in self.mutation_funcs
+            ]
+            try:
+                func_name = random.choices(self.mutation_funcs, weights=weights)[0]
+            except Exception as e:
+                print(e)
+            mutate_eval = "self." + func_name
             if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
-            return eval(mutate_eval)(verbose=verbose)
+            return eval(mutate_eval)()
+        return "Null", None
 
-    def mutate_self(self, verbose=False):
+    def mutate_self(self, mutation_goal_index=0, verbose=False):
         """
         An optional function that allows for the block to mutate itself during mutation, by default this function
         simply invokes mutation of a random mutation function and if that is not possible then
          random mutation of a sub block by invoking mutate_subblock
         """
         if len(self.mutation_funcs) > 0:
-            return self._invoke_random_mutation_function(verbose=verbose)
-        else:
-            return self.mutate_subblock(verbose=verbose)
-
-    def mutate_subblock(
-        self, mutate_equally=True, mutation_probability=0.0, verbose=False
-    ):
-        if len(self.middle_blocks):
-            choice_index = random.choice(range(len(self.middle_blocks)))
-            if verbose:
-                print(
-                    "[MUTATE] middle block #{} of type {}".format(
-                        choice_index, type(self.middle_blocks[choice_index])
-                    )
-                )
-            return self.middle_blocks[choice_index].mutate(
-                mutate_equally=mutate_equally,
-                mutation_probability=mutation_probability,
-                verbose=verbose,
+            return self._invoke_random_mutation_function(
+                mutation_goal_index=mutation_goal_index, verbose=verbose
             )
 
-    def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
+    def mutate(
+        self,
+        mutation_goal_index=0,
+        mutate_equally=True,
+        mutation_probability=0.0,
+        verbose=False,
+    ):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
         this includes the defaul `mutate_subblock`.
 
@@ -138,22 +262,63 @@ class BaseBlock(ABC):
         re-invoking of mutate.
 
         The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
+
         if mutate_equally:
             block = self._get_random_sub_block_inc_self()
-            ret = block.mutate_self(verbose=verbose)
+            ret = block.mutate_self(
+                mutation_goal_index=mutation_goal_index, verbose=verbose
+            )
         else:
             prob = random.random()
             if (prob < mutation_probability) and (len(self.middle_blocks) > 0):
-                ret = self.mutate_subblock(
-                    mutate_equally=mutate_equally,
-                    mutation_probability=mutation_probability,
-                    verbose=verbose,
-                )
+                # Mutate subblock
+                if len(self.middle_blocks):
+                    choice_index = random.choice(range(len(self.middle_blocks)))
+                    if verbose:
+                        print(
+                            "[MUTATE] middle block #{} of type {}".format(
+                                choice_index, type(self.middle_blocks[choice_index])
+                            )
+                        )
+                    ret = self.middle_blocks[choice_index].mutate(
+                        mutation_goal_index=mutation_goal_index,
+                        mutate_equally=mutate_equally,
+                        mutation_probability=mutation_probability,
+                        verbose=verbose,
+                    )
+                # return format of all mutate functions, except most bottom level mutations, should be
+                # function name, list of mutation table references, mutation note from bottom most level
+                ret = tuple(["_mutate_subblock"] + list(ret[1:]))
             else:
-                ret = self._invoke_random_mutation_function(verbose=verbose)
+                ret = self.mutate_self(
+                    mutation_goal_index=mutation_goal_index, verbose=verbose
+                )
+
         self.reset_ba_input_shapes()
 
-        return ret
+        # Add the invoked mutation function to the mutation table by getting a reference to the operation in the
+        # mutation table such that it can be populated with accuracy and param count once the mutation model is
+        # evaluated
+        mutation_function = ret[0]
+        mutation_note = ret[1]
+
+        # If this block is at the bottom of the block architecture hierarchy we need to create the list of mutation
+        # table references to return
+        mutation_table_ref = self.mutation_table.get_mutation_table_ref(
+            mutation_function
+        )
+        if len(ret) < 3:
+            table_ref_list = [mutation_table_ref]
+
+        else:
+            table_ref_list = ret[2]
+            try:
+                table_ref_list.append(mutation_table_ref)
+            except Exception as e:
+                print(e)
+
+        # Return format is 'list of mutation table references', 'mutation note for logging'
+        return mutation_function, mutation_note, table_ref_list
 
     def generate_constrained_output_sub_blocks(self, input_shape, args=None):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are
@@ -544,6 +709,7 @@ class BaseBlock(ABC):
             "inputshape",
             "outputshape",
             "mutations",
+            "optimization_goal",
         ]
 
         for key in self.__dict__.keys():
@@ -599,86 +765,12 @@ class BaseBlock(ABC):
             except Exception as e:
                 return None
 
-    def __init__(self, input_shape, parent_block, args=None):
-        """
-        The init sequence of the Block class should always be called at the end of a subclass's __init__, via
-        super().__init__ if a subclass is to implement its own __init__ method.
 
-        This can be required if the block needs to take in additional parameters when being created, eg. a classification
-        block needs to known the number of output classes that it must classify. Thus such an implementation will
-        read in its required init arguments and then invoke the Block.__init__ such that the defined Block init
-        sequence is performed.
-        """
-        self.input_shape = input_shape
-        self.parent_block = parent_block
-        self.args_enum = self._get_args_enum()
-        self.args = args
-
-        if args:
-            if isinstance(args, list):
-                args = dict(args)
-                new_dict = {}
-
-                for key, val in args.items():
-                    if isinstance(key, str):
-                        new_dict[
-                            [i for i in self.args_enum if i.name == key][0]
-                        ] = args[key]
-                args = new_dict
-
-        try:
-            self.mutation_funcs = [
-                func
-                for func in dir(self)
-                if callable(getattr(self, func))
-                and re.search(r"^_mutate(?!_self)", func)
-            ]
-        except Exception as e:
-            raise e
-
-        self.input_blocks = []
-        self.middle_blocks = []
-        self.output_blocks = []
-
-        if args:
-            ib = self.generate_constrained_input_sub_blocks(
-                input_shape=input_shape, args=args
-            )
-        else:
-            ib = self.generate_constrained_input_sub_blocks(input_shape=input_shape)
-
-        if ib:
-            self.input_blocks.extend(ib)
-
-        if args:
-            mb = self.generate_constrained_middle_sub_blocks(
-                input_shape=self._get_cur_output_shape(), args=args
-            )
-        else:
-            mb = self.generate_constrained_middle_sub_blocks(
-                input_shape=self._get_cur_output_shape()
-            )
-
-        if mb:
-            self.middle_blocks.extend(mb)
-
-        if self.MAX_SUB_BLOCKS:
-            self._generate_sub_blocks()
-
-        if args:
-            ob = self.generate_constrained_output_sub_blocks(
-                input_shape=self._get_cur_output_shape(), args=args
-            )
-        else:
-            ob = self.generate_constrained_output_sub_blocks(
-                input_shape=self._get_cur_output_shape()
-            )
-
-        if ob:
-            self.output_blocks.extend(ob)
+from TensorNAS.Core.LayerMutations import layer_mutation
 
 
 class Block(BaseBlock):
+    @layer_mutation
     def _mutate_drop_subblock(self, verbose=False):
         """
         Randomly drops a middle sub-block
@@ -693,6 +785,9 @@ class Block(BaseBlock):
             self.reset_ba_input_shapes()
             return ret
 
+        return "No middle blocks to drop"
+
+    @layer_mutation
     def _mutate_add_subblock(self, verbose=False):
         """
         Randomly adds a sub-block from the provided list of valid sub-blocks

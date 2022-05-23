@@ -105,7 +105,7 @@ def TestEASimple(
             for mutation in pind.block_architecture.mutations:
                 logger.log(
                     "{} param diff: {} acc diff: {}".format(
-                        mutation.mutation_operation,
+                        mutation.mutation_function,
                         mutation.param_diff,
                         mutation.accuracy_diff,
                     )
@@ -257,6 +257,40 @@ def eaSimple(
         else:
             ind.fitness.values = fit
 
+        # determine which optimization param is currently the goal of the individual
+        import numpy as np
+        from TensorNAS.Core.BlockArchitecture import OptimizationGoal
+
+        goal_vector = np.array(filter_function_args[0][0])
+        norm_vector = np.array(filter_function_args[1][0])
+        # goal vector intercepts
+        m = -norm_vector[1] / norm_vector[0]
+        c = goal_vector[1] - (m * goal_vector[0])
+
+        # Intecept points
+        yc = [0, c]
+        xc = [-c / m, 0]
+
+        is_above = (
+            lambda p: np.cross(
+                p - np.array(yc),
+                np.array(xc) - np.array(yc),
+            )
+            < 0
+        )
+        above = is_above(
+            (ind.block_architecture.param_count, ind.block_architecture.accuracy)
+        )
+        if above:
+            if ind.block_architecture.param_count - goal_vector[0] <= 0:
+                ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
+            else:
+                ind.block_architecture.optimization_goal = (
+                    OptimizationGoal.PARAMETERS_DOWN
+                )
+        else:
+            ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
+
         if hasattr(ind, "updates"):
             ind.updates.append(
                 (ind.block_architecture.param_count, ind.block_architecture.accuracy)
@@ -395,27 +429,33 @@ def eaSimple(
                     fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            ind.block_architecture.prev_param_count = ind.block_architecture.param_count
-            ind.block_architecture.param_count = fit[-2]
-            ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
-            ind.block_architecture.accuracy = fit[-1]
-            if len(ind.block_architecture.mutations):
-                if ind.block_architecture.mutations[-1].accuracy_diff == None:
-                    ind.block_architecture.mutations[-1].accuracy_diff = (
-                        ind.block_architecture.accuracy
-                        - ind.block_architecture.prev_accuracy
-                    )
-                if ind.block_architecture.mutations[-1].param_diff == None:
-                    ind.block_architecture.mutations[-1].param_diff = (
-                        ind.block_architecture.param_count
-                        - ind.block_architecture.prev_param_count
-                    )
 
             if filter_function:
                 if filter_function_args:
                     ind.fitness.values = filter_function(fit, filter_function_args)
                 else:
                     ind.fitness.values = filter_function(fit)
+
+            ind.block_architecture.prev_param_count = ind.block_architecture.param_count
+            ind.block_architecture.param_count = fit[-2]
+            ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
+            ind.block_architecture.accuracy = fit[-1]
+
+            acc_diff = (
+                ind.block_architecture.accuracy - ind.block_architecture.prev_accuracy
+            )
+            param_count_diff = (
+                ind.block_architecture.param_count
+                - ind.block_architecture.prev_param_count
+            )
+
+            for i in reversed(ind.block_architecture.mutations):
+                if i.pending == False:
+                    break
+
+                i.accuracy_diff = acc_diff
+                i.param_diff = param_count_diff
+                i.propogate_mutation_results()
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
@@ -460,7 +500,7 @@ def eaSimple(
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
                         "{} param diff: {} acc diff: {}".format(
-                            mutation.mutation_operation,
+                            mutation.mutation_function,
                             mutation.param_diff,
                             mutation.accuracy_diff,
                         )

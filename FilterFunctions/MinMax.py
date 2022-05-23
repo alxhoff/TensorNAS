@@ -13,8 +13,9 @@ def MinMaxArray(fitnesses, vectors):
 
 def MinMax(fitnesses, normalization_vector, goal_vector):
 
+    # If param count goal has been reached then push accuracy only
     if (fitnesses[0] - goal_vector[0]) <= 0:
-        ret = (goal_vector[1] - fitnesses[1]) / normalization_vector[1]
+        ret = (goal_vector[1] - fitnesses[1]) / normalization_vector[1]  # Acc
     else:
         ret = max(
             (fitnesses[0] - goal_vector[0]) / normalization_vector[0],

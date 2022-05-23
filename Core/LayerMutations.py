@@ -6,9 +6,31 @@ from TensorNAS.Core.Mutate import (
 )
 
 
-class MutateFilters:
-    def _mutate_filters(self, operator=MutationOperators.STEP):
+def layer_mutation(func):
+    def wrapper(self, **kwargs):
+        mutation_table_ref = [self.mutation_table.get_mutation_table_ref(func.__name__)]
+        return func.__name__, func(self, **kwargs), mutation_table_ref
 
+    return wrapper
+
+
+class MutateFilters:
+    @layer_mutation
+    def _mutate_filters_up(self, operator=MutationOperators.STEP_UP):
+
+        prev_filters = self.args[self.get_args_enum().FILTERS]
+        self.args[self.get_args_enum().FILTERS] = mutate_int(
+            self.args[self.get_args_enum().FILTERS],
+            1,
+            self.MAX_FILTER_COUNT,
+            operator=operator,
+        )
+        return "Mutated filters {} -> {}".format(
+            prev_filters, self.args[self.get_args_enum().FILTERS]
+        )
+
+    @layer_mutation
+    def _mutate_filters_down(self, operator=MutationOperators.STEP_DOWN):
         prev_filters = self.args[self.get_args_enum().FILTERS]
         self.args[self.get_args_enum().FILTERS] = mutate_int(
             self.args[self.get_args_enum().FILTERS],
@@ -22,8 +44,22 @@ class MutateFilters:
 
 
 class MutateKernelSize:
-    def _mutate_kernel_size(self, operator=MutationOperators.SYNC_STEP):
+    @layer_mutation
+    def _mutate_kernel_size_up(self, operator=MutationOperators.SYNC_STEP_UP):
 
+        prev_kernel_size = self.args[self.get_args_enum().KERNEL_SIZE]
+        self.args[self.get_args_enum().KERNEL_SIZE] = mutate_tuple(
+            self.args[self.get_args_enum().KERNEL_SIZE],
+            1,
+            self.MAX_KERNEL_DIMENSION,
+            operator=operator,
+        )
+        return "Mutated kernel size {} -> {}".format(
+            prev_kernel_size, self.args[self.get_args_enum().KERNEL_SIZE]
+        )
+
+    @layer_mutation
+    def _mutate_kernel_size_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
         prev_kernel_size = self.args[self.get_args_enum().KERNEL_SIZE]
         self.args[self.get_args_enum().KERNEL_SIZE] = mutate_tuple(
             self.args[self.get_args_enum().KERNEL_SIZE],
@@ -37,7 +73,22 @@ class MutateKernelSize:
 
 
 class MutateStrides:
-    def _mutate_strides(self, operator=MutationOperators.SYNC_STEP):
+    @layer_mutation
+    def _mutate_strides_up(self, operator=MutationOperators.SYNC_STEP_UP):
+
+        prev_strides = self.args[self.get_args_enum().STRIDES]
+        self.args[self.get_args_enum().STRIDES] = mutate_tuple(
+            self.args[self.get_args_enum().STRIDES],
+            1,
+            self.MAX_STRIDE,
+            operator=operator,
+        )
+        return "Mutating strides {} -> {}".format(
+            prev_strides, self.args[self.get_args_enum().STRIDES]
+        )
+
+    @layer_mutation
+    def _mutate_strides_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
 
         prev_strides = self.args[self.get_args_enum().STRIDES]
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
@@ -52,7 +103,20 @@ class MutateStrides:
 
 
 class MutatePadding:
-    def _mutate_padding(self):
+    @layer_mutation
+    def _mutate_padding_up(self, operator=MutationOperators.SYNC_STEP_UP):
+        from TensorNAS.Core.Layer import ArgPadding
+
+        prev_padding = self.args[self.get_args_enum().PADDING]
+        self.args[self.get_args_enum().PADDING] = mutate_enum(
+            self.args[self.get_args_enum().PADDING], ArgPadding
+        )
+        return "Mutating padding {} -> {}".format(
+            prev_padding, self.args[self.get_args_enum().PADDING]
+        )
+
+    @layer_mutation
+    def _mutate_padding_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
         from TensorNAS.Core.Layer import ArgPadding
 
         prev_padding = self.args[self.get_args_enum().PADDING]
@@ -65,7 +129,22 @@ class MutatePadding:
 
 
 class MutateDilationRate:
-    def _mutate_dilation_rate(self, operator=MutationOperators.SYNC_STEP):
+    @layer_mutation
+    def _mutate_dilation_rate_up(self, operator=MutationOperators.SYNC_STEP_UP):
+
+        prev_dilation_rate = self.args[self.get_args_enum().DILATION_RATE]
+        self.args[self.get_args_enum().DILATION_RATE] = mutate_tuple(
+            self.args[self.get_args_enum().DILATION_RATE],
+            1,
+            self.MAX_DILATION,
+            operator=operator,
+        )
+        return "Mutating dilation rate {} -> {}".format(
+            prev_dilation_rate, self.args[self.get_args_enum().DILATION_RATE]
+        )
+
+    @layer_mutation
+    def _mutate_dilation_rate_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
 
         prev_dilation_rate = self.args[self.get_args_enum().DILATION_RATE]
         self.args[self.get_args_enum().DILATION_RATE] = mutate_tuple(
@@ -80,6 +159,7 @@ class MutateDilationRate:
 
 
 class MutateActivation:
+    @layer_mutation
     def _mutate_activation(self):
         from TensorNAS.Core.Layer import ArgActivations
 
@@ -94,7 +174,22 @@ class MutateActivation:
 
 
 class MutatePoolSize:
-    def _mutate_pool_size(self, operator=MutationOperators.SYNC_STEP):
+    @layer_mutation
+    def _mutate_pool_size_up(self, operator=MutationOperators.SYNC_STEP_UP):
+
+        prev_pool_size = self.args[self.get_args_enum().POOL_SIZE]
+        self.args[self.get_args_enum().POOL_SIZE] = mutate_tuple(
+            self.args[self.get_args_enum().POOL_SIZE],
+            1,
+            self.MAX_POOL_SIZE,
+            operator=operator,
+        )
+        return "Mutating pool size {} -> {}".format(
+            prev_pool_size, self.args[self.get_args_enum().POOL_SIZE]
+        )
+
+    @layer_mutation
+    def _mutate_pool_size_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
 
         prev_pool_size = self.args[self.get_args_enum().POOL_SIZE]
         self.args[self.get_args_enum().POOL_SIZE] = mutate_tuple(
@@ -109,12 +204,31 @@ class MutatePoolSize:
 
 
 class MutateUnits:
-    def _mutate_units(self):
+    @layer_mutation
+    def _mutate_units_up(self, operator=MutationOperators.STEP_UP):
         from TensorNAS.Core.Mutate import mutate_int
 
         prev_units = self.args[self.get_args_enum().UNITS]
         self.args[self.get_args_enum().UNITS] = mutate_int(
-            self.args.get(self.get_args_enum().UNITS), 1, self.MAX_UNITS
+            self.args.get(self.get_args_enum().UNITS),
+            1,
+            self.MAX_UNITS,
+            operator=operator,
+        )
+        return "Mutating units {} -> {}".format(
+            prev_units, self.args[self.get_args_enum().UNITS]
+        )
+
+    @layer_mutation
+    def _mutate_units_down(self, operator=MutationOperators.STEP_DOWN):
+        from TensorNAS.Core.Mutate import mutate_int
+
+        prev_units = self.args[self.get_args_enum().UNITS]
+        self.args[self.get_args_enum().UNITS] = mutate_int(
+            self.args.get(self.get_args_enum().UNITS),
+            1,
+            self.MAX_UNITS,
+            operator=operator,
         )
         return "Mutating units {} -> {}".format(
             prev_units, self.args[self.get_args_enum().UNITS]
@@ -122,17 +236,39 @@ class MutateUnits:
 
 
 class MutateNumGroups:
-    def _mutate_num_groups(self):
+    @layer_mutation
+    def _mutate_num_groups_up(self, operator=MutationOperators.STEP_UP):
         from TensorNAS.Core.Mutate import mutate_int
 
         prev_num_groups = self.args[self.get_args_enum().NUM_GROUPS]
-        self.args[self.get_args_enum().NUM_GROUPS] = mutate_int(1, self.MAX_NUM_GROUPS)
+        self.args[self.get_args_enum().NUM_GROUPS] = mutate_int(
+            self.args.get(self.get_args_enum().NUM_GROUPS),
+            1,
+            self.MAX_NUM_GROUPS,
+            operator=operator,
+        )
+        return "Mutating num groups {} -> {}".format(
+            prev_num_groups, self.args[self.get_args_enum().NUM_GROUPS]
+        )
+
+    @layer_mutation
+    def _mutate_num_groups_down(self, operator=MutationOperators.STEP_DOWN):
+        from TensorNAS.Core.Mutate import mutate_int
+
+        prev_num_groups = self.args[self.get_args_enum().NUM_GROUPS]
+        self.args[self.get_args_enum().NUM_GROUPS] = mutate_int(
+            self.args.get(self.get_args_enum().NUM_GROUPS),
+            1,
+            self.MAX_NUM_GROUPS,
+            operator=operator,
+        )
         return "Mutating num groups {} -> {}".format(
             prev_num_groups, self.args[self.get_args_enum().NUM_GROUPS]
         )
 
 
 class MutateTargetShape:
+    @layer_mutation
     def _mutate_target_shape(self):
         from TensorNAS.Core.Mutate import mutate_dimension
 
@@ -146,11 +282,12 @@ class MutateTargetShape:
 
 
 class MutateRate:
+    @layer_mutation
     def _mutate_rate(self):
-        from TensorNAS.Core.Mutate import mutate_unit_interval
+        from TensorNAS.Core.Mutate import mutate_float
 
         prev_rate = self.args[self.get_args_enum().RATE]
-        self.args[self.get_args_enum().RATE] = mutate_unit_interval(
+        self.args[self.get_args_enum().RATE] = mutate_float(
             self.args[self.get_args_enum().RATE], 0, self.MAX_RATE
         )
         return "Mutating rate {} -> {}".format(

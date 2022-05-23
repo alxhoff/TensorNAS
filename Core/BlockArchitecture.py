@@ -2,7 +2,7 @@ import gc
 import math
 
 from TensorNAS.Core.Block import Block
-
+from TensorNAS.Core.LayerMutations import layer_mutation
 from tensorflow.keras import backend as k
 from tensorflow.keras.callbacks import Callback
 
@@ -13,15 +13,63 @@ class ClearMemory(Callback):
         k.clear_session()
 
 
+from Demos import get_global
+
+from enum import Enum, auto
+
+
+class OptimizationGoal(Enum):
+
+    ACCURACY_UP = auto()
+    PARAMETERS_DOWN = auto()
+
+
 class Mutation:
     def __init__(
-        self, mutation_operation, accuracy_diff=None, param_diff=None, notes=None
+        self,
+        mutation_table_references,
+        accuracy_diff=None,
+        param_diff=None,
+        mutation_function=None,
+        mutation_note=None,
     ):
 
-        self.mutation_operation = mutation_operation
+        # Initially mutations are added to block architectures with a list of references to the locations in child
+        # blocks' mutation tables where the accuracy and param count differences must be added, these values cannot
+        # be added until the model has been retrained after the mutation, the pending flag shows that a block
+        # architecture has been mutated and needs to have the accuracy and param count diffs added into it's child
+        # blocks' mutation tables.
+        self.pending = True
+        self.mutation_table_references = mutation_table_references
+        self.mutation_function = mutation_function
+        self.mutation_note = mutation_note
         self.accuracy_diff = accuracy_diff
         self.param_diff = param_diff
-        self.notes = notes
+
+    def _update_q(self, delta, q_old):
+
+        alpha = get_global("alpha")
+
+        return alpha * delta + (1 - alpha) * q_old
+
+    def propogate_mutation_results(self):
+
+        for ref in self.mutation_table_references:
+            # Updating Q values is done by first normalizing the values using the normalization values provided in
+            # the config file, then updating the existing Q values using the formula
+            # Q_n = alpha * delta + (1 - alpha) Q_n-1
+
+            # Normalize
+            # Assumes a single normalization vector and not a varying one
+            normalization_vector = get_global("filter_function_args")[1][0]
+            n_param_count = -self.param_diff / float(normalization_vector[0])
+            n_acc = self.accuracy_diff / float(normalization_vector[1])
+
+            # Update
+            ref[0] = self._update_q(n_param_count, ref[0])
+            ref[1] = self._update_q(n_acc, ref[1])
+
+        self.pending = False
 
 
 class BlockArchitecture(Block):
@@ -41,6 +89,7 @@ class BlockArchitecture(Block):
         self.prev_accuracy = 0
         self.mutations = []
         self.batch_size = batch_size
+        self.optimization_goal = None
 
         from TensorNAS.Optimizers import GetOptimizer
 
@@ -51,20 +100,25 @@ class BlockArchitecture(Block):
 
     def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
 
-        mutation = super().mutate(
+        goal_index = 0
+        if self.optimization_goal == OptimizationGoal.ACCURACY_UP:
+            goal_index = 1
+
+        return super().mutate(
+            mutation_goal_index=goal_index,
             mutate_equally=mutate_equally,
             mutation_probability=mutation_probability,
             verbose=verbose,
         )
 
-        self.mutations.append(Mutation(mutation_operation=mutation))
-
-    def _mutate_optimizer_hyperparameters(self, verbose):
+    @layer_mutation
+    def _mutate_optimizer_hyperparameters(self, verbose=False):
         if self.opt:
             return self.opt.mutate(verbose)
-        return "Null mutation"
+        return "_mutate_optimizer_hyperparameters", "Null mutation"
 
-    def _mutate_batch_size(self, verbose):
+    @layer_mutation
+    def _mutate_batch_size(self, verbose=False):
         from TensorNAS.Core.Mutate import mutate_int_square
 
         prev_batch = self.batch_size
@@ -178,6 +232,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
         test_steps=None,
         early_stopper=None,
+        patience=2,
     ):
         from Demos import get_global
 
@@ -233,6 +288,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         logger=None,
         verbose=0,
         early_stopper=False,
+        patience=2,
     ):
 
         model.fit(
@@ -283,6 +339,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
         test_steps=None,
         early_stopper=False,
+        patience=2,
     ):
         from Demos import get_global
 
@@ -315,6 +372,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             steps_per_epoch=steps_per_epoch,
             verbose=verbose,
             early_stopper=early_stopper,
+            patience=patience,
         )
 
         try:
@@ -369,21 +427,18 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         steps_per_epoch=None,
         verbose=0,
         early_stopper=False,
+        patience=2,
     ):
         import numpy as np
         import tensorflow as tf
 
         if early_stopper:
             early_stopper = tf.keras.callbacks.EarlyStopping(
-                monitor="val_accuracy", patience=10, mode="max"
+                monitor="val_accuracy", patience=patience, mode="max"
             )
             callbacks = [early_stopper, ClearMemory()]
         else:
             callbacks = [ClearMemory()]
-
-        # early_stopper = tf.keras.callbacks.EarlyStopping(
-        #     monitor="val_loss", patience=1, mode="min"
-        # )
 
         try:
             if not batch_size > 0:

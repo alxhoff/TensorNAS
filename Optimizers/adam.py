@@ -53,6 +53,6 @@ class Optimizer:
                 self.epsilon,
                 0,
                 1,
-                operator=MutationOperators.STEP,
+                operator=MutationOperators.STEP_DOWN,
                 step_size=0.000000001,
             )
