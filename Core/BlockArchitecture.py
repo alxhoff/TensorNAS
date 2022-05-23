@@ -434,7 +434,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         if early_stopper:
             early_stopper = tf.keras.callbacks.EarlyStopping(
-                monitor="val_accuracy", patience=patience, mode="max"
+                monitor="val_accuracy", patience=patience, min_delta=0, mode="max"
             )
             callbacks = [early_stopper, ClearMemory()]
         else:
