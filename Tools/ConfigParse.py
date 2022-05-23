@@ -92,6 +92,14 @@ def GetDatasetModule(config):
     return _GetGeneral(config)["DatasetModule"]
 
 
+def GetLocalDataset(config):
+
+    ret = _GetGeneral(config).getboolean("LocalDataset")
+    if ret is None:
+        ret = False
+    return ret
+
+
 def GetGenBlockArchitecture(config):
 
     return _GetGeneral(config)["GenBlockArchitecture"]
