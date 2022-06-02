@@ -57,6 +57,38 @@ def CopyConfig(config_filename, test_name):
     copyfile(config_filename[-1], path + "/config.cfg")
 
 
+def _GetFloat(parent, item):
+
+    if not parent:
+        return None
+
+    return float(parent[item])
+
+
+def _GetInt(parent, item):
+
+    if not parent:
+        return None
+
+    return int(parent[item])
+
+
+def _GetBool(parent, item):
+
+    if not parent:
+        return None
+
+    return parent.getboolean(item)
+
+
+def _GetStr(parent, item):
+
+    if not parent:
+        return None
+
+    return str(parent[item])
+
+
 def _GetGeneral(config):
 
     return config["general"]
@@ -464,12 +496,27 @@ def GetTFMetrics(config):
 
 def GetTFEarlyStopper(config):
 
-    return _GetTensorflow(config).getboolean("EarlyStopper")
+    return _GetBool(_GetTensorflow(config), "EarlyStopper")
 
 
 def GetTFPatience(config):
 
-    return int(_GetTensorflow(config)["Patience"])
+    return _GetInt(_GetTensorflow(config), "Patience")
+
+
+def GetTFStopperMonitor(config):
+
+    return _GetStr(_GetTensorflow(config), "StopperMonitor")
+
+
+def GetTFStopperMinDelta(config):
+
+    return _GetFloat(_GetTensorflow(config), "StopperMinDelta")
+
+
+def GetTFStopperMode(config):
+
+    return _GetStr(_GetTensorflow(config), "StopperMode")
 
 
 def GetTFBatchSize(config):
@@ -478,8 +525,78 @@ def GetTFBatchSize(config):
 
 
 def GetTFEpochs(config):
+
     return int(_GetTensorflow(config)["Epochs"])
 
 
 def GetTFQuantizationAware(config):
+
     return _GetTensorflow(config).getboolean("QuantizationAware")
+
+
+def _GetLRScheduler(config):
+
+    try:
+        return config["lrscheduler"]
+    except KeyError:
+        return None
+
+
+def GetUseLRScheduler(config):
+
+    return _GetBool(_GetLRScheduler(config), "UseLRScheduler")
+
+
+def GetLRScheduler(config):
+
+    return _GetStr(_GetLRScheduler(config), "LRScheduler")
+
+
+def GetLRInitialLearningRate(config):
+
+    return _GetFloat(_GetLRScheduler(config), "InitialLearningRate")
+
+
+def GetLRDecayPerEpoch(config):
+
+    return _GetFloat(_GetLRScheduler(config), "DecayPerEpoch")
+
+
+def _GetImageDataGeneartor(config):
+
+    try:
+        return config["image data generator"]
+    except KeyError:
+        return None
+
+
+def UseImageDataGenerator(config):
+
+    if _GetImageDataGeneartor(config):
+        return True
+    return False
+
+
+def GetRotationRange(config):
+
+    return _GetInt(_GetImageDataGeneartor(config), "RotationRange")
+
+
+def GetWidthShiftRange(config):
+
+    return _GetFloat(_GetImageDataGeneartor(config), "WidthShiftRange")
+
+
+def GetHeightShiftRange(config):
+
+    return _GetFloat(_GetImageDataGeneartor(config), "HeightShiftRange")
+
+
+def GetHorizontalFlip(config):
+
+    return _GetBool(_GetImageDataGeneartor(config), "HorizontalFlip")
+
+
+def GetImageDataGeneratorValidationSplit(config):
+
+    return _GetFloat(_GetImageDataGeneartor(config), "ValidationSplit")

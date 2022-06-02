@@ -1,6 +1,7 @@
 import gc
 import math
 
+import TensorNAS.Core.Individual
 from TensorNAS.Core.Block import Block
 from TensorNAS.Core.LayerMutations import layer_mutation
 from tensorflow.keras import backend as k
@@ -209,6 +210,91 @@ class BlockArchitecture(Block):
 
         return params
 
+    def train_model(
+        self,
+        model,
+        train_data=None,
+        train_labels=None,
+        train_generator_x=None,
+        train_generator_y=None,
+        train_len=None,
+        validation_generator=None,
+        validation_len=None,
+        validation_split=0.1,
+        epochs=1,
+        batch_size=1,
+        test_name=None,
+        model_name=None,
+        logger=None,
+        verbose=0,
+    ):
+        import numpy as np
+        from Demos import get_global
+
+        callbacks = [ClearMemory()]
+
+        if get_global("use_lrscheduler"):
+            from Demos import get_global
+            import TensorNAS.Core.Training as tr
+
+            lrs = eval("tr.{}()".format(get_global("lrscheduler")))
+
+            callbacks += [lrs]
+
+        if get_global("early_stopper"):
+            from TensorNAS.Core.Training import get_early_stopper
+
+            callbacks += [get_early_stopper()]
+
+        try:
+            # If model is trained using data and labels
+            if not [x for x in (train_data, train_labels) if x is None]:
+                model.fit(
+                    x=train_data,
+                    y=train_labels,
+                    batch_size=batch_size,
+                    epochs=epochs,
+                    validation_split=validation_split,
+                    shuffle=True,
+                    # steps_per_epoch=len(train_data) / batch_size,
+                    verbose=verbose,
+                    callbacks=callbacks,
+                )
+            # Else if the model is trained using data generators
+            elif not [
+                x
+                for x in (
+                    train_generator_x,
+                    train_len,
+                    validation_generator,
+                    validation_len,
+                )
+                if x is None
+            ]:
+                import tensorflow as tf
+
+                model.fit(
+                    x=train_generator_x,
+                    y=train_generator_y,
+                    validation_data=validation_generator,
+                    batch_size=batch_size,
+                    steps_per_epoch=train_len / batch_size,
+                    callbacks=callbacks,
+                )
+            else:
+                raise Exception("Missing training data")
+
+        except Exception as e:
+            print("Error fitting model, {}".format(e))
+            return model, np.inf
+
+        params = self.save_model(
+            model=model, test_name=test_name, model_name=model_name, logger=logger
+        )
+
+        gc.collect()
+        return model, params
+
 
 class AreaUnderCurveBlockArchitecture(BlockArchitecture):
     def evaluate(
@@ -217,8 +303,11 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         train_labels=None,
         test_data=None,
         test_labels=None,
-        train_generator=None,
+        train_generator_x=None,
+        train_generator_y=None,
+        train_len=None,
         validation_generator=None,
+        validation_len=None,
         test_generator=None,
         validation_split=0.1,
         epochs=1,
@@ -229,23 +318,25 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         model_name=None,
         q_aware=False,
         logger=None,
-        steps_per_epoch=None,
-        test_steps=None,
-        early_stopper=None,
-        patience=2,
+        verbose=False,
     ):
-        from Demos import get_global
-
-        if get_global("verbose"):
-            verbose = 1
-        else:
-            verbose = 0
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+
+        if model == None:
+            params = math.inf
+            accuracy = 0
+            return params, accuracy
 
         model, params = self.train_model(
             model=model,
             train_data=train_data,
+            train_labels=train_labels,
+            train_generator_x=train_generator_x,
+            train_generator_y=train_generator_y,
+            train_len=train_len,
+            validation_generator=validation_generator,
+            validation_len=validation_len,
             validation_split=validation_split,
             epochs=epochs,
             batch_size=batch_size,
@@ -253,59 +344,34 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             model_name=model_name,
             logger=logger,
             verbose=verbose,
-            early_stopper=early_stopper,
         )
 
         try:
-            import numpy as np
-            from tqdm import tqdm
+            # Tested using test data array
+            if not [x for x in (test_data, test_labels) if x is None]:
+                raise Exception("AUR evalutaion using data array not implemented")
+            # Else if the model is trained using data generators
+            elif not [
+                x for x in (train_generator_x, validation_generator) if x is None
+            ]:
+                import numpy as np
+                from tqdm import tqdm
+                import sklearn.metrics as metrics
 
-            predictions = []
-            for td in tqdm(test_data, total=len(test_data)):
-                pred = model.predict(td)
-                errors = np.mean(np.mean(np.square(td - pred), axis=1))
-                predictions.append(errors)
+                predictions = []
+                for td in tqdm(test_data, total=len(test_data)):
+                    pred = model.predict(td)
+                    errors = np.mean(np.mean(np.square(td - pred), axis=1))
+                    predictions.append(errors)
+                auc = metrics.roc_auc_score(test_labels, predictions)
 
-            import sklearn.metrics as metrics
-
-            auc = metrics.roc_auc_score(test_labels, predictions)
-            return params, auc
+            else:
+                raise Exception("Missing training data")
         except Exception as e:
             auc = 0
             print("Error evaluating model: {}".format(e))
 
-        return auc
-
-    def train_model(
-        self,
-        model,
-        train_data=None,
-        validation_split=0.1,
-        epochs=1,
-        batch_size=1,
-        test_name=None,
-        model_name=None,
-        logger=None,
-        verbose=0,
-        early_stopper=False,
-        patience=2,
-    ):
-
-        model.fit(
-            x=train_data,
-            y=train_data,
-            epochs=epochs,
-            batch_size=batch_size,
-            validation_split=validation_split,
-            shuffle=True,
-            verbose=verbose,
-        )
-
-        params = self.save_model(
-            model=model, test_name=test_name, model_name=model_name, logger=logger
-        )
-
-        return model, params
+        return params, auc
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -324,10 +390,13 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         train_labels=None,
         test_data=None,
         test_labels=None,
-        train_generator=None,
+        train_generator_x=None,
+        train_generator_y=None,
+        train_len=None,
         validation_generator=None,
+        validation_len=None,
         test_generator=None,
-        validation_steps=1,
+        validation_split=0.1,
         epochs=1,
         batch_size=1,
         loss="sparse_categorical_crossentropy",
@@ -336,17 +405,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         model_name=None,
         q_aware=False,
         logger=None,
-        steps_per_epoch=None,
-        test_steps=None,
-        early_stopper=False,
-        patience=2,
+        verbose=False,
     ):
-        from Demos import get_global
-
-        if get_global("verbose"):
-            verbose = 1
-        else:
-            verbose = 0
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
 
@@ -359,29 +419,23 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             model=model,
             train_data=train_data,
             train_labels=train_labels,
-            test_data=test_data,
-            test_labels=test_labels,
-            train_generator=train_generator,
+            train_generator_x=train_generator_x,
+            train_generator_y=train_generator_y,
+            train_len=train_len,
             validation_generator=validation_generator,
-            validation_steps=validation_steps,
+            validation_len=validation_len,
+            validation_split=validation_split,
             epochs=epochs,
             batch_size=batch_size,
             test_name=test_name,
             model_name=model_name,
             logger=logger,
-            steps_per_epoch=steps_per_epoch,
             verbose=verbose,
-            early_stopper=early_stopper,
-            patience=patience,
         )
 
         try:
-            if (
-                (train_data is not None)
-                and (train_labels is not None)
-                and (test_data is not None)
-                and (test_labels is not None)
-            ):
+            # If model is trained using data and label arrays
+            if not [x for x in (test_data, test_labels) if x is None]:
                 accuracy = (
                     model.evaluate(
                         x=test_data,
@@ -391,15 +445,19 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                     )[1]
                     * 100
                 )
-            else:
-                if not test_steps:
-                    test_steps = len(test_generator) // batch_size
+            # Else if the model is trained using data generators
+            elif not [x for x in (test_generator) if x is None]:
+                # if not test_steps:
+                #     test_steps = len(test_generator) // batch_size
                 accuracy = (
                     model.evaluate(
-                        x=train_generator, batch_size=batch_size, steps=test_steps
+                        x=test_generator, batch_size=batch_size, verbose=verbose
                     )[1]
                     * 100
                 )
+            else:
+                raise Exception("Missing training data")
+
         except Exception as e:
             accuracy = 0
             print("Error evaluating model: {}".format(e))
@@ -407,101 +465,3 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         gc.collect()
 
         return params, accuracy
-
-    def train_model(
-        self,
-        model,
-        train_data=None,
-        train_labels=None,
-        test_data=None,
-        test_labels=None,
-        train_generator=None,
-        validation_generator=None,
-        validation_split=0.1,
-        validation_steps=1,
-        epochs=1,
-        batch_size=1,
-        test_name=None,
-        model_name=None,
-        logger=None,
-        steps_per_epoch=None,
-        verbose=0,
-        early_stopper=False,
-        patience=2,
-    ):
-        import numpy as np
-        import tensorflow as tf
-
-        if early_stopper:
-            early_stopper = tf.keras.callbacks.EarlyStopping(
-                monitor="val_accuracy", patience=patience, min_delta=0, mode="max"
-            )
-            callbacks = [early_stopper, ClearMemory()]
-        else:
-            callbacks = [ClearMemory()]
-
-        try:
-            if not batch_size > 0:
-                if (train_data is not None) and (train_labels is not None):
-                    model.fit(
-                        x=train_data,
-                        y=train_labels,
-                        validation_split=validation_split,
-                        epochs=epochs,
-                        verbose=verbose,
-                        callbacks=callbacks,
-                    )
-                else:
-                    if not steps_per_epoch:
-                        steps_per_epoch = len(train_generator) // batch_size
-                    model.fit(
-                        x=train_generator,
-                        steps_per_epoch=steps_per_epoch,
-                        validation_data=validation_generator,
-                        validation_steps=validation_steps,
-                        batch_size=batch_size,
-                        epochs=epochs,
-                        verbose=verbose,
-                        callbacks=callbacks,
-                    )
-            else:
-
-                if (
-                    (train_data is not None)
-                    and (train_labels is not None)
-                    and (test_data is not None)
-                    and (test_labels is not None)
-                ):
-                    model.fit(
-                        x=train_data,
-                        y=train_labels,
-                        validation_data=(test_data, test_labels),
-                        validation_steps=validation_steps,
-                        epochs=epochs,
-                        batch_size=batch_size,
-                        verbose=verbose,
-                        callbacks=callbacks,
-                    )
-                else:
-                    if not steps_per_epoch:
-                        steps_per_epoch = len(train_generator) // batch_size
-                    model.fit(
-                        x=train_generator,
-                        steps_per_epoch=steps_per_epoch,
-                        validation_data=validation_generator,
-                        validation_steps=validation_steps,
-                        epochs=epochs,
-                        batch_size=batch_size,
-                        verbose=verbose,
-                        callbacks=callbacks,
-                    )
-        except Exception as e:
-            print("Error fitting model, {}".format(e))
-            return model, np.inf
-
-        params = self.save_model(
-            model=model, test_name=test_name, model_name=model_name, logger=logger
-        )
-
-        gc.collect()
-        return model, params
