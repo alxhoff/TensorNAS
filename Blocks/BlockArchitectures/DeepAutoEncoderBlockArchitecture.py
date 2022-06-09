@@ -8,11 +8,19 @@ class Block(AreaUnderCurveBlockArchitecture):
         AUTO_ENCODER_BLOCK = auto()
 
     def generate_random_sub_block(self, input_shape, subblock_type):
-        from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlockArray import (
-            Block as DAEArrayBlock,
+        from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlock import (
+            Block as DAEBlock,
         )
 
-        return [DAEArrayBlock(input_shape=input_shape, parent_block=self)]
+        return [DAEBlock(input_shape=input_shape, parent_block=self)]
+
+    def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
+
+        from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlockArray import (
+            Block as DEArrayBlock,
+        )
+
+        return [DEArrayBlock(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
         from TensorNAS.Layers.Dense import Layer as Dense

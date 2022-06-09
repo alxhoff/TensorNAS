@@ -1,6 +1,8 @@
 import gc
 import math
 
+import keras.models
+
 import TensorNAS.Core.Individual
 from TensorNAS.Core.Block import Block
 from TensorNAS.Core.LayerMutations import layer_mutation
@@ -137,10 +139,10 @@ class BlockArchitecture(Block):
 
         if out != None:
             try:
-                model = tf.keras.Model(inp, out)
+                model = tf.keras.Model(inputs=inp, outputs=out)
                 model.compile(
                     optimizer=self.opt.get_optimizer(),
-                    loss=eval(loss),
+                    loss="{}".format(loss),
                     metrics=metrics,
                 )
                 return model
@@ -213,14 +215,10 @@ class BlockArchitecture(Block):
     def train_model(
         self,
         model,
-        train_data=None,
-        train_labels=None,
-        train_generator_x=None,
-        train_generator_y=None,
+        train_generator=None,
         train_len=None,
         validation_generator=None,
         validation_len=None,
-        validation_split=0.1,
         epochs=1,
         batch_size=1,
         test_name=None,
@@ -235,6 +233,8 @@ class BlockArchitecture(Block):
 
         if get_global("use_lrscheduler"):
             from Demos import get_global
+
+            # Do not remove this line
             import TensorNAS.Core.Training as tr
 
             lrs = eval("tr.{}()".format(get_global("lrscheduler")))
@@ -247,39 +247,26 @@ class BlockArchitecture(Block):
             callbacks += [get_early_stopper()]
 
         try:
-            # If model is trained using data and labels
-            if not [x for x in (train_data, train_labels) if x is None]:
-                model.fit(
-                    x=train_data,
-                    y=train_labels,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    validation_split=validation_split,
-                    shuffle=True,
-                    # steps_per_epoch=len(train_data) / batch_size,
-                    verbose=verbose,
-                    callbacks=callbacks,
-                )
-            # Else if the model is trained using data generators
-            elif not [
+            if not [
                 x
                 for x in (
-                    train_generator_x,
+                    train_generator,
                     train_len,
-                    validation_generator,
-                    validation_len,
                 )
                 if x is None
             ]:
                 import tensorflow as tf
 
                 model.fit(
-                    x=train_generator_x,
-                    y=train_generator_y,
-                    validation_data=validation_generator,
-                    batch_size=batch_size,
-                    steps_per_epoch=train_len / batch_size,
+                    x=train_generator,
+                    batch_size=1,
+                    epochs=epochs,
+                    steps_per_epoch=train_len // batch_size,
                     callbacks=callbacks,
+                    validation_data=validation_generator,
+                    validation_batch_size=batch_size,
+                    validation_steps=validation_len // batch_size,
+                    verbose=verbose,
                 )
             else:
                 raise Exception("Missing training data")
@@ -299,17 +286,11 @@ class BlockArchitecture(Block):
 class AreaUnderCurveBlockArchitecture(BlockArchitecture):
     def evaluate(
         self,
-        train_data=None,
-        train_labels=None,
-        test_data=None,
-        test_labels=None,
-        train_generator_x=None,
-        train_generator_y=None,
+        train_generator=None,
         train_len=None,
+        test_generator=None,
         validation_generator=None,
         validation_len=None,
-        test_generator=None,
-        validation_split=0.1,
         epochs=1,
         batch_size=1,
         loss="sparse_categorical_crossentropy",
@@ -330,14 +311,10 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
 
         model, params = self.train_model(
             model=model,
-            train_data=train_data,
-            train_labels=train_labels,
-            train_generator_x=train_generator_x,
-            train_generator_y=train_generator_y,
+            train_generator=train_generator,
             train_len=train_len,
             validation_generator=validation_generator,
             validation_len=validation_len,
-            validation_split=validation_split,
             epochs=epochs,
             batch_size=batch_size,
             test_name=test_name,
@@ -347,23 +324,19 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         )
 
         try:
-            # Tested using test data array
-            if not [x for x in (test_data, test_labels) if x is None]:
-                raise Exception("AUR evalutaion using data array not implemented")
-            # Else if the model is trained using data generators
-            elif not [
-                x for x in (train_generator_x, validation_generator) if x is None
-            ]:
+            if not test_generator is None:
                 import numpy as np
                 from tqdm import tqdm
                 import sklearn.metrics as metrics
 
+                # true_y = []
                 predictions = []
-                for td in tqdm(test_data, total=len(test_data)):
+                for td, ty in tqdm(test_generator, total=len(test_generator)):
                     pred = model.predict(td)
                     errors = np.mean(np.mean(np.square(td - pred), axis=1))
                     predictions.append(errors)
-                auc = metrics.roc_auc_score(test_labels, predictions)
+                labels = [label for x, label in test_generator]
+                auc = metrics.roc_auc_score(labels, predictions)
 
             else:
                 raise Exception("Missing training data")
@@ -386,17 +359,11 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
     def evaluate(
         self,
-        train_data=None,
-        train_labels=None,
-        test_data=None,
-        test_labels=None,
-        train_generator_x=None,
-        train_generator_y=None,
+        train_generator=None,
         train_len=None,
+        test_generator=None,
         validation_generator=None,
         validation_len=None,
-        test_generator=None,
-        validation_split=0.1,
         epochs=1,
         batch_size=1,
         loss="sparse_categorical_crossentropy",
@@ -417,14 +384,10 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         model, params = self.train_model(
             model=model,
-            train_data=train_data,
-            train_labels=train_labels,
-            train_generator_x=train_generator_x,
-            train_generator_y=train_generator_y,
+            train_generator=train_generator,
             train_len=train_len,
             validation_generator=validation_generator,
             validation_len=validation_len,
-            validation_split=validation_split,
             epochs=epochs,
             batch_size=batch_size,
             test_name=test_name,
@@ -434,21 +397,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         )
 
         try:
-            # If model is trained using data and label arrays
-            if not [x for x in (test_data, test_labels) if x is None]:
-                accuracy = (
-                    model.evaluate(
-                        x=test_data,
-                        y=test_labels,
-                        batch_size=batch_size,
-                        verbose=verbose,
-                    )[1]
-                    * 100
-                )
-            # Else if the model is trained using data generators
-            elif not [x for x in (test_generator) if x is None]:
-                # if not test_steps:
-                #     test_steps = len(test_generator) // batch_size
+            if not [x for x in (test_generator) if x is None]:
                 accuracy = (
                     model.evaluate(
                         x=test_generator, batch_size=batch_size, verbose=verbose

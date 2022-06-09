@@ -86,7 +86,12 @@ def _GetStr(parent, item):
     if not parent:
         return None
 
-    return str(parent[item])
+    ret = str(parent[item])
+
+    if ret != "None":
+        return ret
+    else:
+        return None
 
 
 def _GetGeneral(config):
@@ -471,12 +476,17 @@ def _GetTensorflow(config):
 
 def GetTrainingSampleSize(config):
 
-    return int(_GetTensorflow(config)["TrainingSampleSize"])
+    return _GetInt(_GetTensorflow(config), "TrainingSampleSize")
 
 
 def GetTestSampleSize(config):
 
-    return int(_GetTensorflow(config)["TestSampleSize"])
+    return _GetInt(_GetTensorflow(config), "TestSampleSize")
+
+
+def GetValidationSplit(config):
+
+    return _GetFloat(_GetTensorflow(config), "ValidationSplit")
 
 
 def GetTFOptimizer(config):
@@ -491,7 +501,7 @@ def GetTFLoss(config):
 
 def GetTFMetrics(config):
 
-    return [_GetTensorflow(config)["Metrics"]]
+    return _GetStr(_GetTensorflow(config), "Metrics")
 
 
 def GetTFEarlyStopper(config):
