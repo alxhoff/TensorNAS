@@ -362,6 +362,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         train_generator=None,
         train_len=None,
         test_generator=None,
+        test_len=None,
         validation_generator=None,
         validation_len=None,
         epochs=1,
@@ -397,10 +398,13 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         )
 
         try:
-            if not [x for x in (test_generator) if x is None]:
+            if test_generator is not None:
                 accuracy = (
                     model.evaluate(
-                        x=test_generator, batch_size=batch_size, verbose=verbose
+                        x=test_generator,
+                        batch_size=batch_size,
+                        verbose=verbose,
+                        steps=test_len // batch_size,
                     )[1]
                     * 100
                 )

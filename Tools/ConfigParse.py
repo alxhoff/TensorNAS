@@ -484,6 +484,11 @@ def GetTestSampleSize(config):
     return _GetInt(_GetTensorflow(config), "TestSampleSize")
 
 
+def GetValidationSampleSize(config):
+
+    return _GetInt(_GetTensorflow(config), "ValidationSampleSize")
+
+
 def GetValidationSplit(config):
 
     return _GetFloat(_GetTensorflow(config), "ValidationSplit")
