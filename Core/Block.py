@@ -54,6 +54,8 @@ class MutationTable:
 
         if hasattr(cls_obj, "mutation_funcs"):
             self.mutation_funs = cls_obj.mutation_funcs
+            for func in self.mutation_funs:
+                self.mutations[func] = [0, 0]
 
     def get_mutation_table_ref(self, mutation):
 
@@ -214,23 +216,38 @@ class BaseBlock(ABC):
         if ob:
             self.output_blocks.extend(ob)
 
-    def _invoke_random_mutation_function(self, mutation_goal_index=0, verbose=False):
+    def _invoke_random_mutation_function(
+        self,
+        mutation_goal_index=0,
+        mutate_with_reinforcement_learning=True,
+        verbose=False,
+    ):
         if self.mutation_funcs:
-            weights = [
-                self.mutation_table.get_mutation_probability(func)
-                for func in self.mutation_funcs
-            ]
-            try:
-                func_name = random.choices(self.mutation_funcs, weights=weights)[0]
-            except Exception as e:
-                print(e)
+            if mutate_with_reinforcement_learning:
+                weights = [
+                    self.mutation_table.get_mutation_probability(
+                        function_name=func, index=mutation_goal_index
+                    )
+                    for func in self.mutation_funcs
+                ]
+                try:
+                    func_name = random.choices(self.mutation_funcs, weights=weights)[0]
+                except Exception as e:
+                    print(e)
+            else:
+                func_name = random.choice(self.mutation_funcs)
             mutate_eval = "self." + func_name
             if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
             return eval(mutate_eval)()
         return "Null", None
 
-    def mutate_self(self, mutation_goal_index=0, verbose=False):
+    def mutate_self(
+        self,
+        mutation_goal_index=0,
+        mutate_with_reinforcement_learning=True,
+        verbose=False,
+    ):
         """
         An optional function that allows for the block to mutate itself during mutation, by default this function
         simply invokes mutation of a random mutation function and if that is not possible then
@@ -238,7 +255,9 @@ class BaseBlock(ABC):
         """
         if len(self.mutation_funcs) > 0:
             return self._invoke_random_mutation_function(
-                mutation_goal_index=mutation_goal_index, verbose=verbose
+                mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
+                mutation_goal_index=mutation_goal_index,
+                verbose=verbose,
             )
 
     def mutate(
@@ -246,6 +265,7 @@ class BaseBlock(ABC):
         mutation_goal_index=0,
         mutation_method="EQUALLY",
         mutation_probability=0.0,
+        mutate_with_reinforcement_learning=True,
         verbose=False,
     ):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
@@ -284,6 +304,7 @@ class BaseBlock(ABC):
                         mutation_goal_index=mutation_goal_index,
                         mutation_method=mutation_method,
                         mutation_probability=mutation_probability,
+                        mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
                         verbose=verbose,
                     )
                 # return format of all mutate functions, except most bottom level mutations, should be
@@ -291,7 +312,9 @@ class BaseBlock(ABC):
                 ret = tuple(["_mutate_subblock"] + list(ret[1:]))
             else:
                 ret = self.mutate_self(
-                    mutation_goal_index=mutation_goal_index, verbose=verbose
+                    mutation_goal_index=mutation_goal_index,
+                    mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
+                    verbose=verbose,
                 )
         elif mutation_method == "ALL":
             ret = self._get_all_mutation_functions_of_children()[

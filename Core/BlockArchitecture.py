@@ -101,7 +101,13 @@ class BlockArchitecture(Block):
 
         super().__init__(input_shape=input_shape, parent_block=None)
 
-    def mutate(self, mutation_method=True, mutation_probability=0.0, verbose=False):
+    def mutate(
+        self,
+        mutation_method=True,
+        mutation_probability=0.0,
+        mutate_with_reinforcement_learning=True,
+        verbose=False,
+    ):
 
         goal_index = 0
         if self.optimization_goal == OptimizationGoal.ACCURACY_UP:
@@ -111,6 +117,7 @@ class BlockArchitecture(Block):
             mutation_goal_index=goal_index,
             mutation_method=mutation_method,
             mutation_probability=mutation_probability,
+            mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
             verbose=verbose,
         )
 

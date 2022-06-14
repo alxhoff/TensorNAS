@@ -198,6 +198,11 @@ def GetRetrainEveryGeneration(config):
     return _GetEvolution(config).getboolean("RetrainEveryGeneration")
 
 
+def GetUseReinforcementLearning(config):
+
+    return _GetBool(_GetEvolution(config), "UseReinforcementLearningMutation")
+
+
 def GetAlpha(config):
 
     return float(_GetEvolution(config)["Alpha"])
