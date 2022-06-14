@@ -62,6 +62,9 @@ def _GetFloat(parent, item):
     if not parent:
         return None
 
+    if item not in parent:
+        return 0.1
+
     return float(parent[item])
 
 
@@ -69,6 +72,9 @@ def _GetInt(parent, item):
 
     if not parent:
         return None
+
+    if item not in parent:
+        return 0
 
     return int(parent[item])
 

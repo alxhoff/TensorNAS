@@ -188,14 +188,13 @@ def eaSimple(
     .. [Back2000] Back, Fogel and Michalewicz, "Evolutionary Computation 1 :
        Basic Algorithms and Operators", 2000.
     """
-    pop_size = len(population)
-
     from deap import tools
     from Demos import set_global, get_global
     from tqdm import tqdm
+    import csv
 
+    pop_size = len(population)
     retrain = get_global("retrain_every_generation")
-
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
@@ -208,212 +207,38 @@ def eaSimple(
         timing_log.log("Start time: {}".format(start_time))
         logger.log("Gen #0, population: {}".format(len(population)))
 
-    for i, ind in enumerate(population):
-        ind.index = i
+    with open(
+        "Output/{}/generations.csv".format(test_name), "w", newline=""
+    ) as csvfile:
 
-    # Evaluate the individuals with an invalid fitness
-    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        writer = csv.writer(csvfile, delimiter=" ")
 
-    print("GEN #0, evaluating {} new individuals".format(len(invalid_ind)))
+        writer.writerow(["Test Name", "Population", "Generations", "Cxpb", "Mutpb"])
+        writer.writerow([test_name, pop_size, ngen, cxpb, mutpb])
+        writer.writerow(["Gen #0"])
+        raw_fitness_row = []
+        filtered_fitness_row = []
 
-    if multithreaded:
-        from multiprocessing import set_start_method
-
-        set_start_method("spawn", force=True)
-
-        if save_individuals and generation_save_interval == 1:
-            fitnesses = toolbox.map(
-                toolbox.evaluate,
-                [
-                    (ind, test_name, start_gen, logger)
-                    for i, ind in enumerate(invalid_ind)
-                ],
-            )
-        else:
-            fitnesses = toolbox.map(
-                toolbox.evaluate,
-                [(ind, None, None, logger) for ind in invalid_ind],
-            )
-    else:
-        fitnesses = []
-        for i, ind in enumerate(tqdm(invalid_ind)):
-            if save_individuals and generation_save_interval == 1:
-                ret = toolbox.evaluate(ind, test_name, start_gen, logger)
-            else:
-                ret = toolbox.evaluate(ind, None, None, logger)
-            fitnesses.append(ret)
-
-    for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-        ind.block_architecture.param_count = fit[-2]
-        ind.block_architecture.accuracy = fit[-1]
-        # Assign individuals an index so they can be copied in output folder structure if taken to next gen
-        ind.index = count
-
-        if filter_function:
-            if filter_function_args:
-                ind.fitness.values = filter_function(fit, filter_function_args)
-            else:
-                ind.fitness.values = filter_function(fit)
-        else:
-            ind.fitness.values = fit
-
-        # determine which optimization param is currently the goal of the individual
-        import numpy as np
-        from TensorNAS.Core.BlockArchitecture import OptimizationGoal
-
-        goal_vector = np.array(filter_function_args[0][0])
-        norm_vector = np.array(filter_function_args[1][0])
-        # goal vector intercepts
-        m = -norm_vector[1] / norm_vector[0]
-        c = goal_vector[1] - (m * goal_vector[0])
-
-        # Intecept points
-        yc = [0, c]
-        xc = [-c / m, 0]
-
-        is_above = (
-            lambda p: np.cross(
-                p - np.array(yc),
-                np.array(xc) - np.array(yc),
-            )
-            < 0
-        )
-        above = is_above(
-            (ind.block_architecture.param_count, ind.block_architecture.accuracy)
-        )
-        if above:
-            if ind.block_architecture.param_count - goal_vector[0] <= 0:
-                ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
-            else:
-                ind.block_architecture.optimization_goal = (
-                    OptimizationGoal.PARAMETERS_DOWN
-                )
-        else:
-            ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
-
-        if hasattr(ind, "updates"):
-            ind.updates.append(
-                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
-            )
-        else:
-            ind.updates = [
-                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
-            ]
-
-    if logger:
-        for x, ind in enumerate(population):
-            logger.log(
-                "####\nInd #{}, params:{}, acc:{}%".format(
-                    x,
-                    ind.block_architecture.param_count,
-                    ind.block_architecture.accuracy,
-                )
-            )
-            logger.log(str(ind))
-            logger.log("Mutations:")
-            for mutation in ind.block_architecture.mutations:
-                logger.log(
-                    "{} param diff: {} acc diff: {}".format(
-                        mutation.mutation_operation,
-                        mutation.param_diff,
-                        mutation.accuracy_diff,
-                    )
-                )
-            logger.log("####")
-
-    from deap.tools.emo import assignCrowdingDist
-
-    assert len(population) == pop_size, "Initial population not of size {}".format(
-        pop_size
-    )
-
-    assignCrowdingDist(population)
-
-    if individualrecord:
-        individualrecord.add_gen(population)
-
-    if halloffame is not None:
-        halloffame.update(population)
-
-    record = stats.compile(population) if stats else {}
-    logbook.record(gen=0, nevals=len(invalid_ind), **record)
-    if verbose:
-        print(logbook.stream)
-
-    if logger:
-        cur_time = time.time()
-        timing_log.log("Gen #0 finished in: {}".format(cur_gen_start_time - cur_time))
-        cur_gen_start_time = cur_time
-
-    # Begin the generational process
-    for gen in range(start_gen + 1, ngen + 1):
-
-        set_global(
-            "self_mutation_probability",
-            get_global("self_mutation_probability")
-            + (gen - 1) * get_global("variable_mutation_generational_change"),
-        )
-
-        if logger:
-            logger.log("Gen #{}, population: {}".format(gen, len(population)))
-
-        # Select the next generation individuals
-        offspring = toolbox.select(population, pop_size)
-
-        assert len(offspring) == pop_size, "Initial population not of size {}".format(
-            pop_size
-        )
-
-        # Vary the pool of individuals
-        from deap.algorithms import varAnd
-
-        offspring = varAnd(offspring, toolbox, cxpb, mutpb)
-
-        valid_ind = [ind for ind in offspring if ind.fitness.valid]
-
-        if retrain == False:
-            invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        else:
-            invalid_ind = offspring
-
-        for i, ind in enumerate(invalid_ind):
+        for i, ind in enumerate(population):
             ind.index = i
 
-        if logger:
-            logger.log("{} existing individuals".format(len(valid_ind)))
-
-        # Copy existing models to new generation
-        from TensorNAS.Tools import copy_output_model
-
-        for i, ind in enumerate(valid_ind):
-            copy_output_model(test_name, gen, ind.index, len(invalid_ind) + i)
-            logger.log(
-                "Copying existing model, index:{}/{}->{}/{}".format(
-                    gen - 1, ind.index, gen, len(invalid_ind) + i
-                )
-            )
-            ind.index = len(invalid_ind) + i
-
-        offspring[:] = invalid_ind + valid_ind
-
         # Evaluate the individuals with an invalid fitness
-        if logger:
-            logger.log("{} new individuals".format(len(invalid_ind)))
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
 
-        print("GEN #{}, evaluating {} new individuals".format(gen, len(invalid_ind)))
+        print("GEN #0, evaluating {} new individuals".format(len(invalid_ind)))
 
         if multithreaded:
             from multiprocessing import set_start_method
 
             set_start_method("spawn", force=True)
 
-            if save_individuals and ((gen + 1) % generation_save_interval) == 0:
-                for ind in invalid_ind:
-                    index = offspring.index(ind)
-                    ind.index = index
+            if save_individuals and generation_save_interval == 1:
                 fitnesses = toolbox.map(
                     toolbox.evaluate,
-                    [(ind, test_name, gen, logger) for ind in invalid_ind],
+                    [
+                        (ind, test_name, start_gen, logger)
+                        for i, ind in enumerate(invalid_ind)
+                    ],
                 )
             else:
                 fitnesses = toolbox.map(
@@ -422,47 +247,72 @@ def eaSimple(
                 )
         else:
             fitnesses = []
-            for ind in tqdm(invalid_ind):
+            for i, ind in enumerate(tqdm(invalid_ind)):
                 if save_individuals and generation_save_interval == 1:
-                    fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
+                    ret = toolbox.evaluate(ind, test_name, start_gen, logger)
                 else:
-                    fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
+                    ret = toolbox.evaluate(ind, None, None, logger)
+                fitnesses.append(ret)
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
+            ind.block_architecture.param_count = fit[-2]
+            ind.block_architecture.accuracy = fit[-1]
+            # Assign individuals an index so they can be copied in output folder structure if taken to next gen
+            ind.index = count
+
+            raw_fitness_row.append(str(fit))
 
             if filter_function:
                 if filter_function_args:
                     ind.fitness.values = filter_function(fit, filter_function_args)
                 else:
                     ind.fitness.values = filter_function(fit)
+            else:
+                ind.fitness.values = fit
 
-            ind.block_architecture.prev_param_count = ind.block_architecture.param_count
-            ind.block_architecture.param_count = fit[-2]
-            ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
-            ind.block_architecture.accuracy = fit[-1]
+            filtered_fitness_row.append(str(ind.fitness.values[0]))
 
-            acc_diff = (
-                ind.block_architecture.accuracy - ind.block_architecture.prev_accuracy
+            # determine which optimization param is currently the goal of the individual
+            import numpy as np
+            from TensorNAS.Core.BlockArchitecture import OptimizationGoal
+
+            goal_vector = np.array(filter_function_args[0][0])
+            norm_vector = np.array(filter_function_args[1][0])
+            # goal vector intercepts
+            m = -norm_vector[1] / norm_vector[0]
+            c = goal_vector[1] - (m * goal_vector[0])
+
+            # Intecept points
+            yc = [0, c]
+            xc = [-c / m, 0]
+
+            is_above = (
+                lambda p: np.cross(
+                    p - np.array(yc),
+                    np.array(xc) - np.array(yc),
+                )
+                < 0
             )
-            param_count_diff = (
-                ind.block_architecture.param_count
-                - ind.block_architecture.prev_param_count
+            above = is_above(
+                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
             )
-
-            for i in reversed(ind.block_architecture.mutations):
-                if i.pending == False:
-                    break
-
-                i.accuracy_diff = acc_diff
-                i.param_diff = param_count_diff
-                i.propogate_mutation_results()
+            if above:
+                if ind.block_architecture.param_count - goal_vector[0] <= 0:
+                    ind.block_architecture.optimization_goal = (
+                        OptimizationGoal.ACCURACY_UP
+                    )
+                else:
+                    ind.block_architecture.optimization_goal = (
+                        OptimizationGoal.PARAMETERS_DOWN
+                    )
+            else:
+                ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.fitness.values,
                     )
                 )
             else:
@@ -470,21 +320,11 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.fitness.values,
                     )
                 ]
 
-        assignCrowdingDist(offspring)
-
-        # Update the hall of fame with the generated individuals
-        if halloffame is not None:
-            halloffame.update(offspring)
-
-        # Replace the current population by the offspring
-        population[:] = offspring
-
-        if individualrecord:
-            individualrecord.add_gen(population)
+        writer.writerow(raw_fitness_row)
+        writer.writerow(filtered_fitness_row)
 
         if logger:
             for x, ind in enumerate(population):
@@ -500,28 +340,239 @@ def eaSimple(
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
                         "{} param diff: {} acc diff: {}".format(
-                            mutation.mutation_function,
+                            mutation.mutation_operation,
                             mutation.param_diff,
                             mutation.accuracy_diff,
                         )
                     )
                 logger.log("####")
 
-        # Append the current generation statistics to the logbook
+        from deap.tools.emo import assignCrowdingDist
+
+        assert len(population) == pop_size, "Initial population not of size {}".format(
+            pop_size
+        )
+
+        assignCrowdingDist(population)
+
+        if individualrecord:
+            individualrecord.add_gen(population)
+
+        if halloffame is not None:
+            halloffame.update(population)
+
         record = stats.compile(population) if stats else {}
-        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        logbook.record(gen=0, nevals=len(invalid_ind), **record)
         if verbose:
             print(logbook.stream)
 
         if logger:
             cur_time = time.time()
             timing_log.log(
-                "Gen #{} finished in: {}".format(gen, cur_gen_start_time - cur_time)
+                "Gen #0 finished in: {}".format(cur_gen_start_time - cur_time)
             )
             cur_gen_start_time = cur_time
 
-    if logger:
-        timing_log.log("Total time: {}".format(time.time() - start_time))
-        timing_log.log("STOP")
+        # Begin the generational process
+        for gen in range(start_gen + 1, ngen + 1):
+
+            raw_fitness_row = []
+            filtered_fitness_row = []
+            writer.writerow(["Gen #{}".format(gen)])
+
+            set_global(
+                "self_mutation_probability",
+                get_global("self_mutation_probability")
+                + (gen - 1) * get_global("variable_mutation_generational_change"),
+            )
+
+            if logger:
+                logger.log("Gen #{}, population: {}".format(gen, len(population)))
+
+            # Select the next generation individuals
+            offspring = toolbox.select(population, pop_size)
+
+            assert (
+                len(offspring) == pop_size
+            ), "Initial population not of size {}".format(pop_size)
+
+            # Vary the pool of individuals
+            from deap.algorithms import varAnd
+
+            offspring = varAnd(offspring, toolbox, cxpb, mutpb)
+
+            valid_ind = [ind for ind in offspring if ind.fitness.valid]
+
+            if retrain == False:
+                invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+            else:
+                invalid_ind = offspring
+
+            for i, ind in enumerate(invalid_ind):
+                ind.index = i
+
+            if logger:
+                logger.log("{} existing individuals".format(len(valid_ind)))
+
+            # Copy existing models to new generation
+            from TensorNAS.Tools import copy_output_model
+
+            for i, ind in enumerate(valid_ind):
+                copy_output_model(test_name, gen, ind.index, len(invalid_ind) + i)
+                logger.log(
+                    "Copying existing model, index:{}/{}->{}/{}".format(
+                        gen - 1, ind.index, gen, len(invalid_ind) + i
+                    )
+                )
+                ind.index = len(invalid_ind) + i
+
+            offspring[:] = invalid_ind + valid_ind
+
+            # Evaluate the individuals with an invalid fitness
+            if logger:
+                logger.log("{} new individuals".format(len(invalid_ind)))
+
+            print(
+                "GEN #{}, evaluating {} new individuals".format(gen, len(invalid_ind))
+            )
+
+            if multithreaded:
+                from multiprocessing import set_start_method
+
+                set_start_method("spawn", force=True)
+
+                if save_individuals and ((gen + 1) % generation_save_interval) == 0:
+                    for ind in invalid_ind:
+                        index = offspring.index(ind)
+                        ind.index = index
+                    fitnesses = toolbox.map(
+                        toolbox.evaluate,
+                        [(ind, test_name, gen, logger) for ind in invalid_ind],
+                    )
+                else:
+                    fitnesses = toolbox.map(
+                        toolbox.evaluate,
+                        [(ind, None, None, logger) for ind in invalid_ind],
+                    )
+            else:
+                fitnesses = []
+                for ind in tqdm(invalid_ind):
+                    if save_individuals and generation_save_interval == 1:
+                        fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
+                    else:
+                        fitnesses.append(
+                            toolbox.evaluate(ind, None, None, None, logger)
+                        )
+
+            for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
+
+                if filter_function:
+                    if filter_function_args:
+                        ind.fitness.values = filter_function(fit, filter_function_args)
+                    else:
+                        ind.fitness.values = filter_function(fit)
+
+                ind.block_architecture.prev_param_count = (
+                    ind.block_architecture.param_count
+                )
+                ind.block_architecture.param_count = fit[-2]
+                ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
+                ind.block_architecture.accuracy = fit[-1]
+
+                acc_diff = (
+                    ind.block_architecture.accuracy
+                    - ind.block_architecture.prev_accuracy
+                )
+                param_count_diff = (
+                    ind.block_architecture.param_count
+                    - ind.block_architecture.prev_param_count
+                )
+
+                for i in reversed(ind.block_architecture.mutations):
+                    if i.pending == False:
+                        break
+
+                    i.accuracy_diff = acc_diff
+                    i.param_diff = param_count_diff
+                    i.propogate_mutation_results()
+
+                if hasattr(ind, "updates"):
+                    ind.updates.append(
+                        (
+                            ind.block_architecture.param_count,
+                            ind.block_architecture.accuracy,
+                            ind.fitness.values,
+                        )
+                    )
+                else:
+                    ind.updates = [
+                        (
+                            ind.block_architecture.param_count,
+                            ind.block_architecture.accuracy,
+                            ind.fitness.values,
+                        )
+                    ]
+
+            assignCrowdingDist(offspring)
+
+            # Update the hall of fame with the generated individuals
+            if halloffame is not None:
+                halloffame.update(offspring)
+
+            # Replace the current population by the offspring
+            population[:] = offspring
+
+            if individualrecord:
+                individualrecord.add_gen(population)
+
+            for i in population:
+                raw_fitness_row.append(
+                    (
+                        str(i.block_architecture.param_count),
+                        str(i.block_architecture.accuracy),
+                    )
+                )
+                filtered_fitness_row.append(str(i.fitness.values[0]))
+
+            writer.writerow(raw_fitness_row)
+            writer.writerow(filtered_fitness_row)
+
+            if logger:
+                for x, ind in enumerate(population):
+                    logger.log(
+                        "####\nInd #{}, params:{}, acc:{}%".format(
+                            x,
+                            ind.block_architecture.param_count,
+                            ind.block_architecture.accuracy,
+                        )
+                    )
+                    logger.log(str(ind))
+                    logger.log("Mutations:")
+                    for mutation in ind.block_architecture.mutations:
+                        logger.log(
+                            "{} param diff: {} acc diff: {}".format(
+                                mutation.mutation_function,
+                                mutation.param_diff,
+                                mutation.accuracy_diff,
+                            )
+                        )
+                    logger.log("####")
+
+            # Append the current generation statistics to the logbook
+            record = stats.compile(population) if stats else {}
+            logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+            if verbose:
+                print(logbook.stream)
+
+            if logger:
+                cur_time = time.time()
+                timing_log.log(
+                    "Gen #{} finished in: {}".format(gen, cur_gen_start_time - cur_time)
+                )
+                cur_gen_start_time = cur_time
+
+        if logger:
+            timing_log.log("Total time: {}".format(time.time() - start_time))
+            timing_log.log("STOP")
 
     return population, logbook
