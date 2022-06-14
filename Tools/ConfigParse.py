@@ -180,14 +180,7 @@ def GetVerboseMutation(config):
 
 def GetMutationMethod(config):
 
-    val = _GetEvolution(config)["MutationMethod"]
-
-    if val == "EQUAL":
-        return True
-    elif val == "PROBABILITY":
-        return False
-    else:
-        raise Exception("Invalid mutation method given in config")
+    return _GetStr(_GetEvolution(config), "MutationMethod")
 
 
 def GetVariableMutationGenerationalChange(config):

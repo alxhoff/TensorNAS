@@ -244,7 +244,7 @@ class BaseBlock(ABC):
     def mutate(
         self,
         mutation_goal_index=0,
-        mutate_equally=True,
+        mutation_method="EQUALLY",
         mutation_probability=0.0,
         verbose=False,
     ):
@@ -263,12 +263,12 @@ class BaseBlock(ABC):
 
         The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
 
-        if mutate_equally:
+        if mutation_method == "EQUALLY":
             block = self._get_random_sub_block_inc_self()
             ret = block.mutate_self(
                 mutation_goal_index=mutation_goal_index, verbose=verbose
             )
-        else:
+        elif mutation_method == "PROBABILITY":
             prob = random.random()
             if (prob < mutation_probability) and (len(self.middle_blocks) > 0):
                 # Mutate subblock
@@ -282,7 +282,7 @@ class BaseBlock(ABC):
                         )
                     ret = self.middle_blocks[choice_index].mutate(
                         mutation_goal_index=mutation_goal_index,
-                        mutate_equally=mutate_equally,
+                        mutation_method=mutation_method,
                         mutation_probability=mutation_probability,
                         verbose=verbose,
                     )
@@ -293,6 +293,10 @@ class BaseBlock(ABC):
                 ret = self.mutate_self(
                     mutation_goal_index=mutation_goal_index, verbose=verbose
                 )
+        elif mutation_method == "ALL":
+            ret = self._get_all_mutation_functions_of_children()[
+                random.choice(range(len(self.middle_blocks)))
+            ]()
 
         self.reset_ba_input_shapes()
 
@@ -319,6 +323,18 @@ class BaseBlock(ABC):
 
         # Return format is 'list of mutation table references', 'mutation note for logging'
         return mutation_function, mutation_note, table_ref_list
+
+    def _get_all_mutation_functions_of_children(self):
+
+        ret = []
+
+        for func in self.mutation_funcs:
+            ret.append(eval("self.{}".format(func)))
+
+        for block in self.input_blocks + self.middle_blocks + self.output_blocks:
+            ret += block._get_all_mutation_functions_of_children()
+
+        return ret
 
     def generate_constrained_output_sub_blocks(self, input_shape, args=None):
         """This method is called after the sub-blocks have been generated to generate the required blocks which are

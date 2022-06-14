@@ -24,7 +24,7 @@ class TensorNASIndividual:
     ):
         self.index = None
         self.block_architecture.mutate(
-            mutate_equally=mutate_equally,
+            mutation_method=mutate_equally,
             mutation_probability=mutation_probability,
             verbose=verbose,
             generation_change=generation_change,

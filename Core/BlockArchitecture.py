@@ -101,7 +101,7 @@ class BlockArchitecture(Block):
 
         super().__init__(input_shape=input_shape, parent_block=None)
 
-    def mutate(self, mutate_equally=True, mutation_probability=0.0, verbose=False):
+    def mutate(self, mutation_method=True, mutation_probability=0.0, verbose=False):
 
         goal_index = 0
         if self.optimization_goal == OptimizationGoal.ACCURACY_UP:
@@ -109,7 +109,7 @@ class BlockArchitecture(Block):
 
         return super().mutate(
             mutation_goal_index=goal_index,
-            mutate_equally=mutate_equally,
+            mutation_method=mutation_method,
             mutation_probability=mutation_probability,
             verbose=verbose,
         )
