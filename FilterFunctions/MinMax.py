@@ -7,8 +7,7 @@ def MinMaxArray(fitnesses, vectors):
     for nv, gv in zip(normalization_vectors, goal_vectors):
         ret.append(MinMax(fitnesses, nv, gv))
 
-    ret = tuple(ret)
-    return ret
+    return tuple(ret)
 
 
 def MinMax(fitnesses, normalization_vector, goal_vector):

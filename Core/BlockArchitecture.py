@@ -296,6 +296,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         train_generator=None,
         train_len=None,
         test_generator=None,
+        test_len=None,
         validation_generator=None,
         validation_len=None,
         epochs=1,
