@@ -410,9 +410,9 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 accuracy = (
                     model.evaluate(
                         x=test_generator,
-                        batch_size=batch_size,
+                        batch_size=batch_size // 10,
                         verbose=verbose,
-                        steps=test_len // batch_size,
+                        steps=test_len // (batch_size // 10),
                     )[1]
                     * 100
                 )
