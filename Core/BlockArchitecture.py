@@ -407,12 +407,15 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         try:
             if test_generator is not None:
+                callbacks = [ClearMemory()]
+
                 accuracy = (
                     model.evaluate(
                         x=test_generator,
                         batch_size=batch_size // 10,
                         verbose=verbose,
                         steps=test_len // (batch_size // 10),
+                        callbacks=callbacks,
                     )[1]
                     * 100
                 )
