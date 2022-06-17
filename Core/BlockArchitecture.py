@@ -264,6 +264,10 @@ class BlockArchitecture(Block):
             ]:
                 import tensorflow as tf
 
+                if batch_size > validation_len:
+                    vbatch_size = validation_len
+                else:
+                    vbatch_size = batch_size
                 model.fit(
                     x=train_generator,
                     batch_size=1,
@@ -271,10 +275,11 @@ class BlockArchitecture(Block):
                     steps_per_epoch=train_len // batch_size,
                     callbacks=callbacks,
                     validation_data=validation_generator,
-                    validation_batch_size=batch_size,
-                    validation_steps=validation_len // batch_size,
+                    validation_batch_size=vbatch_size,
+                    validation_steps=validation_len // vbatch_size,
                     verbose=verbose,
                 )
+
             else:
                 raise Exception("Missing training data")
 
