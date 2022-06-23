@@ -14,16 +14,11 @@ def get_divisors(n):
 def shuffle_channels(input_tensor, num_groups):
     import tensorflow as tf
 
-    print("Num groups: {}".format(num_groups))
     n, h, w, c = input_tensor.shape.as_list()
-    print("Shuffle input: {}".format(input_tensor.shape.as_list()))
     grouped_channels = c // num_groups
     reshaped_input = tf.reshape(input_tensor, [-1, h, w, num_groups, grouped_channels])
-    print("First reshape: {}".format(reshaped_input.shape.as_list()))
     transformed_input = tf.transpose(reshaped_input, [0, 1, 2, 4, 3])
-    print("Transposed: {}".format(reshaped_input.shape.as_list()))
     output = tf.reshape(transformed_input, [-1, h, w, c])
-    print("Output reshape: {}".format(output.shape.as_list()))
     return output
 
 

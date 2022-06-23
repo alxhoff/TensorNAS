@@ -269,7 +269,7 @@ class BaseBlock(ABC):
         verbose=False,
     ):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
-        this includes the defaul `mutate_subblock`.
+        this includes the defaul `mutate_subblock`.`
 
         The implementation of a block should as such then present the possible mutation possibilities as a collection
         of `_mutate` functions. Generally mutation will call the default `mutate_subblock` method to invoke mutation
@@ -814,6 +814,7 @@ class Block(BaseBlock):
         """
         Randomly drops a middle sub-block
         """
+
         if len(self.middle_blocks):
             choice_index = random.choice(range(len(self.middle_blocks)))
             block_type = type(self.middle_blocks[choice_index])
