@@ -15,7 +15,7 @@ class Block(Block):
 
         CONV2D = auto()
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         """
         Care must be taken here that the input shape is the input to the Expand block as all Layers are in parallel
         and thus take the same input, ie. the input to the block.

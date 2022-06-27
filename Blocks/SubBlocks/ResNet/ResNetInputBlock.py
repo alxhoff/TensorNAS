@@ -53,7 +53,7 @@ class Block(Block):
 
         return layers
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Activation import Layer as Activation
 
         if layer_type == self.SubBlocks.CONV2D:

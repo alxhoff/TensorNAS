@@ -7,7 +7,7 @@ class Block(AreaUnderCurveBlockArchitecture):
 
         AUTO_ENCODER_BLOCK = auto()
 
-    def generate_random_sub_block(self, input_shape, subblock_type):
+    def generate_sub_block(self, input_shape, subblock_type):
         from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlock import (
             Block as DAEBlock,
         )

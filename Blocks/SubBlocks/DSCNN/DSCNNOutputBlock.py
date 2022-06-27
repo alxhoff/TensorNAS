@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 class Block(Block):
 
-    MAX_SUB_BLOCKS = 1
+    MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
 
@@ -22,20 +22,34 @@ class Block(Block):
         from TensorNAS.Layers.Flatten import Layer as Flatten
         from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
         from TensorNAS.Layers.Dense import Args as dense_args
-        from TensorNAS.Core.Layer import ArgActivations
+        from TensorNAS.Layers.Pool import Args as pool_args
+        from TensorNAS.Core.Layer import ArgActivations, ArgPadding
 
         layers = []
 
-        layers.append(
-            Dropout(
-                input_shape=input_shape,
-                parent_block=self,
-            )
-        )
+        # layers.append(
+        #     Dropout(
+        #         input_shape=input_shape,
+        #         parent_block=self,
+        #     )
+        # )
+        # layers.append(
+        #     AveragePool2D(
+        #         input_shape=layers[-1].get_output_shape(),
+        #         parent_block=self,
+        #         args = {pool_args.POOL_SIZE: (layers[-1].get_output_shape()[0]/2, layers[-1].get_output_shape()[1]/2)}
+        #     )
+        # )
+        pool_size = (input_shape[0] / 2, input_shape[1] / 2)
         layers.append(
             AveragePool2D(
-                input_shape=layers[-1].get_output_shape(),
+                input_shape=input_shape,
                 parent_block=self,
+                args={
+                    pool_args.POOL_SIZE: pool_size,
+                    pool_args.STRIDES: pool_size,
+                    pool_args.PADDING: ArgPadding.VALID,
+                },
             )
         )
         layers.append(

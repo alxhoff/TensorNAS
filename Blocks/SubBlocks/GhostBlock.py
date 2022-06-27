@@ -15,7 +15,7 @@ class Block(Block):
     DepthwiseConv has a parameter multiplier for number of output channels to be generated for each input channel
     """
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
         from TensorNAS.Layers.Conv2D.DepthwiseConv2D import Layer as DepthwiseConv2D
 

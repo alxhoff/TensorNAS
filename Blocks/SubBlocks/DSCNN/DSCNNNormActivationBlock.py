@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 class Block(Block):
 
-    MAX_SUB_BLOCKS = 1
+    MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
 

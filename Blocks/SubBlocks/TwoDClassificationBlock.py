@@ -14,7 +14,8 @@ class Block(Block):
     """
 
     DROPOUT_RATE_MAX = 0.2
-    MAX_SUB_BLOCKS = 2
+    MAX_SUB_BLOCKS = 0
+    MIN_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
 
@@ -46,22 +47,7 @@ class Block(Block):
 
         return blocks
 
-    def check_next_layer_type(self, prev_layer_type, next_layer_type):
-        from TensorNAS.Layers import SupportedLayers
-
-        if (
-            prev_layer_type == SupportedLayers.FLATTEN
-            and next_layer_type == self.SubBlocks.FLATTEN
-        ):
-            return False
-        elif (
-            prev_layer_type == SupportedLayers.DROPOUT
-            and next_layer_type == self.SubBlocks.DROPOUT
-        ):
-            return False
-        return True
-
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Flatten import Layer as Flatten
         from TensorNAS.Layers.Dropout import Layer as Dropout
         from TensorNAS.Layers.Dense.HiddenDense import Layer as HiddenDense

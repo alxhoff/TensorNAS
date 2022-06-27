@@ -4,8 +4,8 @@ from enum import Enum, auto
 
 class Block(ClassificationBlockArchitecture):
 
-    MIN_SUB_BLOCKS = 4
-    MAX_SUB_BLOCKS = 4
+    MIN_SUB_BLOCKS = 0
+    MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
 
@@ -36,14 +36,35 @@ class Block(ClassificationBlockArchitecture):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
-        from TensorNAS.Blocks.SubBlocks.DSCNN.DSCNNSeperableDepthwiseConv2DBlock import (
+    def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
+        from TensorNAS.Blocks.SubBlocks.DSCNN.DSCNNMidBlock import (
             Block as DSCNNMidBlock,
         )
 
-        return [
-            DSCNNMidBlock(
-                input_shape=input_shape,
-                parent_block=self,
+        layers = []
+
+        layers.append(DSCNNMidBlock(input_shape=input_shape, parent_block=self))
+
+        for i in range(3):
+            layers.append(
+                DSCNNMidBlock(
+                    input_shape=layers[-1].get_output_shape(), parent_block=self
+                )
             )
-        ]
+
+        return layers
+
+    def generate_sub_block(self, input_shape, layer_type):
+        from TensorNAS.Blocks.SubBlocks.DSCNN.DSCNNMidBlock import (
+            Block as DSCNNMidBlock,
+        )
+
+        if layer_type == self.SubBlocks.DSCNN_SEPERABLE_DEPTHWISE_CONV2D_BLOCK:
+            return [
+                DSCNNMidBlock(
+                    input_shape=input_shape,
+                    parent_block=self,
+                )
+            ]
+
+        return []

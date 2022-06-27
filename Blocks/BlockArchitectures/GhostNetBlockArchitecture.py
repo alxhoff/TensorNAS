@@ -35,7 +35,7 @@ class Block(ClassificationBlockArchitecture):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Blocks.SubBlocks.GhostBlock import Block as GhostBlock
 
         return [GhostBlock(input_shape=input_shape, parent_block=self)]

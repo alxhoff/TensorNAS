@@ -40,7 +40,7 @@ class Block(Block):
 
         return layers
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlock import (
             Block as DenseBlock,
         )

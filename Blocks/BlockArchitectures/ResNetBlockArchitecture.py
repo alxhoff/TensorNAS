@@ -32,7 +32,7 @@ class Block(ClassificationBlockArchitecture):
 
         return [MidBlockArray(input_shape=input_shape, parent_block=self)]
 
-    def generate_random_sub_block(self, input_shape, subblock_type):
+    def generate_sub_block(self, input_shape, subblock_type):
         from TensorNAS.Blocks.SubBlocks.ResNet.ResNetMiddleBlockArray import (
             Block as MidBlockArray,
         )

@@ -335,7 +335,7 @@ def eaSimple(
                         ind.block_architecture.accuracy,
                     )
                 )
-                logger.log(str(ind))
+                logger.log(ind.block_architecture.get_ascii_tree())
                 logger.log("Mutations:")
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
@@ -546,7 +546,7 @@ def eaSimple(
                             ind.block_architecture.accuracy,
                         )
                     )
-                    logger.log(str(ind))
+                    logger.log(ind.block_architecture.get_ascii_tree())
                     logger.log("Mutations:")
                     for mutation in ind.block_architecture.mutations:
                         logger.log(

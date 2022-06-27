@@ -25,7 +25,7 @@ class Block(ClassificationBlockArchitecture):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, subblock_type):
+    def generate_sub_block(self, input_shape, subblock_type):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
             Block as FeatureExtractionBlock,
         )

@@ -6,15 +6,33 @@ from TensorNAS.Core.LayerMutations import layer_mutation
 
 class Layer(Layer):
     def _gen_args(self, input_shape, args=None):
+        from TensorNAS.Core.Layer import ArgActivations, ArgPadding
+
         filter_count = input_shape[-1]
+        strides = (1, 1)
+        dilation_rate = TensorNAS.Core.Layer.gen_2d_dilation()
+        activation = ArgActivations.NONE
+        padding = ArgPadding.SAME
+
+        if args:
+            if self.get_args_enum().FILTERS in args:
+                filter_count = args.get(self.get_args_enum().FILTERS)
+            if self.get_args_enum().PADDING in args:
+                padding = ArgPadding(args.get(self.get_args_enum().PADDING))
+            if self.get_args_enum().ACTIVATION in args:
+                activation = ArgActivations(args.get(self.get_args_enum().ACTIVATION))
+            if self.get_args_enum().DILATION_RATE in args:
+                dilation_rate = args.get(self.get_args_enum().DILATION_RATE)
+            if self.get_args_enum().STRIDES in args:
+                strides = args.get(self.get_args_enum().STRIDES)
 
         return {
             self.get_args_enum().FILTERS: filter_count,
             self.get_args_enum().KERNEL_SIZE: (1, 1),
-            self.get_args_enum().STRIDES: (1, 1),
-            self.get_args_enum().PADDING: TensorNAS.Core.Layer.gen_padding(),
-            self.get_args_enum().DILATION_RATE: TensorNAS.Core.Layer.gen_2d_dilation(),
-            self.get_args_enum().ACTIVATION: TensorNAS.Core.Layer.gen_activation(),
+            self.get_args_enum().PADDING: padding,
+            self.get_args_enum().STRIDES: strides,
+            self.get_args_enum().DILATION_RATE: dilation_rate,
+            self.get_args_enum().ACTIVATION: activation,
         }
 
     @layer_mutation

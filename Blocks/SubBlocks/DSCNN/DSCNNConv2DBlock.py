@@ -14,13 +14,13 @@ class Block(Block):
     def generate_constrained_input_sub_blocks(self, input_shape):
         from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
         from TensorNAS.Layers.Conv2D import Args as conv2d_args
-        from TensorNAS.Core.Layer import ArgRegularizers
-        from TensorNAS.Core.Layer import ArgPadding
+        from TensorNAS.Core.Layer import ArgRegularizers, ArgPadding, ArgActivations
 
         args = {
             conv2d_args.FILTERS: 64,
             conv2d_args.PADDING: ArgPadding.SAME,
             conv2d_args.REGULARIZER: (ArgRegularizers.L2, 1e-4),
+            conv2d_args.ACTIVATION: ArgActivations.NONE,
         }
 
         return [

@@ -24,7 +24,7 @@ class Block(ClassificationBlockArchitecture):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Blocks.SubBlocks.ShuffleNetBlock import (
             Block as ShuffleNetBlock,
         )

@@ -37,7 +37,7 @@ class Block(ClassificationBlockArchitecture):
         )
         return layers
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Blocks.SubBlocks.EffNetBlock import Block as EffNetBlock
 
         return [EffNetBlock(input_shape=input_shape, parent_block=self)]

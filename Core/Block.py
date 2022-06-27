@@ -380,12 +380,12 @@ class BaseBlock(ABC):
     def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
         """
         Different to constrained input and output sub blocks, mid sub blocks are up for mutation and can be modified.
-        This function helps to generate a specific set of blocks originally instead of calling generate_random_sub_block
+        This function helps to generate a specific set of blocks originally instead of calling generate_sub_block
         which returns a random block.
         """
         return []
 
-    def generate_random_sub_block(self, input_shape, subblock_type, args=None):
+    def generate_sub_block(self, input_shape, subblock_type, args=None):
         """This method appends a randomly selected possible sub-block to the classes middle_blocks list, The block type is
         passed in as layer_type which is randomly selected from the provided enum SUB_BLOCK_TYPES which stores the
         possible sub block types. This function is responsible for instantiating each of these sub blocks if required.
@@ -468,7 +468,7 @@ class BaseBlock(ABC):
             )
             for i in range(rng):
                 out_shape = self._get_cur_output_shape()
-                blocks = self.generate_random_sub_block(
+                blocks = self.generate_sub_block(
                     out_shape,
                     self._get_random_sub_block_type(),
                 )
@@ -843,7 +843,7 @@ class Block(BaseBlock):
             input_shape = self.input_shape
 
         new_block_class = self._get_random_subblock_class()
-        new_blocks = self.generate_random_sub_block(input_shape, new_block_class)
+        new_blocks = self.generate_sub_block(input_shape, new_block_class)
 
         if len(new_blocks):
             self.middle_blocks.insert(index, new_blocks[0])

@@ -13,7 +13,7 @@ class Block(Block):
 
         NONE = auto()
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         """
         Fire blocks consist of a pointwise conv layer followed by any number of parallel separable 2d conv Layers.
         This collection of separable conv Layers is known as an expansion block.

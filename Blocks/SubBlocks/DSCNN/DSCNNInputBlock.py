@@ -7,7 +7,7 @@ class Block(Block):
 
         NONE = auto()
 
-    def generate_random_sub_block(self, input_shape, block_type):
+    def generate_constrained_input_sub_blocks(self, input_shape):
         from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
         from TensorNAS.Layers.BatchNormalization import Layer as BatchNormalization
         from TensorNAS.Layers.Activation import Layer as Activation
@@ -31,6 +31,7 @@ class Block(Block):
                     conv2d_args.STRIDES: (2, 2),
                     conv2d_args.REGULARIZER: (ArgRegularizers.L2, 1e-4),
                     conv2d_args.PADDING: ArgPadding.SAME,
+                    conv2d_args.ACTIVATION: ArgActivations.NONE,
                 },
             )
         )

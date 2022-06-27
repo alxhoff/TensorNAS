@@ -39,7 +39,7 @@ class Block(Block):
 
         return blocks
 
-    def generate_random_sub_block(self, input_shape, subblock_type):
+    def generate_sub_block(self, input_shape, subblock_type):
 
         if subblock_type == self.SubBlocks.RESNET_MIDDLE_BLOCK:
             from TensorNAS.Blocks.SubBlocks.ResNet.ResNetMiddleBlock import (

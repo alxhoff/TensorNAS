@@ -41,7 +41,7 @@ class Block(Block):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Dense.HiddenDense import Layer as HiddenDense
         from TensorNAS.Layers.Dense import Args as dense_args
         from TensorNAS.Layers.Pool.GlobalAveragePool2D import (

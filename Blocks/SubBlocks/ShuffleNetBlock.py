@@ -31,7 +31,7 @@ class Block(Block):
             )
         ]
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Conv2D.DepthwiseConv2D import Layer as DepthwiseConv2D
         from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
         from TensorNAS.Layers.Conv2D.GroupedPointwiseConv2D import (

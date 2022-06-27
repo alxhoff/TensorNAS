@@ -27,7 +27,7 @@ class Block(Block):
 
         return blocks
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
         from TensorNAS.Layers.Pool.MaxPool2D import Layer as MaxPool2D
 

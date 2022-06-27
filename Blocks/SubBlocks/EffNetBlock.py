@@ -10,9 +10,6 @@ class Block(Block):
 
         NONE = auto()
 
-    def generate_random_sub_block(self, input_shape, layer_type):
-        return []
-
     def generate_constrained_input_sub_blocks(self, input_shape):
         from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
         from TensorNAS.Layers.Conv2D.DepthwiseConv2D import Layer as DepthwiseConv2D

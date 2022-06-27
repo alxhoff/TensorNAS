@@ -54,7 +54,7 @@ class Block(Block):
 
         return layers
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
 
         if layer_type == self.SubBlocks.FLATTEN:
             from TensorNAS.Layers.Flatten import Layer as Flatten

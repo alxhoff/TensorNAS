@@ -10,7 +10,7 @@ class Block(Block):
 
         SAME_CONV2D = auto()
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
             Block as FeatureExtractionBlock,
         )

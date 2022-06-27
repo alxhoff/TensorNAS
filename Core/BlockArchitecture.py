@@ -142,6 +142,9 @@ class BlockArchitecture(Block):
         try:
             out = self.get_keras_layers(inp)
         except Exception as e:
+            import traceback
+
+            print(traceback.format_exc())
             raise e
 
         if out != None:
@@ -409,6 +412,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             logger=logger,
             verbose=verbose,
         )
+
+        model.summary()
 
         try:
             if test_generator is not None:

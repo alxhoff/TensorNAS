@@ -50,6 +50,10 @@ class Layer(Layer):
         inp = self.inputshape.get()
         pool = self.args[self.get_args_enum().POOL_SIZE]
         stri = self.args[self.get_args_enum().STRIDES]
+
+        if stri is None:
+            stri = pool
+
         pad = self.args[self.get_args_enum().PADDING]
         if pad == ArgPadding.SAME:
             x = same_pad_output_shape(inp[0], pool[0], stri[0])

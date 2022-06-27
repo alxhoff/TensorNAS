@@ -51,10 +51,10 @@ class Layer(
     def _gen_args(self, input_shape, args):
         filter_count = random.randint(1, self.MAX_FILTER_COUNT)
         kernel_size = TensorNAS.Core.Layer.gen_2d_kernel_size(self.MAX_KERNEL_DIMENSION)
-        padding = TensorNAS.Core.Layer.gen_padding()
+        padding = ArgPadding.SAME
         # Since Relu is the standard activation, we will start with Relu and let the EA mutate it
-        activation = ArgActivations.RELU
-        dilation_rate = TensorNAS.Core.Layer.gen_2d_dilation()
+        activation = ArgActivations.NONE
+        dilation_rate = (1, 1)
         initializer = ArgInitializers.GLOROT_UNIFORM
         regularizer = ArgRegularizers.NONE, 0
         strides = (1, 1)

@@ -48,7 +48,7 @@ class Block(Block):
 
         return layers
 
-    def generate_random_sub_block(self, input_shape, layer_type):
+    def generate_sub_block(self, input_shape, layer_type):
         from TensorNAS.Layers.Dense import Args as dense_args
         from TensorNAS.Layers.Activation import Args as activation_args
         from TensorNAS.Core.Layer import ArgActivations
