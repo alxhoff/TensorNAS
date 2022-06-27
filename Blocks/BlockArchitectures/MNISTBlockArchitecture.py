@@ -4,8 +4,8 @@ from enum import Enum, auto
 
 class Block(ClassificationBlockArchitecture):
 
-    MAX_SUB_BLOCKS = 2
-    MIN_SUB_BLOCKS = 1
+    MAX_SUB_BLOCKS = 4
+    MIN_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
 
@@ -25,22 +25,19 @@ class Block(ClassificationBlockArchitecture):
             )
         ]
 
+    def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
+        from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
+            Block as FeatureExtractionBlock,
+        )
+
+        return [FeatureExtractionBlock(input_shape=input_shape, parent_block=self)]
+
     def generate_sub_block(self, input_shape, subblock_type):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
             Block as FeatureExtractionBlock,
         )
-        from TensorNAS.Blocks.SubBlocks.TwoDClassificationBlock import (
-            Block as ClassificationBlock,
-        )
 
         if subblock_type == self.SubBlocks.FEATURE_EXTRACTION_BLOCK:
             return [FeatureExtractionBlock(input_shape=input_shape, parent_block=self)]
-        elif subblock_type == self.SubBlocks.CLASSIFICATION_BLOCK:
-            return [
-                ClassificationBlock(
-                    input_shape=input_shape,
-                    parent_block=self,
-                    class_count=self.class_count,
-                )
-            ]
+
         return []

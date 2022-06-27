@@ -70,7 +70,7 @@ class LatexWriter:
                 width=layer.layer.outputshape.get()[-1],
             )
             return LatexLayer(name, string)
-        if layer.layer_type == SupportedLayers.MAXPOOL2D:
+        if layer.layer_type == SupportedLayers.MAX_POOL2D:
             self.pool_count += 1
             name = "pool{}".format(self.pool_count)
             string = self.mod.to_Pool(
