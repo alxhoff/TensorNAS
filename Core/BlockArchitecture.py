@@ -352,7 +352,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
                     errors = np.mean(np.mean(np.square(td - pred), axis=1))
                     predictions.append(errors)
                 labels = [label for x, label in test_generator]
-                auc = metrics.roc_auc_score(labels, predictions)
+                auc = metrics.roc_auc_score(labels, predictions) * 100
 
             else:
                 raise Exception("Missing training data")
@@ -360,7 +360,9 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             auc = 0
             print("Error evaluating model: {}".format(e))
 
-        return params, auc * 100
+        if verbose:
+            print("Param Count: {}, AUC Acc: {}".format(params, auc))
+        return params, auc
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -443,4 +445,6 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         gc.collect()
 
+        if verbose:
+            print("Param Count: {}, Acc: {}".format(params, accuracy))
         return params, accuracy
