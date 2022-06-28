@@ -1,4 +1,4 @@
-import time
+import time, math
 
 
 def TestEASimple(
@@ -216,8 +216,9 @@ def eaSimple(
         writer.writerow(["Test Name", "Population", "Generations", "Cxpb", "Mutpb"])
         writer.writerow([test_name, pop_size, ngen, cxpb, mutpb])
         writer.writerow(["Gen #0"])
-        raw_fitness_row = []
-        filtered_fitness_row = []
+        raw_pcount_row = ["Param Count"]
+        raw_acc_row = ["Accuracy"]
+        filtered_fitness_row = ["Fitness"]
 
         for i, ind in enumerate(population):
             ind.index = i
@@ -260,8 +261,6 @@ def eaSimple(
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
 
-            raw_fitness_row.append(str(fit))
-
             if filter_function:
                 if filter_function_args:
                     ind.fitness.values = filter_function(fit, filter_function_args)
@@ -270,7 +269,10 @@ def eaSimple(
             else:
                 ind.fitness.values = fit
 
-            filtered_fitness_row.append(str(ind.fitness.values[0]))
+            if fit[0] is not math.inf and fit[1] is not 0:
+                raw_pcount_row.append(fit[0])
+                raw_acc_row.append(fit[1])
+                filtered_fitness_row.append(ind.fitness.values[0])
 
             # determine which optimization param is currently the goal of the individual
             import numpy as np
@@ -323,7 +325,8 @@ def eaSimple(
                     )
                 ]
 
-        writer.writerow(raw_fitness_row)
+        writer.writerow(raw_pcount_row)
+        writer.writerow(raw_acc_row)
         writer.writerow(filtered_fitness_row)
 
         if logger:
@@ -376,8 +379,9 @@ def eaSimple(
         # Begin the generational process
         for gen in range(start_gen + 1, ngen + 1):
 
-            raw_fitness_row = []
-            filtered_fitness_row = []
+            raw_pcount_row = ["Param Count"]
+            raw_acc_row = ["Accuracy"]
+            filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
             set_global(
@@ -526,15 +530,16 @@ def eaSimple(
                 individualrecord.add_gen(population)
 
             for i in population:
-                raw_fitness_row.append(
-                    (
-                        str(i.block_architecture.param_count),
-                        str(i.block_architecture.accuracy),
-                    )
-                )
-                filtered_fitness_row.append(str(i.fitness.values[0]))
+                if (
+                    i.block_architecture.param_count is not math.inf
+                    and i.block_architecture.accuracy is not 0
+                ):
+                    raw_pcount_row.append(i.block_architecture.param_count)
+                    raw_acc_row.append(i.block_architecture.accuracy)
+                    filtered_fitness_row.append(str(i.fitness.values[0]))
 
-            writer.writerow(raw_fitness_row)
+            writer.writerow(raw_pcount_row)
+            writer.writerow(raw_acc_row)
             writer.writerow(filtered_fitness_row)
 
             if logger:
