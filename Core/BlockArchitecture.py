@@ -85,13 +85,14 @@ class BlockArchitecture(Block):
 
     MAX_BATCH_SIZE = 128
 
-    def __init__(self, input_shape, batch_size, optimizer):
+    def __init__(self, input_shape, batch_size, test_batch_size=None, optimizer=None):
         self.param_count = 0
         self.prev_param_count = 0
         self.accuracy = 0
         self.prev_accuracy = 0
         self.mutations = []
         self.batch_size = batch_size
+        self.test_batch_size = test_batch_size
         self.optimization_goal = None
 
         from TensorNAS.Optimizers import GetOptimizer
@@ -309,11 +310,13 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         validation_len=None,
         epochs=1,
         batch_size=1,
+        test_batch_size=1,
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
         test_name=None,
         model_name=None,
         q_aware=False,
+        use_clear_memory=False,
         logger=None,
         verbose=False,
     ):
@@ -366,12 +369,15 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
-    def __init__(self, input_shape, batch_size, optimizer, class_count):
+    def __init__(
+        self, input_shape, batch_size, test_batch_size, optimizer, class_count
+    ):
         self.class_count = class_count
 
         super().__init__(
             input_shape=input_shape,
             batch_size=batch_size,
+            test_batch_size=test_batch_size,
             optimizer=optimizer,
         )
 
@@ -385,11 +391,13 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         validation_len=None,
         epochs=1,
         batch_size=1,
+        test_batch_size=1,
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"],
         test_name=None,
         model_name=None,
         q_aware=False,
+        use_clear_memory=False,
         logger=None,
         verbose=False,
     ):
@@ -419,19 +427,17 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         try:
             if test_generator is not None:
-                callbacks = [ClearMemory()]
-
-                if batch_size > test_len:
-                    tbatch_size = test_len
+                if use_clear_memory:
+                    callbacks = [ClearMemory()]
                 else:
-                    tbatch_size = batch_size
+                    callbacks = []
 
                 accuracy = (
                     model.evaluate(
                         x=test_generator,
-                        batch_size=tbatch_size // 10,
+                        batch_size=test_batch_size,
                         verbose=verbose,
-                        steps=test_len // (tbatch_size // 10),
+                        steps=test_len // test_batch_size,
                         callbacks=callbacks,
                     )[1]
                     * 100

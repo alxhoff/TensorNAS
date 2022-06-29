@@ -68,13 +68,13 @@ def _GetFloat(parent, item):
     return float(parent[item])
 
 
-def _GetInt(parent, item):
+def _GetInt(parent, item, default=0):
 
     if not parent:
         return None
 
     if item not in parent:
-        return 0
+        return default
 
     return int(parent[item])
 
@@ -540,7 +540,12 @@ def GetTFStopperMode(config):
 
 def GetTFBatchSize(config):
 
-    return int(_GetTensorflow(config)["BatchSize"])
+    return _GetInt(_GetTensorflow(config), "BatchSize")
+
+
+def GetTFTestBatchSize(config):
+
+    return _GetInt(_GetTensorflow(config), "TestBatchSize")
 
 
 def GetTFEpochs(config):
@@ -551,6 +556,11 @@ def GetTFEpochs(config):
 def GetTFQuantizationAware(config):
 
     return _GetTensorflow(config).getboolean("QuantizationAware")
+
+
+def GetTFUseClearMemory(config):
+
+    return _GetBool(_GetTensorflow(config), "UseClearMemory")
 
 
 def _GetLRScheduler(config):

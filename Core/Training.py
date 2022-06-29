@@ -1,14 +1,13 @@
 def lrscheduler_decay():
     from Demos import get_global
+    from tensorflow.keras.callbacks import LearningRateScheduler
 
     def lr_schedule(epoch):
         lrate = get_global("initial_learning_rate") * (
             get_global("decay_per_epoch") ** epoch
         )
-        print("Learning rate = {}".format(lrate))
+        print("Learning rate = %f" % lrate)
         return lrate
-
-    from tensorflow.keras.callbacks import LearningRateScheduler
 
     return LearningRateScheduler(lr_schedule)
 
