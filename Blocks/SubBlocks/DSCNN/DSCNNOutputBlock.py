@@ -11,12 +11,7 @@ class Block(Block):
         DEPTHWISE_CONV2D = auto()
         BATCH_NORMALIZATION_AND_ACTIVATION = auto()
 
-    def __init__(self, input_shape, parent_block, class_count):
-        self.class_count = class_count
-
-        super().__init__(input_shape, parent_block)
-
-    def generate_constrained_output_sub_blocks(self, input_shape):
+    def generate_constrained_output_sub_blocks(self, input_shape, args):
         from TensorNAS.Layers.Dropout import Layer as Dropout
         from TensorNAS.Layers.Pool.AveragePooling2D import Layer as AveragePool2D
         from TensorNAS.Layers.Flatten import Layer as Flatten
@@ -26,6 +21,8 @@ class Block(Block):
         from TensorNAS.Core.Layer import ArgActivations, ArgPadding
 
         layers = []
+
+        pool_size = args.get(pool_args.POOL_SIZE, (1, 1))
 
         # layers.append(
         #     Dropout(
@@ -40,7 +37,6 @@ class Block(Block):
         #         args = {pool_args.POOL_SIZE: (layers[-1].get_output_shape()[0]/2, layers[-1].get_output_shape()[1]/2)}
         #     )
         # )
-        pool_size = (input_shape[0] / 2, input_shape[1] / 2)
         layers.append(
             AveragePool2D(
                 input_shape=input_shape,
@@ -63,7 +59,7 @@ class Block(Block):
                 input_shape=layers[-1].get_output_shape(),
                 parent_block=self,
                 args={
-                    dense_args.UNITS: self.class_count,
+                    dense_args.UNITS: self.get_block_architecture().class_count,
                     dense_args.ACTIVATION: ArgActivations.SOFTMAX,
                 },
             )

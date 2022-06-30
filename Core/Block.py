@@ -85,8 +85,8 @@ def add_mutation_table(func):
     Function decorator used to decorate the block init function to create a PER-CLASS mutation table
     """
 
-    def wrapper(self, input_shape, parent_block, args=None):
-        func(self, input_shape, parent_block, args)
+    def wrapper(self, input_shape, parent_block, args=None, **kwargs):
+        func(self, input_shape, parent_block, args, **kwargs)
         if not hasattr(self.__class__, "mutation_table"):
             setattr(self.__class__, "mutation_table", MutationTable(self))
 
@@ -137,7 +137,7 @@ class BaseBlock(ABC):
         NONE = auto()
 
     @add_mutation_table
-    def __init__(self, input_shape, parent_block, args=None):
+    def __init__(self, input_shape, parent_block, args=None, **kwargs):
         """
         The init sequence of the Block class should always be called at the end of a subclass's __init__, via
         super().__init__ if a subclass is to implement its own __init__ method.

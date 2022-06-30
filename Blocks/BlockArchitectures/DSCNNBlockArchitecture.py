@@ -29,10 +29,17 @@ class Block(ClassificationBlockArchitecture):
         from TensorNAS.Blocks.SubBlocks.DSCNN.DSCNNOutputBlock import (
             Block as DSCNNOutputBlock,
         )
+        from TensorNAS.Layers.Pool import Args as pool_args
+
+        input_shape = self.get_input_shape()
+        args = {pool_args.POOL_SIZE: (int(input_shape[0] / 2), int(input_shape[1] / 2))}
 
         return [
             DSCNNOutputBlock(
-                input_shape=input_shape, parent_block=self, class_count=self.class_count
+                input_shape=input_shape,
+                parent_block=self,
+                class_count=self.class_count,
+                args=args,
             )
         ]
 
