@@ -14,14 +14,18 @@ def lrscheduler_decay():
 
 def lrscheduler_step_function():
     def lr_schedule(epoch):
+        lr = 0.00001
         if epoch < 12:
-            return 0.0005
+            lr = 0.0005
         elif epoch < 24:
-            return 0.0001
+            lr = 0.0001
         elif epoch < 36:
-            return 0.00002
+            lr = 0.00002
         else:
-            return 0.00001
+            lr = 0.00001
+
+        print("Learning rate = %f" % lr)
+        return lr
 
     from tensorflow.keras.callbacks import LearningRateScheduler
 
