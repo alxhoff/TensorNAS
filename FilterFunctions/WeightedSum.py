@@ -14,4 +14,4 @@ def WeightedSum(fitnesses, normalization_vector):
 
     import numpy as np
 
-    return np.divide(fitnesses, normalization_vector)
+    return np.sum(np.divide(fitnesses, normalization_vector))
