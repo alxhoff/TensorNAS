@@ -220,16 +220,27 @@ class BaseBlock(ABC):
         self,
         mutation_goal_index=0,
         mutate_with_reinforcement_learning=True,
+        goal_attainment=True,
         verbose=False,
+        **kwargs
     ):
         if self.mutation_funcs:
             if mutate_with_reinforcement_learning:
-                weights = [
-                    self.mutation_table.get_mutation_probability(
-                        function_name=func, index=mutation_goal_index
-                    )
-                    for func in self.mutation_funcs
-                ]
+                if goal_attainment:
+                    weights = [
+                        self.mutation_table.get_mutation_probability(
+                            function_name=func, index=mutation_goal_index
+                        )
+                        for func in self.mutation_funcs
+                    ]
+                else:
+                    # Just use a single mutation table for all mutations, ie. no goals
+                    weights = [
+                        self.mutation_table.get_mutation_probability(
+                            function_name=func, index=0
+                        )
+                        for func in self.mutation_funcs
+                    ]
                 try:
                     func_name = random.choices(self.mutation_funcs, weights=weights)[0]
                 except Exception as e:
@@ -246,6 +257,7 @@ class BaseBlock(ABC):
         self,
         mutation_goal_index=0,
         mutate_with_reinforcement_learning=True,
+        goal_attainment=True,
         verbose=False,
     ):
         """
@@ -257,6 +269,7 @@ class BaseBlock(ABC):
             return self._invoke_random_mutation_function(
                 mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
                 mutation_goal_index=mutation_goal_index,
+                goal_attainment=goal_attainment,
                 verbose=verbose,
             )
 
@@ -266,6 +279,7 @@ class BaseBlock(ABC):
         mutation_method="EQUALLY",
         mutation_probability=0.0,
         mutate_with_reinforcement_learning=True,
+        goal_attainment=True,
         verbose=False,
     ):
         """Similar to NetworkLayer objects, block mutation is a randomized call to any methods prexied with `_mutate`,
@@ -286,7 +300,9 @@ class BaseBlock(ABC):
         if mutation_method == "EQUALLY":
             block = self._get_random_sub_block_inc_self()
             ret = block.mutate_self(
-                mutation_goal_index=mutation_goal_index, verbose=verbose
+                mutation_goal_index=mutation_goal_index,
+                goal_attainment=goal_attainment,
+                verbose=verbose,
             )
         elif mutation_method == "PROBABILITY":
             prob = random.random()
@@ -305,6 +321,7 @@ class BaseBlock(ABC):
                         mutation_method=mutation_method,
                         mutation_probability=mutation_probability,
                         mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
+                        goal_attainment=goal_attainment,
                         verbose=verbose,
                     )
                 # return format of all mutate functions, except most bottom level mutations, should be
@@ -314,6 +331,7 @@ class BaseBlock(ABC):
                 ret = self.mutate_self(
                     mutation_goal_index=mutation_goal_index,
                     mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
+                    goal_attainment=goal_attainment,
                     verbose=verbose,
                 )
         elif mutation_method == "ALL":

@@ -117,7 +117,7 @@ class Layer(BaseBlock):
         print(str(self))
 
     def mutate(self, verbose=False, **kwargs):
-        return self._invoke_random_mutation_function()
+        return self._invoke_random_mutation_function(verbose=verbose, **kwargs)
 
     @abstractmethod
     def _gen_args(self, input_shape, args):

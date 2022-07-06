@@ -107,6 +107,7 @@ class BlockArchitecture(Block):
         mutation_method=True,
         mutation_probability=0.0,
         mutate_with_reinforcement_learning=True,
+        goal_attainment=True,
         verbose=False,
     ):
 
@@ -119,6 +120,7 @@ class BlockArchitecture(Block):
             mutation_method=mutation_method,
             mutation_probability=mutation_probability,
             mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
+            goal_attainment=goal_attainment,
             verbose=verbose,
         )
 
@@ -409,6 +411,9 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             accuracy = 0
             return params, accuracy
 
+        if verbose:
+            model.summary()
+
         model, params = self.train_model(
             model=model,
             train_generator=train_generator,
@@ -422,8 +427,6 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             logger=logger,
             verbose=verbose,
         )
-
-        model.summary()
 
         try:
             if test_generator is not None:
