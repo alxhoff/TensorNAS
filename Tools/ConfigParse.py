@@ -79,12 +79,17 @@ def _GetInt(parent, item, default=0):
     return int(parent[item])
 
 
-def _GetBool(parent, item):
+def _GetBool(parent, item, default=False):
 
     if not parent:
-        return None
+        return default
 
-    return parent.getboolean(item)
+    ret = parent.getboolean(item)
+
+    if ret is None:
+        return default
+
+    return ret
 
 
 def _GetStr(parent, item):
@@ -360,6 +365,11 @@ def GetFilterFunction(config):
     func = getattr(module, _GetFilters(config)["FilterFunction"])
 
     return func
+
+
+def GetUseGoalAttainment(config):
+
+    return _GetBool(_GetFilters(config), "UseGoalAttainment", True)
 
 
 def _GetFilterFunctionModule(config):
