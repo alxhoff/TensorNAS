@@ -276,7 +276,7 @@ class BlockArchitecture(Block):
                     vbatch_size = batch_size
                 model.fit(
                     x=train_generator,
-                    batch_size=1,
+                    batch_size=batch_size,
                     epochs=epochs,
                     steps_per_epoch=train_len // batch_size,
                     callbacks=callbacks,
@@ -290,7 +290,10 @@ class BlockArchitecture(Block):
                 raise Exception("Missing training data")
 
         except Exception as e:
+            import traceback
+
             print("Error fitting model, {}".format(e))
+            print(traceback.format_exc())
             return model, np.inf
 
         params = self.save_model(
