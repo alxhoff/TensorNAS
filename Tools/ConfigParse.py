@@ -140,6 +140,17 @@ def GetDatasetModule(config):
     return _GetGeneral(config)["DatasetModule"]
 
 
+def GetUseDatasetDirectory(config):
+
+    try:
+        return _GetStr(_GetGeneral(config), "DatasetDirectory")
+    except Exception as e:
+        return False
+
+def GetDatasetDirectory(config):
+
+    return _GetStr(_GetGeneral(config), "DatasetDirectory")
+
 def GetLocalDataset(config):
 
     ret = _GetGeneral(config).getboolean("LocalDataset")
