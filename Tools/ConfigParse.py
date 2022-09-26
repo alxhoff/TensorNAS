@@ -1,3 +1,6 @@
+from re import X
+
+
 def GetConfigFile(config_filename=None, directory=None):
     import os, sys
 
@@ -324,10 +327,19 @@ def _GetNormalizationAccVectorEnd(config):
 
     return float(_GetGoals(config)["NormalizationAccVectorEnd"])
 
+def _GetNormalizationFlopsVectorStart(config):
+
+    return float(_GetGoals(config)["NormalizationFlopsVectorStart"])
+
+def _GetNormalizationFlopsVectorEnd(config):
+
+    return float(_GetGoals(config)["NormalizationFlopsVectorEnd"])
+
 
 def _GetNormalizationVectorSteps(config):
 
     return int(_GetGoals(config)["NormalizationVectorSteps"])
+
 
 
 def _GetGoalVector(config):
@@ -335,6 +347,7 @@ def _GetGoalVector(config):
     import ast
 
     return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
+
 
 
 def _GetGoalParamVectorStart(config):
@@ -356,6 +369,14 @@ def _GetGoalAccVectorEnd(config):
 
     return int(_GetGoals(config)["GoalAccVectorEnd"])
 
+def _GetGoalFlopsVectorSrat(config):
+
+    return int(_GetGoals(config)["GoalFlopsVectorStart"])
+
+def _GetGoalFlopsVectorEnd(config):
+
+    return int(_GetGoals(config)["GoalFlopsVectorEnd"])
+
 
 def _GetGoalVectorSteps(config):
 
@@ -368,6 +389,11 @@ def _GetNormalizationVector(config):
 
     return [n for n in ast.literal_eval(_GetGoals(config)["NormalizationVector"])]
 
+def _GetActivationVector(config):
+
+    import ast
+
+    return [n for n in ast.literal_eval(_GetGoals(config)["ActivationVector"])]
 
 def GetFilterFunction(config):
     import importlib
@@ -435,41 +461,46 @@ def _GenVector(start, stop, steps):
         ]
 
 
-def _GenVariableVectors(p1_start, p1_stop, p2_start, p2_stop, steps):
+def _GenVariableVectors(p1_start, p1_stop, p2_start, p2_stop, p3_start, p3_stop, steps):
 
     v1 = _GenVector(p1_start, p1_stop, steps)
     v2 = _GenVector(p2_start, p2_stop, steps)
+    v3 = _GenVector(p3_start, p3_stop, steps)
 
-    return list(zip(v1, v2))
+    return list(zip(v1, v2, v3))
 
 
 def _GenVectorsVariableGoal(
-    g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
+    g_param_start, g_param_stop, g_acc_start, g_acc_stop, g_flops_start, g_flops_stop, steps, n1, n2, n3, config
 ):
 
     goal_vectors = _GenVariableVectors(
-        g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps
+        g_param_start, g_param_stop, g_acc_start, g_acc_stop, g_flops_start, g_flops_stop, steps
     )
 
-    normalization_vectors = [(n1, n2) for _ in range(len(goal_vectors))]
+    activation_vector =_GetActivationVector(config)
 
-    return goal_vectors, normalization_vectors
+    normalization_vectors = [(n1, n2, n3) for _ in range(len(goal_vectors))]
+
+    return goal_vectors, normalization_vectors, activation_vector
 
 
-def _GenVectorsVariableNormilization(
-    n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
+def _GenVectorsVariableNormilization( # i need to updae the function for acticvation function
+    n_param_start, n_param_stop, n_acc_start, n_acc_stop, n_flops_start, n_flops_stop, steps, g1, g2, g3, config
 ):
 
     normalization_vectors = _GenVariableVectors(
-        n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps
+        n_param_start, n_param_stop, n_acc_start, n_acc_stop, n_flops_start, n_flops_stop, steps
     )
 
-    goal_vectors = [(g1, g2) for _ in range(len(normalization_vectors))]
+    goal_vectors = [(g1, g2, g3) for _ in range(len(normalization_vectors))]
 
-    return goal_vectors, normalization_vectors
+    activation_vector =_GetActivationVector(config)
+
+    return goal_vectors, normalization_vectors, activation_vector
 
 
-def GetFilterFunctionArgs(config):
+def GetFilterFunctionArgs(config):# here i should add the activation vector choice for the parameter we need to optimiz for such this  [1,0,1]
 
     if _GetVariableGoal(config):
         # Goal vector varies, normilization vector is static
@@ -477,20 +508,24 @@ def GetFilterFunctionArgs(config):
         g_param_stop = _GetGoalParamVectorEnd(config)
         g_acc_start = _GetGoalAccVectorStart(config)
         g_acc_stop = _GetGoalAccVectorEnd(config)
+        g_flops_start = _GetGoalFlopsVectorSrat(config)
+        g_flops_end = _GetGoalFlopsVectorEnd(config)
         steps = _GetGoalVectorSteps(config)
-        n1, n2 = _GetNormalizationVector(config)
+        n1, n2, n3 = _GetNormalizationVector(config)
         return _GenVectorsVariableGoal(
-            g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
+            g_param_start, g_param_stop, g_acc_start, g_acc_stop, g_flops_start, g_flops_end, steps, n1, n2, n3, config
         )
     else:
         n_param_start = _GetNormalizationParamVectorStart(config)
         n_param_stop = _GetNormalizationParamVectorEnd(config)
         n_acc_start = _GetNormalizationAccVectorStart(config)
         n_acc_stop = _GetNormalizationAccVectorEnd(config)
+        n_flops_start = _GetNormalizationFlopsVectorStart(config)
+        n_flops_end = _GetNormalizationFlopsVectorEnd(config)
         steps = _GetNormalizationVectorSteps(config)
-        g1, g2 = _GetGoalVector(config)
+        g1, g2, g3 = _GetGoalVector(config)
         return _GenVectorsVariableNormilization(
-            n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
+            n_param_start, n_param_stop, n_acc_start, n_acc_stop, n_flops_start, n_flops_end, steps, g1, g2, g3, config
         )
 
 

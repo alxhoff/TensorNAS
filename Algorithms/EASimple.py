@@ -1,3 +1,4 @@
+from curses import raw
 import time, math
 
 
@@ -6,7 +7,7 @@ def TestEASimple(
     mutpb,
     pop_size,
     gen_count,
-    evaluate_individual,
+    evaluate_individual, #return param and acc and i should add the flops 
     crossover_individual,
     mutate_individual,
     toolbox,
@@ -218,6 +219,7 @@ def eaSimple(
         writer.writerow(["Gen #0"])
         raw_pcount_row = ["Param Count"]
         raw_acc_row = ["Accuracy"]
+        raw_flops_row = ['Flops']
         filtered_fitness_row = ["Fitness"]
 
         for i, ind in enumerate(population):
@@ -254,16 +256,18 @@ def eaSimple(
                 else:
                     ret = toolbox.evaluate(ind, None, None, logger)
                 fitnesses.append(ret)
-
+        
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            ind.block_architecture.param_count = fit[-2]
-            ind.block_architecture.accuracy = fit[-1]
+            ind.block_architecture.param_count = fit[-3]
+            ind.block_architecture.accuracy = fit[-2]
+            ind.block_architecture.flops = fit[-1] #i added the flops 
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
+            #activation_vector = [1,1,1]
 
             if filter_function:
                 if filter_function_args:
-                    ind.fitness.values = filter_function(fit, filter_function_args)
+                    ind.fitness.values , activation_vector = filter_function(fit, filter_function_args)
                 else:
                     ind.fitness.values = filter_function(fit)
             else:
@@ -272,6 +276,7 @@ def eaSimple(
             if fit[0] is not math.inf and fit[1] is not 0:
                 raw_pcount_row.append(fit[0])
                 raw_acc_row.append(fit[1])
+                raw_flops_row.append(fit[2])
                 filtered_fitness_row.append(ind.fitness.values[0])
 
             # determine which optimization param is currently the goal of the individual
@@ -299,22 +304,38 @@ def eaSimple(
                 (ind.block_architecture.param_count, ind.block_architecture.accuracy)
             )
             if above:
-                if ind.block_architecture.param_count - goal_vector[0] <= 0:
-                    ind.block_architecture.optimization_goal = (
-                        OptimizationGoal.ACCURACY_UP
-                    )
-                else:
-                    ind.block_architecture.optimization_goal = (
+                if activation_vector[0] == 1:
+
+                    if ind.block_architecture.param_count - goal_vector[0] <= 0:
+                        ind.block_architecture.optimization_goal = (
+                            OptimizationGoal.ACCURACY_UP
+                            )
+                    elif activation_vector[1] == 1:
+                     ind.block_architecture.optimization_goal = (
                         OptimizationGoal.PARAMETERS_DOWN
                     )
+                    elif activation_vector[2] == 1:
+                        ind.block_architecture.optimization_goal = (
+                            OptimizationGoal.FLOPS_DOWN )       
+                elif activation_vector[1] == 1:
+                     ind.block_architecture.optimization_goal = (
+                        OptimizationGoal.PARAMETERS_DOWN
+                    )
+                elif activation_vector[2] == 1:
+                    ind.block_architecture.optimization_goal = (
+                        OptimizationGoal.FLOPS_DOWN )
+
             else:
-                ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
+                if activation_vector[0] == 1:
+                    ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
+                        ind.block_architecture.flops
+
                     )
                 )
             else:
@@ -322,29 +343,33 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
+                        ind.block_architecture.flops
                     )
                 ]
 
         writer.writerow(raw_pcount_row)
         writer.writerow(raw_acc_row)
+        writer.writerow(raw_flops_row)
         writer.writerow(filtered_fitness_row)
 
         if logger:
             for x, ind in enumerate(population):
                 logger.log(
-                    "####\nInd #{}, params:{}, acc:{}%".format(
+                    "####\nInd #{}, params:{}, acc:{}%, flops:{}".format(
                         x,
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
+                        ind.block_architecture.flops
                     )
                 )
                 logger.log("Mutations:")
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
-                        "{} param diff: {} acc diff: {}".format(
+                        "{} param diff: {} acc diff: {}, flops diff{}".format(
                             mutation.mutation_operation,
                             mutation.param_diff,
                             mutation.accuracy_diff,
+                            mutation.flops_diff
                         )
                     )
                 logger.log("####")
@@ -380,6 +405,7 @@ def eaSimple(
 
             raw_pcount_row = ["Param Count"]
             raw_acc_row = ["Accuracy"]
+            raw_flops_row = ['Flops']
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
@@ -471,16 +497,18 @@ def eaSimple(
 
                 if filter_function:
                     if filter_function_args:
-                        ind.fitness.values = filter_function(fit, filter_function_args)
+                        ind.fitness.values, temp_activation_vec = filter_function(fit, filter_function_args)
                     else:
                         ind.fitness.values = filter_function(fit)
 
                 ind.block_architecture.prev_param_count = (
                     ind.block_architecture.param_count
                 )
-                ind.block_architecture.param_count = fit[-2]
+                ind.block_architecture.param_count = fit[-3]
                 ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
-                ind.block_architecture.accuracy = fit[-1]
+                ind.block_architecture.accuracy = fit[-2]
+                ind.block_architecture.prev_flops = ind.block_architecture.flops
+                ind.block_architecture.flops = fit[-1]
 
                 acc_diff = (
                     ind.block_architecture.accuracy
@@ -491,12 +519,15 @@ def eaSimple(
                     - ind.block_architecture.prev_param_count
                 )
 
+                flop_diff = (ind.block_architecture.flops - ind.block_architecture.prev_flops)
+
                 for i in reversed(ind.block_architecture.mutations):
                     if i.pending == False:
                         break
 
                     i.accuracy_diff = acc_diff
                     i.param_diff = param_count_diff
+                    i.flops_diff = flop_diff
                     i.propogate_mutation_results()
 
                 if hasattr(ind, "updates"):
@@ -504,6 +535,7 @@ def eaSimple(
                         (
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
+                            ind.block_architecture.flops,
                             ind.fitness.values,
                         )
                     )
@@ -512,6 +544,7 @@ def eaSimple(
                         (
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
+                            ind.block_architecture.flops,
                             ind.fitness.values,
                         )
                     ]
@@ -535,28 +568,33 @@ def eaSimple(
                 ):
                     raw_pcount_row.append(i.block_architecture.param_count)
                     raw_acc_row.append(i.block_architecture.accuracy)
+                    raw_flops_row.append(i.block_architecture.flops)
                     filtered_fitness_row.append(str(i.fitness.values[0]))
 
             writer.writerow(raw_pcount_row)
             writer.writerow(raw_acc_row)
+            writer.writerow(raw_flops_row)
             writer.writerow(filtered_fitness_row)
 
             if logger:
                 for x, ind in enumerate(population):
                     logger.log(
-                        "####\nInd #{}, params:{}, acc:{}%".format(
+                        "####\nInd #{}, params:{}, acc:{}%, flops:{}".format(
                             x,
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
+                            ind.block_architecture.flops
                         )
                     )
                     logger.log("Mutations:")
                     for mutation in ind.block_architecture.mutations:
                         logger.log(
-                            "{} param diff: {} acc diff: {}".format(
+                            "{} param diff: {} acc diff: {}, flops diff:{}".format(
                                 mutation.mutation_function,
                                 mutation.param_diff,
                                 mutation.accuracy_diff,
+                                mutation.flops_diff
+
                             )
                         )
                     logger.log("####")

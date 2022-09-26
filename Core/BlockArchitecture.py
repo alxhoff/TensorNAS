@@ -8,6 +8,8 @@ from TensorNAS.Core.Block import Block
 from TensorNAS.Core.LayerMutations import layer_mutation
 from tensorflow.keras import backend as k
 from tensorflow.keras.callbacks import Callback
+from TensorNAS.Core import (count_flops)
+from tensorflow.python.keras.engine.functional import Functional
 
 
 class ClearMemory(Callback):
@@ -21,10 +23,11 @@ from Demos import get_global
 from enum import Enum, auto
 
 
-class OptimizationGoal(Enum):
+class OptimizationGoal(Enum):   # added number of flops as optimization goal
 
     ACCURACY_UP = auto()
     PARAMETERS_DOWN = auto()
+    FLOPS_DOWN = auto()
 
 
 class Mutation:
@@ -33,6 +36,7 @@ class Mutation:
         mutation_table_references,
         accuracy_diff=None,
         param_diff=None,
+        flops_diff=None,
         mutation_function=None,
         mutation_note=None,
     ):
@@ -48,6 +52,7 @@ class Mutation:
         self.mutation_note = mutation_note
         self.accuracy_diff = accuracy_diff
         self.param_diff = param_diff
+        self.flops_diff= flops_diff
 
     def _update_q(self, delta, q_old):
 
@@ -67,10 +72,12 @@ class Mutation:
             normalization_vector = get_global("filter_function_args")[1][0]
             n_param_count = -self.param_diff / float(normalization_vector[0])
             n_acc = self.accuracy_diff / float(normalization_vector[1])
+            n_flops = self.flops_diff / float(normalization_vector[2])
 
             # Update
             ref[0] = self._update_q(n_param_count, ref[0])
             ref[1] = self._update_q(n_acc, ref[1])
+            ref[2] = self._update_q(n_flops, ref[2])
 
         self.pending = False
 
@@ -90,6 +97,8 @@ class BlockArchitecture(Block):
         self.prev_param_count = 0
         self.accuracy = 0
         self.prev_accuracy = 0
+        self.flops = 0
+        self.prev_flops = 0
         self.mutations = []
         self.batch_size = batch_size
         self.test_batch_size = test_batch_size
@@ -112,8 +121,10 @@ class BlockArchitecture(Block):
     ):
 
         goal_index = 0
-        if self.optimization_goal == OptimizationGoal.ACCURACY_UP:
+        if self.optimization_goal == OptimizationGoal.ACCURACY_UP:   # changed the way we choose our optimization goal by adding the number of flops
             goal_index = 1
+        elif self.optimization_goal == OptimizationGoal.FLOPS_DOWN:
+            goal_index = 2
 
         return super().mutate(
             mutation_goal_index=goal_index,
@@ -300,8 +311,19 @@ class BlockArchitecture(Block):
             model=model, test_name=test_name, model_name=model_name, logger=logger
         )
 
+        #i start modefing the code here
+        from model_profiler import model_profiler
+
+        Batch_size = 128
+        units = ['GPU IDs', 'BFLOPs', 'GB', 'Million', 'MB']
+        profile = model_profiler(model, Batch_size)
+                
+        flops=count_flops(units[1],model, Batch_size)*1000000
+        print(profile)
+        # also i need to add function to evaluate the mode Flops
+
         gc.collect()
-        return model, params
+        return model, params, flops # here we should add multiple objectives for the return 
 
 
 class AreaUnderCurveBlockArchitecture(BlockArchitecture):
@@ -333,7 +355,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             accuracy = 0
             return params, accuracy
 
-        model, params = self.train_model(
+        model, params, flops = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -362,6 +384,8 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
                 labels = [label for x, label in test_generator]
                 auc = metrics.roc_auc_score(labels, predictions) * 100
 
+                
+
             else:
                 raise Exception("Missing training data")
         except Exception as e:
@@ -369,8 +393,8 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             print("Error evaluating model: {}".format(e))
 
         if verbose:
-            print("Param Count: {}, AUC Acc: {}".format(params, auc))
-        return params, auc
+            print("Param Count: {}, Acc: {}, flops: {}".format(params, accuracy, flops))
+        return params, auc, flops # here we should add multiple objectives for the return 
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -417,7 +441,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         if verbose:
             model.summary()
 
-        model, params = self.train_model(
+        model, params, flops = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -448,6 +472,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                     )[1]
                     * 100
                 )
+
+                
             else:
                 raise Exception("Missing training data")
 
@@ -458,5 +484,5 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         gc.collect()
 
         if verbose:
-            print("Param Count: {}, Acc: {}".format(params, accuracy))
-        return params, accuracy
+            print("Param Count: {}, Acc: {}, flops: {}".format(params, accuracy, flops))
+        return params, accuracy, flops # here we should add multiple objectives for the return 
