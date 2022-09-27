@@ -61,6 +61,19 @@ def count_conv2d(layers, log = False):
     return MACperConv * numshifts * 2 + ADD
 
 
+@multiply
+def mem_for_storing_weights(model):
+    '''Return mnemory required to store model parameters in bytes'''
+    if isinstance(model, list):
+        mem_req = 0
+        for l in model:
+            mem_req += l.count_params() * 4
+    else:
+        mem_req = model.count_params() * 4
+    return mem_req
+
+
+layer_flops = []
 
 @multiply
 def count_flops(model, log = False):

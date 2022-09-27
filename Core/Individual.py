@@ -51,7 +51,7 @@ class TensorNASIndividual:
         logger=None,
         verbose=False,
     ):
-        param_count, accuracy, flops = self.block_architecture.evaluate(
+        param_count, accuracy, flops, storage = self.block_architecture.evaluate(
             train_generator=train_generator,
             train_len=train_len,
             test_generator=test_generator,
@@ -70,7 +70,7 @@ class TensorNASIndividual:
             logger=logger,
             verbose=verbose,
         )
-        return param_count, accuracy, flops
+        return param_count, accuracy, flops, storage
 
     def print(self):
         self.block_architecture.print()

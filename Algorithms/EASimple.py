@@ -220,6 +220,7 @@ def eaSimple(
         raw_pcount_row = ["Param Count"]
         raw_acc_row = ["Accuracy"]
         raw_flops_row = ['Flops']
+        raw_storage_row = ['Storage']
         filtered_fitness_row = ["Fitness"]
 
         for i, ind in enumerate(population):
@@ -258,9 +259,10 @@ def eaSimple(
                 fitnesses.append(ret)
         
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            ind.block_architecture.param_count = fit[-3]
-            ind.block_architecture.accuracy = fit[-2]
-            ind.block_architecture.flops = fit[-1] #i added the flops 
+            ind.block_architecture.param_count = fit[-4]
+            ind.block_architecture.accuracy = fit[-3]
+            ind.block_architecture.flops = fit[-2]
+            ind.block_architecture.storage = fit[-1] #i added the flops 
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
             #activation_vector = [1,1,1]
@@ -277,6 +279,7 @@ def eaSimple(
                 raw_pcount_row.append(fit[0])
                 raw_acc_row.append(fit[1])
                 raw_flops_row.append(fit[2])
+                raw_storage_row.append(fit[3])
                 filtered_fitness_row.append(ind.fitness.values[0])
 
             # determine which optimization param is currently the goal of the individual
@@ -316,7 +319,11 @@ def eaSimple(
                     )
                     elif activation_vector[2] == 1:
                         ind.block_architecture.optimization_goal = (
-                            OptimizationGoal.FLOPS_DOWN )       
+                            OptimizationGoal.FLOPS_DOWN )     
+                    elif activation_vector[3] == 1:
+                        ind.block_architecture.optimization_goal = (
+                            OptimizationGoal.STORAGE_DOWN )
+
                 elif activation_vector[1] == 1:
                      ind.block_architecture.optimization_goal = (
                         OptimizationGoal.PARAMETERS_DOWN
@@ -324,6 +331,9 @@ def eaSimple(
                 elif activation_vector[2] == 1:
                     ind.block_architecture.optimization_goal = (
                         OptimizationGoal.FLOPS_DOWN )
+                elif activation_vector[3] == 1:
+                        ind.block_architecture.optimization_goal = (
+                            OptimizationGoal.STORAGE_DOWN )
 
             else:
                 if activation_vector[0] == 1:
@@ -334,7 +344,8 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.block_architecture.flops
+                        ind.block_architecture.flops,
+                        ind.block_architecture.storage
 
                     )
                 )
@@ -343,23 +354,26 @@ def eaSimple(
                     (
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.block_architecture.flops
+                        ind.block_architecture.flops,
+                        ind.block_architecture.storage
                     )
                 ]
 
         writer.writerow(raw_pcount_row)
         writer.writerow(raw_acc_row)
         writer.writerow(raw_flops_row)
+        writer.writerow(raw_storage_row)
         writer.writerow(filtered_fitness_row)
 
         if logger:
             for x, ind in enumerate(population):
                 logger.log(
-                    "####\nInd #{}, params:{}, acc:{}%, flops:{}".format(
+                    "####\nInd #{}, params:{}, acc:{}%, flops:{}, storage:{}".format(
                         x,
                         ind.block_architecture.param_count,
                         ind.block_architecture.accuracy,
-                        ind.block_architecture.flops
+                        ind.block_architecture.flops,
+                        ind.block_architecture.storage
                     )
                 )
                 logger.log("Mutations:")
@@ -369,7 +383,8 @@ def eaSimple(
                             mutation.mutation_operation,
                             mutation.param_diff,
                             mutation.accuracy_diff,
-                            mutation.flops_diff
+                            mutation.flops_diff,
+                            mutation.storage_diff
                         )
                     )
                 logger.log("####")
@@ -406,6 +421,7 @@ def eaSimple(
             raw_pcount_row = ["Param Count"]
             raw_acc_row = ["Accuracy"]
             raw_flops_row = ['Flops']
+            raw_storage_row = ['Storage']
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
@@ -504,11 +520,13 @@ def eaSimple(
                 ind.block_architecture.prev_param_count = (
                     ind.block_architecture.param_count
                 )
-                ind.block_architecture.param_count = fit[-3]
+                ind.block_architecture.param_count = fit[-4]
                 ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
-                ind.block_architecture.accuracy = fit[-2]
+                ind.block_architecture.accuracy = fit[-3]
                 ind.block_architecture.prev_flops = ind.block_architecture.flops
-                ind.block_architecture.flops = fit[-1]
+                ind.block_architecture.flops = fit[-2]
+                ind.block_architecture.prev_storage = ind.block_architecture.storage
+                ind.block_architecture.storage = fit[-1]
 
                 acc_diff = (
                     ind.block_architecture.accuracy
@@ -520,6 +538,7 @@ def eaSimple(
                 )
 
                 flop_diff = (ind.block_architecture.flops - ind.block_architecture.prev_flops)
+                storage_diff = (ind.block_architecture.storage - ind.block_architecture.prev_storage)
 
                 for i in reversed(ind.block_architecture.mutations):
                     if i.pending == False:
@@ -528,6 +547,7 @@ def eaSimple(
                     i.accuracy_diff = acc_diff
                     i.param_diff = param_count_diff
                     i.flops_diff = flop_diff
+                    i.storage_diff = storage_diff
                     i.propogate_mutation_results()
 
                 if hasattr(ind, "updates"):
@@ -536,6 +556,7 @@ def eaSimple(
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
                             ind.block_architecture.flops,
+                            ind.block_architecture.storage,
                             ind.fitness.values,
                         )
                     )
@@ -545,6 +566,7 @@ def eaSimple(
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
                             ind.block_architecture.flops,
+                            ind.block_architecture.storage,
                             ind.fitness.values,
                         )
                     ]
@@ -569,31 +591,35 @@ def eaSimple(
                     raw_pcount_row.append(i.block_architecture.param_count)
                     raw_acc_row.append(i.block_architecture.accuracy)
                     raw_flops_row.append(i.block_architecture.flops)
+                    raw_storage_row.append(i.block_architecture.storage)
                     filtered_fitness_row.append(str(i.fitness.values[0]))
 
             writer.writerow(raw_pcount_row)
             writer.writerow(raw_acc_row)
             writer.writerow(raw_flops_row)
+            writer.writerow(raw_storage_row)
             writer.writerow(filtered_fitness_row)
 
             if logger:
                 for x, ind in enumerate(population):
                     logger.log(
-                        "####\nInd #{}, params:{}, acc:{}%, flops:{}".format(
+                        "####\nInd #{}, params:{}, acc:{}%, flops:{}, storage:{}".format(
                             x,
                             ind.block_architecture.param_count,
                             ind.block_architecture.accuracy,
-                            ind.block_architecture.flops
+                            ind.block_architecture.flops,
+                            ind.block_architecture.storage
                         )
                     )
                     logger.log("Mutations:")
                     for mutation in ind.block_architecture.mutations:
                         logger.log(
-                            "{} param diff: {} acc diff: {}, flops diff:{}".format(
+                            "{} param diff: {} acc diff: {}, flops diff:{}, storage:{}".format(
                                 mutation.mutation_function,
                                 mutation.param_diff,
                                 mutation.accuracy_diff,
-                                mutation.flops_diff
+                                mutation.flops_diff,
+                                mutation.storage_diff
 
                             )
                         )

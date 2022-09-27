@@ -55,12 +55,12 @@ class MutationTable:
         if hasattr(cls_obj, "mutation_funcs"):
             self.mutation_funs = cls_obj.mutation_funcs
             for func in self.mutation_funs:
-                self.mutations[func] = [0, 0, 0]    # i added mutation value for the flops and i should add another for future targets
+                self.mutations[func] = [0, 0, 0, 0]    # i added mutation value for the flops and i should add another for future targets
 
     def get_mutation_table_ref(self, mutation):
 
         if not mutation in self.mutations:
-            self.mutations[mutation] = [0, 0, 0]   # i added mutation value for the flops and i should add another for future targets
+            self.mutations[mutation] = [0, 0, 0, 0]   # i added mutation value for the flops and i should add another for future targets
 
         ret = self.mutations[mutation]
 

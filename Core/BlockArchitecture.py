@@ -9,6 +9,7 @@ from TensorNAS.Core.LayerMutations import layer_mutation
 from tensorflow.keras import backend as k
 from tensorflow.keras.callbacks import Callback
 from TensorNAS.Core import (count_flops)
+from TensorNAS.Core import (mem_for_storing_weights)
 from tensorflow.python.keras.engine.functional import Functional
 
 
@@ -28,6 +29,7 @@ class OptimizationGoal(Enum):   # added number of flops as optimization goal
     ACCURACY_UP = auto()
     PARAMETERS_DOWN = auto()
     FLOPS_DOWN = auto()
+    STORAGE_DOWN = auto()
 
 
 class Mutation:
@@ -37,6 +39,7 @@ class Mutation:
         accuracy_diff=None,
         param_diff=None,
         flops_diff=None,
+        storage_diff=None,
         mutation_function=None,
         mutation_note=None,
     ):
@@ -53,6 +56,7 @@ class Mutation:
         self.accuracy_diff = accuracy_diff
         self.param_diff = param_diff
         self.flops_diff= flops_diff
+        self.storage_diff=storage_diff
 
     def _update_q(self, delta, q_old):
 
@@ -73,11 +77,14 @@ class Mutation:
             n_param_count = -self.param_diff / float(normalization_vector[0])
             n_acc = self.accuracy_diff / float(normalization_vector[1])
             n_flops = self.flops_diff / float(normalization_vector[2])
+            n_storage = self.storage_diff / float(normalization_vector[3])
 
             # Update
             ref[0] = self._update_q(n_param_count, ref[0])
             ref[1] = self._update_q(n_acc, ref[1])
             ref[2] = self._update_q(n_flops, ref[2])
+            ref[3] = self._update_q(n_storage, ref[3])
+
 
         self.pending = False
 
@@ -99,6 +106,8 @@ class BlockArchitecture(Block):
         self.prev_accuracy = 0
         self.flops = 0
         self.prev_flops = 0
+        self.storage = 0
+        self.prev_storage = 0
         self.mutations = []
         self.batch_size = batch_size
         self.test_batch_size = test_batch_size
@@ -125,6 +134,8 @@ class BlockArchitecture(Block):
             goal_index = 1
         elif self.optimization_goal == OptimizationGoal.FLOPS_DOWN:
             goal_index = 2
+        elif self.optimization_goal == OptimizationGoal.STORAGE_DOWN:
+            goal_index = 3    
 
         return super().mutate(
             mutation_goal_index=goal_index,
@@ -319,11 +330,12 @@ class BlockArchitecture(Block):
         profile = model_profiler(model, Batch_size)
                 
         flops=count_flops(units[1],model, Batch_size)*1000000
+        storage= mem_for_storing_weights(units[4], model)*1000
         print(profile)
         # also i need to add function to evaluate the mode Flops
 
         gc.collect()
-        return model, params, flops # here we should add multiple objectives for the return 
+        return model, params, flops, storage # here we should add multiple objectives for the return 
 
 
 class AreaUnderCurveBlockArchitecture(BlockArchitecture):
@@ -355,7 +367,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             accuracy = 0
             return params, accuracy
 
-        model, params, flops = self.train_model(
+        model, params, flops, storage = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -393,8 +405,8 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             print("Error evaluating model: {}".format(e))
 
         if verbose:
-            print("Param Count: {}, Acc: {}, flops: {}".format(params, accuracy, flops))
-        return params, auc, flops # here we should add multiple objectives for the return 
+            print("Param Count: {}, Acc: {}, flops: {}, storage: {}".format(params, accuracy, flops, storage))
+        return params, auc, flops, storage # here we should add multiple objectives for the return 
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -441,7 +453,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         if verbose:
             model.summary()
 
-        model, params, flops = self.train_model(
+        model, params, flops, storage = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -485,4 +497,4 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         if verbose:
             print("Param Count: {}, Acc: {}, flops: {}".format(params, accuracy, flops))
-        return params, accuracy, flops # here we should add multiple objectives for the return 
+        return params, accuracy, flops, storage # here we should add multiple objectives for the return 
