@@ -86,10 +86,8 @@ class BlockArchitecture(Block):
     MAX_BATCH_SIZE = 128
 
     def __init__(self, input_shape, batch_size, test_batch_size=None, optimizer=None):
-        self.param_count = 0
-        self.prev_param_count = 0
-        self.accuracy = 0
-        self.prev_accuracy = 0
+        self.evaluation_values = []
+        self.prev_evaluation_values = []
         self.mutations = []
         self.batch_size = batch_size
         self.test_batch_size = test_batch_size
@@ -296,12 +294,8 @@ class BlockArchitecture(Block):
             print(traceback.format_exc())
             return model, np.inf
 
-        params = self.save_model(
-            model=model, test_name=test_name, model_name=model_name, logger=logger
-        )
-
         gc.collect()
-        return model, params
+        return model
 
 
 class AreaUnderCurveBlockArchitecture(BlockArchitecture):
@@ -333,7 +327,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             accuracy = 0
             return params, accuracy
 
-        model, params = self.train_model(
+        model = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -345,6 +339,10 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             model_name=model_name,
             logger=logger,
             verbose=verbose,
+        )
+
+        params = self.save_model(
+            model=model, test_name=test_name, model_name=model_name, logger=logger
         )
 
         try:
@@ -417,7 +415,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         if verbose:
             model.summary()
 
-        model, params = self.train_model(
+        model = self.train_model(
             model=model,
             train_generator=train_generator,
             train_len=train_len,
@@ -429,6 +427,10 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             model_name=model_name,
             logger=logger,
             verbose=verbose,
+        )
+
+        params = self.save_model(
+            model=model, test_name=test_name, model_name=model_name, logger=logger
         )
 
         try:
