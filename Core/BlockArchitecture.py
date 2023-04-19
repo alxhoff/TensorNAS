@@ -1,3 +1,5 @@
+from enum import Enum, auto
+from Demos import get_global
 import gc
 import math
 
@@ -16,11 +18,6 @@ class ClearMemory(Callback):
         k.clear_session()
 
 
-from Demos import get_global
-
-from enum import Enum, auto
-
-
 class OptimizationGoal(Enum):
 
     ACCURACY_UP = auto()
@@ -31,8 +28,7 @@ class Mutation:
     def __init__(
         self,
         mutation_table_references,
-        accuracy_diff=None,
-        param_diff=None,
+        evaluation_values_diff=[],
         mutation_function=None,
         mutation_note=None,
     ):
@@ -46,8 +42,7 @@ class Mutation:
         self.mutation_table_references = mutation_table_references
         self.mutation_function = mutation_function
         self.mutation_note = mutation_note
-        self.accuracy_diff = accuracy_diff
-        self.param_diff = param_diff
+        self.evaluation_values_diff = evaluation_values_diff
 
     def _update_q(self, delta, q_old):
 
@@ -65,12 +60,16 @@ class Mutation:
             # Normalize
             # Assumes a single normalization vector and not a varying one
             normalization_vector = get_global("filter_function_args")[1][0]
-            n_param_count = -self.param_diff / float(normalization_vector[0])
-            n_acc = self.accuracy_diff / float(normalization_vector[1])
+            #weights = get_global("weights")
+            weights = [-1,1]
+            n_evaluation_values = []
+            for i in range(len(self.evaluation_values_diff)):
+                n_evaluation_values.append(
+                    weights[i] * self.evaluation_values_diff[i] / float(normalization_vector[i]))
 
             # Update
-            ref[0] = self._update_q(n_param_count, ref[0])
-            ref[1] = self._update_q(n_acc, ref[1])
+            for i in range (len(ref)):
+                ref[i] = self._update_q(n_evaluation_values[i], ref[i])
 
         self.pending = False
 
@@ -86,8 +85,8 @@ class BlockArchitecture(Block):
     MAX_BATCH_SIZE = 128
 
     def __init__(self, input_shape, batch_size, test_batch_size=None, optimizer=None):
-        self.evaluation_values = []
-        self.prev_evaluation_values = []
+        self.evaluation_values = [0, 0]
+        self.prev_evaluation_values = [0, 0]
         self.mutations = []
         self.batch_size = batch_size
         self.test_batch_size = test_batch_size
@@ -211,7 +210,8 @@ class BlockArchitecture(Block):
 
             print(traceback.format_exc())
             if logger:
-                logger.log("Error running/saving model:{}, {}".format(model_name, e))
+                logger.log(
+                    "Error running/saving model:{}, {}".format(model_name, e))
 
         from tensorflow.keras.backend import count_params
 
@@ -321,11 +321,11 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
     ):
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+        evaluation_values = []
 
         if model == None:
-            params = math.inf
-            accuracy = 0
-            return params, accuracy
+            evaluation_values.append(math.inf)
+            return evaluation_values
 
         model = self.train_model(
             model=model,
@@ -344,6 +344,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         params = self.save_model(
             model=model, test_name=test_name, model_name=model_name, logger=logger
         )
+        evaluation_values.append(params)
 
         try:
             if not test_generator is None:
@@ -359,6 +360,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
                     predictions.append(errors)
                 labels = [label for x, label in test_generator]
                 auc = metrics.roc_auc_score(labels, predictions) * 100
+                evaluation_values.append(auc)
 
             else:
                 raise Exception("Missing training data")
@@ -367,8 +369,9 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             print("Error evaluating model: {}".format(e))
 
         if verbose:
-            print("Param Count: {}, AUC Acc: {}".format(params, auc))
-        return params, auc
+            print("Param Count: {}, AUC Acc: {}".format(
+                evaluation_values[0], evaluation_values[1]))
+        return evaluation_values
 
 
 class ClassificationBlockArchitecture(BlockArchitecture):
@@ -406,11 +409,12 @@ class ClassificationBlockArchitecture(BlockArchitecture):
     ):
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
+        evaluation_values = []
 
         if model == None:
-            params = math.inf
-            accuracy = 0
-            return params, accuracy
+            evaluation_values.append(math.inf)
+            evaluation_values.append(0)
+            return evaluation_values
 
         if verbose:
             model.summary()
@@ -432,6 +436,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         params = self.save_model(
             model=model, test_name=test_name, model_name=model_name, logger=logger
         )
+        evaluation_values.append(params)
 
         try:
             if test_generator is not None:
@@ -459,6 +464,9 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         gc.collect()
 
+        evaluation_values.append(accuracy)
+
         if verbose:
-            print("Param Count: {}, Acc: {}".format(params, accuracy))
-        return params, accuracy
+            print("Param Count: {}, Acc: {}".format(
+                evaluation_values[0], evaluation_values[1]))
+        return evaluation_values

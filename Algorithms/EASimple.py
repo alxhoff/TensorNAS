@@ -1,4 +1,5 @@
-import time, math
+import time
+import math
 
 
 def TestEASimple(
@@ -81,8 +82,8 @@ def TestEASimple(
             i
             for i in pop
             if (
-                (i.block_architecture.param_count == ind[0])
-                and (i.block_architecture.accuracy == ind[1])
+                (i.block_architecture.evaluation_values[0] == ind[0])
+                and (i.block_architecture.evaluation_values[1] == ind[1])
             )
         ]
         if len(models):
@@ -96,18 +97,19 @@ def TestEASimple(
             logger.log("####\nPareto Ind #{}".format(i))
             logger.log(
                 "Acc: {}, Param Count: {}".format(
-                    pind.block_architecture.accuracy,
-                    pind.block_architecture.param_count,
+                    pind.block_architecture.evaluation_values[1],
+                    pind.block_architecture.evaluation_values[0],
                 )
             )
             logger.log(str(pind))
             logger.log("Mutations:")
+            # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
             for mutation in pind.block_architecture.mutations:
                 logger.log(
                     "{} param diff: {} acc diff: {}".format(
                         mutation.mutation_function,
-                        mutation.param_diff,
-                        mutation.accuracy_diff,
+                        mutation.evaluation_values_diff[0],
+                        mutation.evaluation_values_diff[1],
                     )
                 )
             logger.log("####")
@@ -213,7 +215,8 @@ def eaSimple(
 
         writer = csv.writer(csvfile, delimiter=" ")
 
-        writer.writerow(["Test Name", "Population", "Generations", "Cxpb", "Mutpb"])
+        writer.writerow(["Test Name", "Population",
+                        "Generations", "Cxpb", "Mutpb"])
         writer.writerow([test_name, pop_size, ngen, cxpb, mutpb])
         writer.writerow(["Gen #0"])
         raw_pcount_row = ["Param Count"]
@@ -256,14 +259,15 @@ def eaSimple(
                 fitnesses.append(ret)
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            ind.block_architecture.param_count = fit[-2]
-            ind.block_architecture.accuracy = fit[-1]
+            ind.block_architecture.evaluation_values[0] = fit[-2]
+            ind.block_architecture.evaluation_values[1] = fit[-1]
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
 
             if filter_function:
                 if filter_function_args:
-                    ind.fitness.values = filter_function(fit, filter_function_args)
+                    ind.fitness.values = filter_function(
+                        fit, filter_function_args)
                 else:
                     ind.fitness.values = filter_function(fit)
             else:
@@ -296,10 +300,11 @@ def eaSimple(
                 < 0
             )
             above = is_above(
-                (ind.block_architecture.param_count, ind.block_architecture.accuracy)
+                (ind.block_architecture.evaluation_values[0],
+                 ind.block_architecture.evaluation_values[1])
             )
             if above:
-                if ind.block_architecture.param_count - goal_vector[0] <= 0:
+                if ind.block_architecture.evaluation_values[0] - goal_vector[0] <= 0:
                     ind.block_architecture.optimization_goal = (
                         OptimizationGoal.ACCURACY_UP
                     )
@@ -313,15 +318,15 @@ def eaSimple(
             if hasattr(ind, "updates"):
                 ind.updates.append(
                     (
-                        ind.block_architecture.param_count,
-                        ind.block_architecture.accuracy,
+                        ind.block_architecture.evaluation_values[0],
+                        ind.block_architecture.evaluation_values[1],
                     )
                 )
             else:
                 ind.updates = [
                     (
-                        ind.block_architecture.param_count,
-                        ind.block_architecture.accuracy,
+                        ind.block_architecture.evaluation_values[0],
+                        ind.block_architecture.evaluation_values[1],
                     )
                 ]
 
@@ -334,17 +339,18 @@ def eaSimple(
                 logger.log(
                     "####\nInd #{}, params:{}, acc:{}%".format(
                         x,
-                        ind.block_architecture.param_count,
-                        ind.block_architecture.accuracy,
+                        ind.block_architecture.evaluation_values[0],
+                        ind.block_architecture.evaluation_values[1],
                     )
                 )
                 logger.log("Mutations:")
+                # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
                         "{} param diff: {} acc diff: {}".format(
                             mutation.mutation_operation,
-                            mutation.param_diff,
-                            mutation.accuracy_diff,
+                            mutation.mutation.evaluation_values_diff[0],
+                            mutation.mutation.evaluation_values_diff[1],
                         )
                     )
                 logger.log("####")
@@ -390,7 +396,8 @@ def eaSimple(
             )
 
             if logger:
-                logger.log("Gen #{}, population: {}".format(gen, len(population)))
+                logger.log("Gen #{}, population: {}".format(
+                    gen, len(population)))
 
             # Select the next generation individuals
             offspring = toolbox.select(population, pop_size)
@@ -407,7 +414,8 @@ def eaSimple(
             valid_ind = [ind for ind in offspring if ind.fitness.valid]
 
             if retrain == False:
-                invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+                invalid_ind = [
+                    ind for ind in offspring if not ind.fitness.valid]
             else:
                 invalid_ind = offspring
 
@@ -421,7 +429,8 @@ def eaSimple(
             from TensorNAS.Tools import copy_output_model
 
             for i, ind in enumerate(valid_ind):
-                copy_output_model(test_name, gen, ind.index, len(invalid_ind) + i)
+                copy_output_model(test_name, gen, ind.index,
+                                  len(invalid_ind) + i)
                 logger.log(
                     "Copying existing model, index:{}/{}->{}/{}".format(
                         gen - 1, ind.index, gen, len(invalid_ind) + i
@@ -436,7 +445,8 @@ def eaSimple(
                 logger.log("{} new individuals".format(len(invalid_ind)))
 
             print(
-                "GEN #{}, evaluating {} new individuals".format(gen, len(invalid_ind))
+                "GEN #{}, evaluating {} new individuals".format(
+                    gen, len(invalid_ind))
             )
 
             if multithreaded:
@@ -461,7 +471,8 @@ def eaSimple(
                 fitnesses = []
                 for ind in tqdm(invalid_ind):
                     if save_individuals and generation_save_interval == 1:
-                        fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
+                        fitnesses.append(toolbox.evaluate(
+                            ind, test_name, gen, logger))
                     else:
                         fitnesses.append(
                             toolbox.evaluate(ind, None, None, None, logger)
@@ -471,47 +482,44 @@ def eaSimple(
 
                 if filter_function:
                     if filter_function_args:
-                        ind.fitness.values = filter_function(fit, filter_function_args)
+                        ind.fitness.values = filter_function(
+                            fit, filter_function_args)
                     else:
                         ind.fitness.values = filter_function(fit)
 
-                ind.block_architecture.prev_param_count = (
-                    ind.block_architecture.param_count
+                ind.block_architecture.prev_evaluation_values[0] = (
+                    ind.block_architecture.evaluation_values[0]
                 )
-                ind.block_architecture.param_count = fit[-2]
-                ind.block_architecture.prev_accuracy = ind.block_architecture.accuracy
-                ind.block_architecture.accuracy = fit[-1]
+                ind.block_architecture.evaluation_values[0] = fit[-2]
+                ind.block_architecture.prev_evaluation_values[1] = ind.block_architecture.evaluation_values[1]
+                ind.block_architecture.evaluation_values[1] = fit[-1]
 
-                acc_diff = (
-                    ind.block_architecture.accuracy
-                    - ind.block_architecture.prev_accuracy
-                )
-                param_count_diff = (
-                    ind.block_architecture.param_count
-                    - ind.block_architecture.prev_param_count
-                )
+                evaluation_values_diff=[]
+                evaluation_values_diff.append(ind.block_architecture.evaluation_values[0]
+                                          - ind.block_architecture.prev_evaluation_values[0])
+                evaluation_values_diff.append(ind.block_architecture.evaluation_values[1]
+                                          - ind.block_architecture.prev_evaluation_values[1])
 
                 for i in reversed(ind.block_architecture.mutations):
                     if i.pending == False:
                         break
 
-                    i.accuracy_diff = acc_diff
-                    i.param_diff = param_count_diff
+                    i.evaluation_values_diff = evaluation_values_diff
                     i.propogate_mutation_results()
 
                 if hasattr(ind, "updates"):
                     ind.updates.append(
                         (
-                            ind.block_architecture.param_count,
-                            ind.block_architecture.accuracy,
+                            ind.block_architecture.evaluation_values[0],
+                            ind.block_architecture.evaluation_values[1],
                             ind.fitness.values,
                         )
                     )
                 else:
                     ind.updates = [
                         (
-                            ind.block_architecture.param_count,
-                            ind.block_architecture.accuracy,
+                            ind.block_architecture.evaluation_values[0],
+                            ind.block_architecture.evaluation_values[1],
                             ind.fitness.values,
                         )
                     ]
@@ -530,11 +538,11 @@ def eaSimple(
 
             for i in population:
                 if (
-                    i.block_architecture.param_count is not math.inf
-                    and i.block_architecture.accuracy is not 0
+                    i.block_architecture.evaluation_values[0] is not math.inf
+                    and i.block_architecture.evaluation_values[1] is not 0
                 ):
-                    raw_pcount_row.append(i.block_architecture.param_count)
-                    raw_acc_row.append(i.block_architecture.accuracy)
+                    raw_pcount_row.append(i.block_architecture.evaluation_values[0])
+                    raw_acc_row.append(i.block_architecture.evaluation_values[1])
                     filtered_fitness_row.append(str(i.fitness.values[0]))
 
             writer.writerow(raw_pcount_row)
@@ -546,8 +554,8 @@ def eaSimple(
                     logger.log(
                         "####\nInd #{}, params:{}, acc:{}%".format(
                             x,
-                            ind.block_architecture.param_count,
-                            ind.block_architecture.accuracy,
+                            ind.block_architecture.evaluation_values[0],
+                            ind.block_architecture.evaluation_values[1],
                         )
                     )
                     logger.log("Mutations:")
@@ -555,8 +563,8 @@ def eaSimple(
                         logger.log(
                             "{} param diff: {} acc diff: {}".format(
                                 mutation.mutation_function,
-                                mutation.param_diff,
-                                mutation.accuracy_diff,
+                                mutation.evaluation_values_diff[0],
+                                mutation.evaluation_values_diff[1],
                             )
                         )
                     logger.log("####")
@@ -570,7 +578,8 @@ def eaSimple(
             if logger:
                 cur_time = time.time()
                 timing_log.log(
-                    "Gen #{} finished in: {}".format(gen, cur_gen_start_time - cur_time)
+                    "Gen #{} finished in: {}".format(
+                        gen, cur_gen_start_time - cur_time)
                 )
                 cur_gen_start_time = cur_time
 

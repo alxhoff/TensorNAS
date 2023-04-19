@@ -12,8 +12,8 @@ class IndividualRecord:
         for ind in gen:
             self.gens[self.gen_count].append(
                 (
-                    ind.block_architecture.param_count,
-                    ind.block_architecture.accuracy,
+                    ind.block_architecture.evaluation_values[0],
+                    ind.block_architecture.evaluation_values[1],
                     ind.fitness.values,
                 )
             )
@@ -206,8 +206,8 @@ def a_dominates_b(a, b):
 def plot_hof_pareto(hof, test_name):
     import matplotlib
 
-    x = [i.block_architecture.param_count for i in hof.items]
-    y = [i.block_architecture.accuracy for i in hof.items]
+    x = [i.block_architecture.evaluation_values[0] for i in hof.items]
+    y = [i.block_architecture.evaluation_values[1] for i in hof.items]
 
     import matplotlib.backends.backend_agg as agg
 
