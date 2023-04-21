@@ -404,7 +404,7 @@ def GetWeights(config):
     else:
         import ast
 
-        return [n.strip() for n in ast.literal_eval(config_arg)]
+        return [n.strip() if isinstance(n,str) else n for n in ast.literal_eval(config_arg)]
 
 
 def _GenVector(start, stop, steps):

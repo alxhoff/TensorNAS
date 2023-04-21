@@ -90,15 +90,18 @@ def TestEASimple(
             pareto_models.append(models[0])
 
     from TensorNAS.Tools import copy_pareto_model
+    from Demos import set_global, get_global
+
+    mutation_log_string = get_global("mutation_log_string")
+    pareto_log_string = get_global("pareto_log_string")
 
     for i, pind in enumerate(pareto_models):
         copy_pareto_model(test_name, gen_count, pind.index, i)
         if logger:
             logger.log("####\nPareto Ind #{}".format(i))
             logger.log(
-                "Acc: {}, Param Count: {}".format(
-                    pind.block_architecture.evaluation_values[1],
-                    pind.block_architecture.evaluation_values[0],
+                pareto_log_string.format(
+                    *reversed(pind.block_architecture.evaluation_values),
                 )
             )
             logger.log(str(pind))
@@ -106,10 +109,9 @@ def TestEASimple(
             # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
             for mutation in pind.block_architecture.mutations:
                 logger.log(
-                    "{} param diff: {} acc diff: {}".format(
+                    ("{} " + mutation_log_string).format(
                         mutation.mutation_function,
-                        mutation.evaluation_values_diff[0],
-                        mutation.evaluation_values_diff[1],
+                        *mutation.evaluation_values_diff,
                     )
                 )
             logger.log("####")
@@ -200,6 +202,9 @@ def eaSimple(
     logbook = tools.Logbook()
     logbook.header = ["gen", "nevals"] + (stats.fields if stats else [])
 
+    mutation_log_string = get_global("mutation_log_string")
+    evaluated_values_log_string = get_global("evaluated_values_log_string")
+
     if logger:
         from TensorNAS.Tools.Logging import Logger
 
@@ -219,9 +224,12 @@ def eaSimple(
                         "Generations", "Cxpb", "Mutpb"])
         writer.writerow([test_name, pop_size, ngen, cxpb, mutpb])
         writer.writerow(["Gen #0"])
-        raw_pcount_row = ["Param Count"]
-        raw_acc_row = ["Accuracy"]
+        #raw_pcount_row = ["Param Count"]
+        #raw_acc_row = ["Accuracy"]
+        raw_evaluated_values_row = get_global("raw_evaluated_values_row")
         filtered_fitness_row = ["Fitness"]
+
+        weights = get_global("weights")
 
         for i, ind in enumerate(population):
             ind.index = i
@@ -259,23 +267,26 @@ def eaSimple(
                 fitnesses.append(ret)
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            ind.block_architecture.evaluation_values[0] = fit[-2]
-            ind.block_architecture.evaluation_values[1] = fit[-1]
+            for i in range(get_global("goals_number")):
+                ind.block_architecture.evaluation_values.append(fit[-get_global(
+                    "goals_number")+i])  # fit[] is iterated in reverse
+
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
 
             if filter_function:
                 if filter_function_args:
                     ind.fitness.values = filter_function(
-                        fit, filter_function_args)
+                        fit, filter_function_args, weights)
                 else:
                     ind.fitness.values = filter_function(fit)
             else:
                 ind.fitness.values = fit
 
-            if fit[0] is not math.inf and fit[1] is not 0:
-                raw_pcount_row.append(fit[0])
-                raw_acc_row.append(fit[1])
+            if fit[0] is not math.inf and fit[1] is not 0: # this needs goal generalization
+                for i in range(get_global("goals_number")):
+                    raw_evaluated_values_row[i].append(fit[i])
+                
                 filtered_fitness_row.append(ind.fitness.values[0])
 
             # determine which optimization param is currently the goal of the individual
@@ -284,73 +295,45 @@ def eaSimple(
 
             goal_vector = np.array(filter_function_args[0][0])
             norm_vector = np.array(filter_function_args[1][0])
-            # goal vector intercepts
-            m = -norm_vector[1] / norm_vector[0]
-            c = goal_vector[1] - (m * goal_vector[0])
+            weights_vector = np.array(get_global("weights"))
 
-            # Intecept points
-            yc = [0, c]
-            xc = [-c / m, 0]
+            Fk = (np.array(ind.block_architecture.evaluation_values) - goal_vector)
+            Fk_normalized = np.divide(Fk, norm_vector)
+            Fk_normalized_and_wighted = Fk_normalized * weights_vector
 
-            is_above = (
-                lambda p: np.cross(
-                    p - np.array(yc),
-                    np.array(xc) - np.array(yc),
-                )
-                < 0
-            )
-            above = is_above(
-                (ind.block_architecture.evaluation_values[0],
-                 ind.block_architecture.evaluation_values[1])
-            )
-            if above:
-                if ind.block_architecture.evaluation_values[0] - goal_vector[0] <= 0:
-                    ind.block_architecture.optimization_goal = (
-                        OptimizationGoal.ACCURACY_UP
-                    )
-                else:
-                    ind.block_architecture.optimization_goal = (
-                        OptimizationGoal.PARAMETERS_DOWN
-                    )
-            else:
-                ind.block_architecture.optimization_goal = OptimizationGoal.ACCURACY_UP
+            # find the index of the worse evaluated value
+            worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
+
+            # set the optimaization goal of the individual
+            ind.block_architecture.optimization_goal = list(
+                OptimizationGoal)[worst_evaluated_value_index]
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
-                    (
-                        ind.block_architecture.evaluation_values[0],
-                        ind.block_architecture.evaluation_values[1],
-                    )
-                )
+                    tuple(ind.block_architecture.evaluation_values))
             else:
-                ind.updates = [
-                    (
-                        ind.block_architecture.evaluation_values[0],
-                        ind.block_architecture.evaluation_values[1],
-                    )
-                ]
-
-        writer.writerow(raw_pcount_row)
-        writer.writerow(raw_acc_row)
+                ind.updates = [tuple(ind.block_architecture.evaluation_values)]
+        
+        for i in range(get_global("goals_number")):
+            writer.writerow(raw_evaluated_values_row[i])
+    
         writer.writerow(filtered_fitness_row)
 
         if logger:
             for x, ind in enumerate(population):
                 logger.log(
-                    "####\nInd #{}, params:{}, acc:{}%".format(
+                    ("####\nInd #{}, " + evaluated_values_log_string).format(
                         x,
-                        ind.block_architecture.evaluation_values[0],
-                        ind.block_architecture.evaluation_values[1],
+                        *ind.block_architecture.evaluation_values,
                     )
                 )
                 logger.log("Mutations:")
                 # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
-                        "{} param diff: {} acc diff: {}".format(
+                        ("{} " + mutation_log_string).format(
                             mutation.mutation_operation,
-                            mutation.mutation.evaluation_values_diff[0],
-                            mutation.mutation.evaluation_values_diff[1],
+                            *mutation.mutation.evaluation_values_diff,
                         )
                     )
                 logger.log("####")
@@ -384,8 +367,9 @@ def eaSimple(
         # Begin the generational process
         for gen in range(start_gen + 1, ngen + 1):
 
-            raw_pcount_row = ["Param Count"]
-            raw_acc_row = ["Accuracy"]
+            #raw_pcount_row = ["Param Count"]
+            #raw_acc_row = ["Accuracy"]
+            raw_evaluated_values_row = get_global("raw_evaluated_values_row")
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
@@ -483,22 +467,19 @@ def eaSimple(
                 if filter_function:
                     if filter_function_args:
                         ind.fitness.values = filter_function(
-                            fit, filter_function_args)
+                            fit, filter_function_args, weights)
                     else:
                         ind.fitness.values = filter_function(fit)
 
-                ind.block_architecture.prev_evaluation_values[0] = (
-                    ind.block_architecture.evaluation_values[0]
-                )
-                ind.block_architecture.evaluation_values[0] = fit[-2]
-                ind.block_architecture.prev_evaluation_values[1] = ind.block_architecture.evaluation_values[1]
-                ind.block_architecture.evaluation_values[1] = fit[-1]
+                evaluation_values_diff = []
+                for i in range(get_global("goals_number")):
+                    ind.block_architecture.prev_evaluation_values.append(
+                        ind.block_architecture.evaluation_values[i])
+                    ind.block_architecture.evaluation_values[i] = fit[-get_global(
+                        "goals_number")+i]
 
-                evaluation_values_diff=[]
-                evaluation_values_diff.append(ind.block_architecture.evaluation_values[0]
-                                          - ind.block_architecture.prev_evaluation_values[0])
-                evaluation_values_diff.append(ind.block_architecture.evaluation_values[1]
-                                          - ind.block_architecture.prev_evaluation_values[1])
+                    evaluation_values_diff.append(ind.block_architecture.evaluation_values[i]
+                                                  - ind.block_architecture.prev_evaluation_values[i])
 
                 for i in reversed(ind.block_architecture.mutations):
                     if i.pending == False:
@@ -509,18 +490,14 @@ def eaSimple(
 
                 if hasattr(ind, "updates"):
                     ind.updates.append(
-                        (
-                            ind.block_architecture.evaluation_values[0],
-                            ind.block_architecture.evaluation_values[1],
-                            ind.fitness.values,
-                        )
+                        tuple(ind.block_architecture.evaluation_values) +
+                        tuple(ind.fitness.values)
                     )
                 else:
                     ind.updates = [
                         (
-                            ind.block_architecture.evaluation_values[0],
-                            ind.block_architecture.evaluation_values[1],
-                            ind.fitness.values,
+                            tuple(ind.block_architecture.evaluation_values) +
+                            tuple(ind.fitness.values)
                         )
                     ]
 
@@ -538,33 +515,34 @@ def eaSimple(
 
             for i in population:
                 if (
-                    i.block_architecture.evaluation_values[0] is not math.inf
+                    i.block_architecture.evaluation_values[0] is not math.inf # this needs goal generalization
                     and i.block_architecture.evaluation_values[1] is not 0
                 ):
-                    raw_pcount_row.append(i.block_architecture.evaluation_values[0])
-                    raw_acc_row.append(i.block_architecture.evaluation_values[1])
-                    filtered_fitness_row.append(str(i.fitness.values[0]))
+                    for j in range(get_global("goals_number")):
+                        raw_evaluated_values_row[j].append(
+                        i.block_architecture.evaluation_values[j])
 
-            writer.writerow(raw_pcount_row)
-            writer.writerow(raw_acc_row)
+                    filtered_fitness_row.append(str(i.fitness.values[0]))
+            
+            for i in range(get_global("goals_number")):
+                        writer.writerow(raw_evaluated_values_row[i])
+
             writer.writerow(filtered_fitness_row)
 
             if logger:
                 for x, ind in enumerate(population):
                     logger.log(
-                        "####\nInd #{}, params:{}, acc:{}%".format(
+                        ("####\nInd #{}, " + evaluated_values_log_string).format(
                             x,
-                            ind.block_architecture.evaluation_values[0],
-                            ind.block_architecture.evaluation_values[1],
+                            *ind.block_architecture.evaluation_values,
                         )
                     )
                     logger.log("Mutations:")
                     for mutation in ind.block_architecture.mutations:
                         logger.log(
-                            "{} param diff: {} acc diff: {}".format(
+                            ("{} " + mutation_log_string).format(
                                 mutation.mutation_function,
-                                mutation.evaluation_values_diff[0],
-                                mutation.evaluation_values_diff[1],
+                                *mutation.evaluation_values_diff,
                             )
                         )
                     logger.log("####")

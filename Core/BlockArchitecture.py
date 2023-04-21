@@ -60,15 +60,18 @@ class Mutation:
             # Normalize
             # Assumes a single normalization vector and not a varying one
             normalization_vector = get_global("filter_function_args")[1][0]
-            #weights = get_global("weights")
-            weights = [-1,1]
+            weights = get_global("weights")
             n_evaluation_values = []
             for i in range(len(self.evaluation_values_diff)):
-                n_evaluation_values.append(
-                    weights[i] * self.evaluation_values_diff[i] / float(normalization_vector[i]))
+                if (len(weights) > 1):
+                    n_evaluation_values.append(
+                        weights[i] * self.evaluation_values_diff[i] / float(normalization_vector[i]))
+                else:
+                    n_evaluation_values.append(
+                        weights * self.evaluation_values_diff[i] / float(normalization_vector[i]))
 
             # Update
-            for i in range (len(ref)):
+            for i in range(len(ref)):
                 ref[i] = self._update_q(n_evaluation_values[i], ref[i])
 
         self.pending = False
@@ -85,8 +88,8 @@ class BlockArchitecture(Block):
     MAX_BATCH_SIZE = 128
 
     def __init__(self, input_shape, batch_size, test_batch_size=None, optimizer=None):
-        self.evaluation_values = [0, 0]
-        self.prev_evaluation_values = [0, 0]
+        self.evaluation_values = []
+        self.prev_evaluation_values = []
         self.mutations = []
         self.batch_size = batch_size
         self.test_batch_size = test_batch_size

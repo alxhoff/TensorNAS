@@ -11,12 +11,7 @@ class IndividualRecord:
         self.gens.append([])
         for ind in gen:
             self.gens[self.gen_count].append(
-                (
-                    ind.block_architecture.evaluation_values[0],
-                    ind.block_architecture.evaluation_values[1],
-                    ind.fitness.values,
-                )
-            )
+                tuple(ind.block_architecture.evaluation_values) + tuple(ind.fitness.values))
         self.gen_count += 1
 
     def save(self, gen_interval, test_name, title="Fig_None", comment=None):
@@ -38,7 +33,8 @@ class IndividualRecord:
                 sy = subplot_num % 2
                 datax, datay, goal = map(list, zip(*self.gens[i]))
                 axes[sx, sy].scatter(datax, datay)
-                axes[sx, sy].set_title("Gen {}, count: {}".format(i, len(self.gens[i])))
+                axes[sx, sy].set_title(
+                    "Gen {}, count: {}".format(i, len(self.gens[i])))
                 axes[sx, sy].set(xlabel="Param Count", ylabel="Accuracy")
             except Exception as e:
                 pass
