@@ -22,6 +22,7 @@ class OptimizationGoal(Enum):
 
     ACCURACY_UP = auto()
     PARAMETERS_DOWN = auto()
+    CROSSENTROPY_DOWN = auto()
 
 
 class Mutation:
@@ -413,6 +414,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
         evaluation_values = []
+        crossentropy = 0
 
         if model == None:
             evaluation_values.append(math.inf)
@@ -448,16 +450,17 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 else:
                     callbacks = []
 
-                accuracy = (
+                acc_and_crossentropy = (
                     model.evaluate(
                         x=test_generator,
                         batch_size=test_batch_size,
                         verbose=verbose,
                         steps=test_len // test_batch_size,
                         callbacks=callbacks,
-                    )[1]
-                    * 100
+                    )
                 )
+                accuracy = acc_and_crossentropy[1]*100
+                crossentropy = acc_and_crossentropy[2]
             else:
                 raise Exception("Missing training data")
 
@@ -468,8 +471,9 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         gc.collect()
 
         evaluation_values.append(accuracy)
+        evaluation_values.append(crossentropy)
 
         if verbose:
-            print("Param Count: {}, Acc: {}".format(
-                evaluation_values[0], evaluation_values[1]))
+            print("Param Count: {}, Acc: {}, Crossentropy: {}".format(
+                evaluation_values[0], evaluation_values[1], evaluation_values[1]))
         return evaluation_values
