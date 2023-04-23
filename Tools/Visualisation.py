@@ -33,8 +33,7 @@ class IndividualRecord:
                 sy = subplot_num % 2
                 datax, datay, goal = map(list, zip(*self.gens[i]))
                 axes[sx, sy].scatter(datax, datay)
-                axes[sx, sy].set_title(
-                    "Gen {}, count: {}".format(i, len(self.gens[i])))
+                axes[sx, sy].set_title("Gen {}, count: {}".format(i, len(self.gens[i])))
                 axes[sx, sy].set(xlabel="Param Count", ylabel="Accuracy")
             except Exception as e:
                 pass
@@ -204,7 +203,7 @@ def plot_hof_pareto(hof, test_name):
 
     x = [i.block_architecture.evaluation_values[0] for i in hof.items]
     y = [i.block_architecture.evaluation_values[1] for i in hof.items]
-
+    z = [i.block_architecture.evaluation_values[2] for i in hof.items]
     import matplotlib.backends.backend_agg as agg
 
     fig = matplotlib.figure.Figure(figsize=(15, 15))

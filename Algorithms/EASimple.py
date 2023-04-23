@@ -81,10 +81,7 @@ def TestEASimple(
         models = [
             i
             for i in pop
-            if (
-                (i.block_architecture.evaluation_values[0] == ind[0])
-                and (i.block_architecture.evaluation_values[1] == ind[1])
-            )
+            if (i.block_architecture.evaluation_values == ind)
         ]
         if len(models):
             pareto_models.append(models[0])
@@ -106,7 +103,6 @@ def TestEASimple(
             )
             logger.log(str(pind))
             logger.log("Mutations:")
-            # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
             for mutation in pind.block_architecture.mutations:
                 logger.log(
                     ("{} " + mutation_log_string).format(
@@ -224,8 +220,6 @@ def eaSimple(
                         "Generations", "Cxpb", "Mutpb"])
         writer.writerow([test_name, pop_size, ngen, cxpb, mutpb])
         writer.writerow(["Gen #0"])
-        #raw_pcount_row = ["Param Count"]
-        #raw_acc_row = ["Accuracy"]
         raw_evaluated_values_row = get_global("raw_evaluated_values_row")
         filtered_fitness_row = ["Fitness"]
 
@@ -300,7 +294,7 @@ def eaSimple(
             Fk_normalized = np.divide(Fk, norm_vector)
             Fk_normalized_and_wighted = Fk_normalized * weights_vector
 
-            # find the index of the worse evaluated value
+            # find the index of the worst evaluated value
             worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
 
             # set the optimaization goal of the individual
@@ -327,7 +321,6 @@ def eaSimple(
                     )
                 )
                 logger.log("Mutations:")
-                # IN GENERAL CASE: use for loop in range(#golas_number) to print all goals_diffs
                 for mutation in ind.block_architecture.mutations:
                     logger.log(
                         ("{} " + mutation_log_string).format(
@@ -366,8 +359,6 @@ def eaSimple(
         # Begin the generational process
         for gen in range(start_gen + 1, ngen + 1):
 
-            #raw_pcount_row = ["Param Count"]
-            #raw_acc_row = ["Accuracy"]
             raw_evaluated_values_row = get_global("raw_evaluated_values_row")
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
