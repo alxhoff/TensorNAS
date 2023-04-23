@@ -268,8 +268,7 @@ def eaSimple(
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             for i in range(get_global("goals_number")):
-                ind.block_architecture.evaluation_values.append(fit[-get_global(
-                    "goals_number")+i])  # fit[] is iterated in reverse
+                ind.block_architecture.evaluation_values.append(fit[-get_global("goals_number")+i])  # fit[] is iterated in reverse
 
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count

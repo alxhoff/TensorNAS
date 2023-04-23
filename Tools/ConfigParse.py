@@ -1,5 +1,6 @@
 def GetConfigFile(config_filename=None, directory=None):
-    import os, sys
+    import os
+    import sys
 
     if directory:
         script_path = directory
@@ -147,9 +148,11 @@ def GetUseDatasetDirectory(config):
     except Exception as e:
         return False
 
+
 def GetDatasetDirectory(config):
 
     return _GetStr(_GetGeneral(config), "DatasetDirectory")
+
 
 def GetLocalDataset(config):
 
@@ -329,6 +332,25 @@ def _GetNormalizationVectorSteps(config):
 
     return int(_GetGoals(config)["NormalizationVectorSteps"])
 
+def _GetGoalsNames(config):
+    return _GetStr(_GetGoals(config), "GoalsNames").split()
+
+def _GetLogString(config):
+    log_strings =[]
+    goals_names = _GetGoalsNames(config)
+
+    mutation_log_string = ""
+    evaluated_values_log_string = ""
+    pareto_log_string = ""
+    raw_evaluated_values_row = []
+    
+    for i in range(len(goals_names)):
+        mutation_log_string = mutation_log_string + goals_names[i] + " diff: {} "
+        evaluated_values_log_string = evaluated_values_log_string + goals_names[i] + ":{}, "
+        pareto_log_string = pareto_log_string + goals_names[len(goals_names)-1-i] + ": {}, "
+        raw_evaluated_values_row.append([goals_names[i]]) 
+
+    return mutation_log_string, evaluated_values_log_string, pareto_log_string, raw_evaluated_values_row
 
 def _GetGoalVector(config):
 
@@ -337,28 +359,17 @@ def _GetGoalVector(config):
     return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
 
 
-def _GetGoalParamVectorStart(config):
-
-    return int(_GetGoals(config)["GoalParamVectorStart"])
-
-
-def _GetGoalParamVectorEnd(config):
-
-    return int(_GetGoals(config)["GoalParamVectorEnd"])
+def _GetGoalVectorStart(config):
+    import ast
+    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVectorBegin"])]
 
 
-def _GetGoalAccVectorStart(config):
-
-    return int(_GetGoals(config)["GoalAccVectorStart"])
-
-
-def _GetGoalAccVectorEnd(config):
-
-    return int(_GetGoals(config)["GoalAccVectorEnd"])
+def _GetGoalVectorEnd(config):
+    import ast
+    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVectorEnd"])]
 
 
 def _GetGoalVectorSteps(config):
-
     return int(_GetGoals(config)["GoalVectorSteps"])
 
 
@@ -387,6 +398,9 @@ def _GetFilterFunctionModule(config):
 
     return _GetFilters(config)["FilterFunctionModule"]
 
+def GetGoalsNumber(config):
+    return int(_GetGoals(config)["GoalsNumber"])
+
 
 def GetWeights(config):
 
@@ -404,7 +418,7 @@ def GetWeights(config):
     else:
         import ast
 
-        return [n.strip() if isinstance(n,str) else n for n in ast.literal_eval(config_arg)]
+        return [n.strip() if isinstance(n, str) else n for n in ast.literal_eval(config_arg)]
 
 
 def _GenVector(start, stop, steps):
@@ -456,6 +470,24 @@ def _GenVectorsVariableGoal(
     return goal_vectors, normalization_vectors
 
 
+def _GenVariableVectors_nD(g_start, g_stop, steps):
+
+    vectors = [1 for _ in range(len(g_start))]
+
+    for i in range(len(g_start)):
+        vectors[i] = (_GenVector(g_start[i], g_stop[i], steps))
+
+    return list(zip(*vectors))
+
+
+def _GenVectorsVariableGoal_nD(g_start, g_stop, steps, n_vector):
+
+    goal_vectors = _GenVariableVectors_nD(g_start, g_stop, steps)
+    normalization_vectors = [n_vector for _ in range(len(goal_vectors))]
+
+    return goal_vectors, normalization_vectors
+
+
 def _GenVectorsVariableNormilization(
     n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
 ):
@@ -470,18 +502,14 @@ def _GenVectorsVariableNormilization(
 
 
 def GetFilterFunctionArgs(config):
-
     if _GetVariableGoal(config):
         # Goal vector varies, normilization vector is static
-        g_param_start = _GetGoalParamVectorStart(config)
-        g_param_stop = _GetGoalParamVectorEnd(config)
-        g_acc_start = _GetGoalAccVectorStart(config)
-        g_acc_stop = _GetGoalAccVectorEnd(config)
+        goal_vector_start = _GetGoalVectorStart(config)
+        goal_vector_end = _GetGoalVectorEnd(config)
         steps = _GetGoalVectorSteps(config)
-        n1, n2 = _GetNormalizationVector(config)
-        return _GenVectorsVariableGoal(
-            g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
-        )
+        n_vector = _GetNormalizationVector(config)
+        return _GenVectorsVariableGoal_nD(
+            goal_vector_start, goal_vector_end, steps, n_vector)
     else:
         n_param_start = _GetNormalizationParamVectorStart(config)
         n_param_stop = _GetNormalizationParamVectorEnd(config)
@@ -531,7 +559,7 @@ def GetTFLoss(config):
 
 def GetTFMetrics(config):
 
-    return _GetStr(_GetTensorflow(config), "Metrics")
+    return _GetStr(_GetTensorflow(config), "Metrics").split()
 
 
 def GetTFEarlyStopper(config):
