@@ -406,10 +406,7 @@ def GetWeights(config):
 
     config_arg = _GetFilters(config)["Weights"]
 
-    if _GetVariableGoal(config):
-        w_len = _GetGoalVectorSteps(config)
-    else:
-        w_len = _GetNormalizationVectorSteps(config)
+    w_len = GetGoalsNumber(config)
 
     if config_arg == "minimize":
         return [-1] * w_len

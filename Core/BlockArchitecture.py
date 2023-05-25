@@ -20,10 +20,11 @@ class ClearMemory(Callback):
 
 class OptimizationGoal(Enum):
 
-    ACCURACY_UP = auto()
     PARAMETERS_DOWN = auto()
-    CROSSENTROPY_DOWN = auto()
+    ACCURACY_UP = auto()
+    #CROSSENTROPY_DOWN = auto()
     #MEANSQUAREDERROR_DOWN = auto()
+
 
 class Mutation:
     def __init__(
@@ -112,9 +113,7 @@ class BlockArchitecture(Block):
         verbose=False,
     ):
 
-        goal_index = 0
-        if self.optimization_goal == OptimizationGoal.ACCURACY_UP:
-            goal_index = 1
+        goal_index = list(OptimizationGoal).index(self.optimization_goal)
 
         return super().mutate(
             mutation_goal_index=goal_index,
@@ -220,8 +219,8 @@ class BlockArchitecture(Block):
         from tensorflow.keras.backend import count_params
 
         params = int(np.sum([count_params(p) for p in model.trainable_weights])) + int(
-            np.sum([count_params(p) for p in model.non_trainable_weights])
-        )
+            np.sum([count_params(p) for p in model.non_trainable_weights]))
+        
         if params == 0:
             params = np.inf
 
@@ -296,7 +295,7 @@ class BlockArchitecture(Block):
 
             print("Error fitting model, {}".format(e))
             print(traceback.format_exc())
-            return model, np.inf
+            return model
 
         gc.collect()
         return model
@@ -328,7 +327,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         evaluation_values = []
 
         if model == None:
-            evaluation_values.append(math.inf)
+            evaluation_values = [0]* get_global("goals_number")
             return evaluation_values
 
         model = self.train_model(
@@ -417,8 +416,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         crossentropy = 0
 
         if model == None:
-            evaluation_values.append(math.inf)
-            evaluation_values.append(0)
+            evaluation_values = [0]* get_global("goals_number")
             return evaluation_values
 
         if verbose:
@@ -460,7 +458,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                     )
                 )
                 accuracy = evaluations[1]*100
-                crossentropy = evaluations[2]
+                #crossentropy = evaluations[2]
                 #mean_squared_error = evaluations[3]
             else:
                 raise Exception("Missing training data")
@@ -472,7 +470,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         gc.collect()
 
         evaluation_values.append(accuracy)
-        evaluation_values.append(crossentropy)
+        #evaluation_values.append(crossentropy)
         #evaluation_values.append(mean_squared_error)
 
         if verbose:

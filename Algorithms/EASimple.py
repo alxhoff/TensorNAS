@@ -297,9 +297,15 @@ def eaSimple(
             # find the index of the worst evaluated value
             worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
 
-            # set the optimaization goal of the individual
+            # set the optimization goal of the individual
             ind.block_architecture.optimization_goal = list(
                 OptimizationGoal)[worst_evaluated_value_index]
+
+#-----------For Debugging Purpose---------------------------------------------------------------
+            # log the selected optimization goal
+            if logger:
+                logger.log("=== ind: {} -->{} ===".format(ind.index,ind.block_architecture.optimization_goal))
+#-----------------------------------------------------------------------------------------------
 
             if hasattr(ind, "updates"):
                 ind.updates.append(
@@ -363,22 +369,15 @@ def eaSimple(
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
-            set_global(
-                "self_mutation_probability",
-                get_global("self_mutation_probability")
-                + (gen - 1) * get_global("variable_mutation_generational_change"),
-            )
+            set_global("self_mutation_probability",get_global("self_mutation_probability")+ (gen - 1) * get_global("variable_mutation_generational_change"),)
 
             if logger:
-                logger.log("Gen #{}, population: {}".format(
-                    gen, len(population)))
+                logger.log("Gen #{}, population: {}".format(gen, len(population)))
 
             # Select the next generation individuals
             offspring = toolbox.select(population, pop_size)
 
-            assert (
-                len(offspring) == pop_size
-            ), "Initial population not of size {}".format(pop_size)
+            assert (len(offspring) == pop_size), "Initial population not of size {}".format(pop_size)
 
             # Vary the pool of individuals
             from deap.algorithms import varAnd
@@ -388,8 +387,7 @@ def eaSimple(
             valid_ind = [ind for ind in offspring if ind.fitness.valid]
 
             if retrain == False:
-                invalid_ind = [
-                    ind for ind in offspring if not ind.fitness.valid]
+                invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
             else:
                 invalid_ind = offspring
 
@@ -403,13 +401,8 @@ def eaSimple(
             from TensorNAS.Tools import copy_output_model
 
             for i, ind in enumerate(valid_ind):
-                copy_output_model(test_name, gen, ind.index,
-                                  len(invalid_ind) + i)
-                logger.log(
-                    "Copying existing model, index:{}/{}->{}/{}".format(
-                        gen - 1, ind.index, gen, len(invalid_ind) + i
-                    )
-                )
+                copy_output_model(test_name, gen, ind.index,len(invalid_ind) + i)
+                logger.log("Copying existing model, index:{}/{}->{}/{}".format(gen - 1, ind.index, gen, len(invalid_ind) + i))
                 ind.index = len(invalid_ind) + i
 
             offspring[:] = invalid_ind + valid_ind
@@ -445,12 +438,9 @@ def eaSimple(
                 fitnesses = []
                 for ind in tqdm(invalid_ind):
                     if save_individuals and generation_save_interval == 1:
-                        fitnesses.append(toolbox.evaluate(
-                            ind, test_name, gen, logger))
+                        fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
                     else:
-                        fitnesses.append(
-                            toolbox.evaluate(ind, None, None, None, logger)
-                        )
+                        fitnesses.append(toolbox.evaluate(ind, None, None, None, logger))
 
             for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
 
@@ -460,16 +450,16 @@ def eaSimple(
                             fit, filter_function_args, weights)
                     else:
                         ind.fitness.values = filter_function(fit)
-
+#-----------For Debugging Purpose---------------------------------------------------------------
+                if logger:
+                    logger.log("=== ind: {} -->{} ===".format(ind.index,ind.block_architecture.optimization_goal))
+#-----------------------------------------------------------------------------------------------
                 evaluation_values_diff = []
                 for i in range(get_global("goals_number")):
-                    ind.block_architecture.prev_evaluation_values.append(
-                        ind.block_architecture.evaluation_values[i])
-                    ind.block_architecture.evaluation_values[i] = fit[-get_global(
-                        "goals_number")+i]
+                    ind.block_architecture.prev_evaluation_values.append(ind.block_architecture.evaluation_values[i])
+                    ind.block_architecture.evaluation_values[i] = fit[-get_global("goals_number")+i]
 
-                    evaluation_values_diff.append(ind.block_architecture.evaluation_values[i]
-                                                  - ind.block_architecture.prev_evaluation_values[i])
+                    evaluation_values_diff.append(ind.block_architecture.evaluation_values[i]- ind.block_architecture.prev_evaluation_values[i])
 
                 for i in reversed(ind.block_architecture.mutations):
                     if i.pending == False:
@@ -509,8 +499,7 @@ def eaSimple(
                     and i.block_architecture.evaluation_values[1] is not 0
                 ):
                     for j in range(get_global("goals_number")):
-                        raw_evaluated_values_row[j].append(
-                        i.block_architecture.evaluation_values[j])
+                        raw_evaluated_values_row[j].append(i.block_architecture.evaluation_values[j])
 
                     filtered_fitness_row.append(str(i.fitness.values[0]))
             

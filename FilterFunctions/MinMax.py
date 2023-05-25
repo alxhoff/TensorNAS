@@ -4,8 +4,7 @@ def MinMaxArray(fitnesses, vectors, weights):
 
     goal_vectors, normalization_vectors = vectors
 
-    for nv, gv in zip(normalization_vectors, goal_vectors):
-        ret.append(MinMax(fitnesses, nv, gv, weights))
+    ret.append(MinMax(fitnesses, normalization_vectors, goal_vectors, weights))
 
     return tuple(ret)
 
@@ -19,7 +18,7 @@ def MinMax(fitnesses, normalization_vector, goal_vector, weights):
     goal_vector = np.array(goal_vector)
     weights = np.array(weights)
 
-    ret = goal_vector - fitnesses
+    ret = fitnesses - goal_vector
     ret = ret * weights
     ret = np.divide(ret, normalization_vector)
     ret = np.amax(ret)

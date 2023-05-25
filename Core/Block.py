@@ -335,9 +335,7 @@ class BaseBlock(ABC):
                     verbose=verbose,
                 )
         elif mutation_method == "ALL":
-            ret = self._get_all_mutation_functions_of_children()[
-                random.choice(range(len(self.middle_blocks)))
-            ]()
+            ret = self._get_all_mutation_functions_of_children()[random.choice(range(len(self.middle_blocks)))]()
 
         self.reset_ba_input_shapes()
 
@@ -349,9 +347,7 @@ class BaseBlock(ABC):
 
         # If this block is at the bottom of the block architecture hierarchy we need to create the list of mutation
         # table references to return
-        mutation_table_ref = self.mutation_table.get_mutation_table_ref(
-            mutation_function
-        )
+        mutation_table_ref = self.mutation_table.get_mutation_table_ref(mutation_function)
         if len(ret) < 3:
             table_ref_list = [mutation_table_ref]
 
