@@ -450,10 +450,22 @@ def eaSimple(
                             fit, filter_function_args, weights)
                     else:
                         ind.fitness.values = filter_function(fit)
-#-----------For Debugging Purpose---------------------------------------------------------------
+
+                # determine which optimization param is currently the goal of the individual
+                Fk = (np.array(ind.block_architecture.evaluation_values) - goal_vector)
+                Fk_normalized = np.divide(Fk, norm_vector)
+                Fk_normalized_and_wighted = Fk_normalized * weights_vector
+
+                # find the index of the worst evaluated value
+                worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
+
+                # set the optimization goal of the individual
+                ind.block_architecture.optimization_goal = list(OptimizationGoal)[worst_evaluated_value_index]
+
+                #-----------For Debugging Purpose---------------------------------------------------------------
                 if logger:
                     logger.log("=== ind: {} -->{} ===".format(ind.index,ind.block_architecture.optimization_goal))
-#-----------------------------------------------------------------------------------------------
+                #-----------------------------------------------------------------------------------------------
                 evaluation_values_diff = []
                 for i in range(get_global("goals_number")):
                     ind.block_architecture.prev_evaluation_values.append(ind.block_architecture.evaluation_values[i])
