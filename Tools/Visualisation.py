@@ -145,13 +145,12 @@ class IndividualRecord:
             facecolor=(0.7, 0.7, 0.7),
             zorder=-1,
         )
-        for ff in filter_funcs[0]:
-            m = -filter_funcs[1][0][1] / filter_funcs[1][0][0]
-            c = ff[1] - (m * ff[0])
-            y_point = [0, c]
-            x_point = [-c / m, 0]
-            ax.plot(ff[0], ff[1], "go")
-            ax.plot(x_point, y_point)
+        m = -filter_funcs[1][1] / filter_funcs[1][0]
+        c = filter_funcs[0][1] - (m * filter_funcs[0][0])
+        y_point = [0, c]
+        x_point = [-c / m, 0]
+        ax.plot(filter_funcs[0][0], filter_funcs[0][1], "go")
+        ax.plot(x_point, y_point)
 
         ax = fig.add_subplot(1, 3, 2)
         ax.set_xscale("log")

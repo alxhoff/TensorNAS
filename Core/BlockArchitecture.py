@@ -17,15 +17,6 @@ class ClearMemory(Callback):
         gc.collect()
         k.clear_session()
 
-
-class OptimizationGoal(Enum):
-
-    PARAMETERS_DOWN = auto()
-    ACCURACY_UP = auto()
-    #CROSSENTROPY_DOWN = auto()
-    #MEANSQUAREDERROR_DOWN = auto()
-
-
 class Mutation:
     def __init__(
         self,
@@ -61,7 +52,7 @@ class Mutation:
 
             # Normalize
             # Assumes a single normalization vector and not a varying one
-            normalization_vector = get_global("filter_function_args")[1][0]
+            normalization_vector = get_global("filter_function_args")[1]
             weights = get_global("weights")
             n_evaluation_values = []
             for i in range(len(self.evaluation_values_diff)):
@@ -112,9 +103,9 @@ class BlockArchitecture(Block):
         goal_attainment=True,
         verbose=False,
     ):
-
-        goal_index = list(OptimizationGoal).index(self.optimization_goal)
-
+        
+        goal_index = get_global("OptimizationGoal")[self.optimization_goal]
+    
         return super().mutate(
             mutation_goal_index=goal_index,
             mutation_method=mutation_method,
@@ -413,7 +404,6 @@ class ClassificationBlockArchitecture(BlockArchitecture):
 
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
         evaluation_values = []
-        crossentropy = 0
 
         if model == None:
             evaluation_values = [0]* get_global("goals_number")
@@ -457,21 +447,19 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                         callbacks=callbacks,
                     )
                 )
-                accuracy = evaluations[1]*100
-                #crossentropy = evaluations[2]
-                #mean_squared_error = evaluations[3]
+                # for better readability of the accuracy (in percent)
+                evaluations[1] = evaluations[1]*100
+                for i in range(1,len(evaluations)):
+                    evaluation_values.append(evaluations[i])
             else:
                 raise Exception("Missing training data")
+                evaluation_values = [0]* get_global("goals_number")
 
         except Exception as e:
-            accuracy = 0
             print("Error evaluating model: {}".format(e))
+            evaluation_values = [0]* get_global("goals_number")
 
-        gc.collect()
-
-        evaluation_values.append(accuracy)
-        #evaluation_values.append(crossentropy)
-        #evaluation_values.append(mean_squared_error)
+        gc.collect()        
 
         if verbose:
             print((get_global("mutation_log_string")).format(

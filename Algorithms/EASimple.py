@@ -284,10 +284,11 @@ def eaSimple(
 
             # determine which optimization param is currently the goal of the individual
             import numpy as np
-            from TensorNAS.Core.BlockArchitecture import OptimizationGoal
+            
+            OptimizationGoal = get_global("OptimizationGoal")
 
-            goal_vector = np.array(filter_function_args[0][0])
-            norm_vector = np.array(filter_function_args[1][0])
+            goal_vector = np.array(filter_function_args[0])
+            norm_vector = np.array(filter_function_args[1])
             weights_vector = np.array(get_global("weights"))
 
             Fk = (np.array(ind.block_architecture.evaluation_values) - goal_vector)
@@ -298,8 +299,9 @@ def eaSimple(
             worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
 
             # set the optimization goal of the individual
-            ind.block_architecture.optimization_goal = list(
-                OptimizationGoal)[worst_evaluated_value_index]
+            for goal,index in OptimizationGoal.items():
+                if index == worst_evaluated_value_index:
+                    ind.block_architecture.optimization_goal = goal
 
 #-----------For Debugging Purpose---------------------------------------------------------------
             # log the selected optimization goal
@@ -446,8 +448,7 @@ def eaSimple(
 
                 if filter_function:
                     if filter_function_args:
-                        ind.fitness.values = filter_function(
-                            fit, filter_function_args, weights)
+                        ind.fitness.values = filter_function(fit, filter_function_args, weights)
                     else:
                         ind.fitness.values = filter_function(fit)
 
@@ -460,7 +461,9 @@ def eaSimple(
                 worst_evaluated_value_index = np.argmax(Fk_normalized_and_wighted)
 
                 # set the optimization goal of the individual
-                ind.block_architecture.optimization_goal = list(OptimizationGoal)[worst_evaluated_value_index]
+                for goal,index in OptimizationGoal.items():
+                    if index == worst_evaluated_value_index:
+                        ind.block_architecture.optimization_goal = goal
 
                 #-----------For Debugging Purpose---------------------------------------------------------------
                 if logger:

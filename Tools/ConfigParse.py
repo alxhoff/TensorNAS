@@ -335,6 +335,25 @@ def _GetNormalizationVectorSteps(config):
 def _GetGoalsNames(config):
     return _GetStr(_GetGoals(config), "GoalsNames").split()
 
+def _GetOptimizationGoals(config):
+    
+    goal_names = _GetGoalsNames(config)
+    weights = GetWeights(config)
+    OptimizationGoal = dict()
+
+    for count, (name, weight) in enumerate(zip(goal_names, weights)):
+        
+        name = name.upper()
+        
+        if(weight == 1):
+            name = name + "_DOWN"
+        else:
+            name = name + "_UP"
+
+        OptimizationGoal[name] = count
+        
+    return OptimizationGoal
+
 def _GetLogString(config):
     log_strings =[]
     goals_names = _GetGoalsNames(config)
@@ -359,26 +378,15 @@ def _GetGoalVector(config):
     return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
 
 
-def _GetGoalVectorStart(config):
+def _GetGoalVector(config):
     import ast
-    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVectorBegin"])]
-
-
-def _GetGoalVectorEnd(config):
-    import ast
-    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVectorEnd"])]
-
-
-def _GetGoalVectorSteps(config):
-    return int(_GetGoals(config)["GoalVectorSteps"])
-
+    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
 
 def _GetNormalizationVector(config):
 
     import ast
 
     return [n for n in ast.literal_eval(_GetGoals(config)["NormalizationVector"])]
-
 
 def GetFilterFunction(config):
     import importlib
@@ -387,7 +395,6 @@ def GetFilterFunction(config):
     func = getattr(module, _GetFilters(config)["FilterFunction"])
 
     return func
-
 
 def GetUseGoalAttainment(config):
 
@@ -416,8 +423,7 @@ def GetWeights(config):
         import ast
 
         return [n.strip() if isinstance(n, str) else n for n in ast.literal_eval(config_arg)]
-
-
+"""
 def _GenVector(start, stop, steps):
 
     if steps > 1:
@@ -496,28 +502,13 @@ def _GenVectorsVariableNormilization(
     goal_vectors = [(g1, g2) for _ in range(len(normalization_vectors))]
 
     return goal_vectors, normalization_vectors
-
-
+"""
 def GetFilterFunctionArgs(config):
-    if _GetVariableGoal(config):
-        # Goal vector varies, normilization vector is static
-        goal_vector_start = _GetGoalVectorStart(config)
-        goal_vector_end = _GetGoalVectorEnd(config)
-        steps = _GetGoalVectorSteps(config)
-        n_vector = _GetNormalizationVector(config)
-        return _GenVectorsVariableGoal_nD(
-            goal_vector_start, goal_vector_end, steps, n_vector)
-    else:
-        n_param_start = _GetNormalizationParamVectorStart(config)
-        n_param_stop = _GetNormalizationParamVectorEnd(config)
-        n_acc_start = _GetNormalizationAccVectorStart(config)
-        n_acc_stop = _GetNormalizationAccVectorEnd(config)
-        steps = _GetNormalizationVectorSteps(config)
-        g1, g2 = _GetGoalVector(config)
-        return _GenVectorsVariableNormilization(
-            n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
-        )
-
+    # Goal vector varies, normilization vector is static
+    goal_vector = _GetGoalVector(config)
+    n_vector = _GetNormalizationVector(config)
+    return goal_vector, n_vector
+    
 
 def _GetTensorflow(config):
 
