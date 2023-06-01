@@ -4,16 +4,13 @@ from TensorNAS.Core import EnumWithNone
 
 
 class Args(EnumWithNone):
-
     FILTERS = auto()
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 5
 
     class SubBlocks(Enum):
-
         CONV2D = auto()
         BATCH_NORMALIZATION = auto()
         ACTIVATION = auto()

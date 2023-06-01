@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(ParallelMidBlock):
     class SubBlocks(Enum):
-
         POINTWISE_CONV2D = auto()
         MODULE_A_BRANCH_1 = auto()
         MODULE_A_BRANCH_2 = auto()
@@ -39,7 +38,6 @@ class Block(ParallelMidBlock):
         return layers
 
     def generate_sub_block(self, input_shape, layer_type):
-
         if layer_type == self.SubBlocks.POINTWISE_CONV2D:
             from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
 

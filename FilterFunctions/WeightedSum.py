@@ -1,5 +1,4 @@
 def WeightedSumArray(fitnesses, vectors):
-
     ret = []
 
     goal_vector, normalization_vectors = vectors
@@ -11,7 +10,6 @@ def WeightedSumArray(fitnesses, vectors):
 
 
 def WeightedSum(fitnesses, normalization_vector):
-
     import numpy as np
 
     return np.sum(np.divide(fitnesses, normalization_vector))

@@ -2,7 +2,6 @@ from multiprocessing import Process, Manager
 
 
 def writer(pqueue, filename):
-
     import os, errno
 
     if not os.path.exists(os.path.dirname(filename)):
@@ -13,7 +12,6 @@ def writer(pqueue, filename):
                 raise
 
     with open(filename, "w+") as log_file:
-
         while True:
             if pqueue:
                 msg = pqueue.get()

@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
     MIN_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         AVERAGE_POOL2D = auto()
         OUTPUT_CLASSIFICATION = auto()
 
@@ -37,7 +35,6 @@ class Block(Block):
         return layers
 
     def generate_sub_block(self, input_shape, layer_type, args=None):
-
         if layer_type == self.SubBlocks.AVERAGE_POOL2D:
             from TensorNAS.Layers.Pool.AveragePooling2D import Layer as AveragePooling2D
 

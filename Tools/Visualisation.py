@@ -3,7 +3,6 @@ import math
 
 class IndividualRecord:
     def __init__(self):
-
         self.gen_count = 0
         self.gens = []
 
@@ -11,7 +10,9 @@ class IndividualRecord:
         self.gens.append([])
         for ind in gen:
             self.gens[self.gen_count].append(
-                tuple(ind.block_architecture.evaluation_values) + tuple(ind.fitness.values))
+                tuple(ind.block_architecture.evaluation_values)
+                + tuple(ind.fitness.values)
+            )
         self.gen_count += 1
 
     def save(self, gen_interval, test_name, title="Fig_None", comment=None):
@@ -45,7 +46,6 @@ class IndividualRecord:
         fig.savefig("Output/{}/Figures/{}".format(test_name, title))
 
     def goals(self, gen_interval, test_name):
-
         import matplotlib.pyplot as plt
         import math
 
@@ -107,15 +107,12 @@ class IndividualRecord:
         pareto_inds = [best_models[0]]
 
         for ind_to_compare in best_models[1:]:
-
             is_dominated = False
 
             for existing_ind in pareto_inds:
-
                 if a_dominates_b(existing_ind, ind_to_compare) or (
                     set(ind_to_compare) == set(existing_ind)
                 ):
-
                     is_dominated = True
                     break
 
@@ -180,7 +177,6 @@ class IndividualRecord:
 
 
 def a_dominates_b(a, b):
-
     n_better = 0
 
     # First index is parameter count, thus we want a[0] < b[0]

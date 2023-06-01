@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MIN_SUB_BLOCKS = 0
     MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         DSCNN_INPUT_BLOCK = auto()
         DSCNN_SEPERABLE_DEPTHWISE_CONV2D_BLOCK = auto()
         DSCNN_OUTPUT_BLOCK = auto()

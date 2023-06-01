@@ -6,7 +6,6 @@ from TensorNAS.Core.Layer import ArgPadding as ap
 
 class Layer(Layer):
     def _gen_args(self, input_shape, args):
-
         pool_size = gen_2d_poolsize(random.randint(1, self.MAX_POOL_SIZE))
         stride_size = (1, 1)
         padding = ap.SAME

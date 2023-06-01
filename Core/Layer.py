@@ -62,7 +62,6 @@ class Layer(BaseBlock):
         """
 
     def __init__(self, input_shape, parent_block, args=None):
-
         super().__init__(input_shape=input_shape, parent_block=parent_block, args=args)
 
         self.args = self._gen_args(input_shape, args)

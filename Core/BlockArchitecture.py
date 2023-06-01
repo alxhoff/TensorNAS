@@ -17,6 +17,7 @@ class ClearMemory(Callback):
         gc.collect()
         k.clear_session()
 
+
 class Mutation:
     def __init__(
         self,
@@ -25,7 +26,6 @@ class Mutation:
         mutation_function=None,
         mutation_note=None,
     ):
-
         # Initially mutations are added to block architectures with a list of references to the locations in child
         # blocks' mutation tables where the accuracy and param count differences must be added, these values cannot
         # be added until the model has been retrained after the mutation, the pending flag shows that a block
@@ -38,13 +38,11 @@ class Mutation:
         self.evaluation_values_diff = evaluation_values_diff
 
     def _update_q(self, delta, q_old):
-
         alpha = get_global("alpha")
 
         return alpha * delta + (1 - alpha) * q_old
 
     def propogate_mutation_results(self):
-
         for ref in self.mutation_table_references:
             # Updating Q values is done by first normalizing the values using the normalization values provided in
             # the config file, then updating the existing Q values using the formula
@@ -56,12 +54,18 @@ class Mutation:
             weights = get_global("weights")
             n_evaluation_values = []
             for i in range(len(self.evaluation_values_diff)):
-                if (len(weights) > 1):
+                if len(weights) > 1:
                     n_evaluation_values.append(
-                        weights[i] * self.evaluation_values_diff[i] / float(normalization_vector[i]))
+                        weights[i]
+                        * self.evaluation_values_diff[i]
+                        / float(normalization_vector[i])
+                    )
                 else:
                     n_evaluation_values.append(
-                        weights * self.evaluation_values_diff[i] / float(normalization_vector[i]))
+                        weights
+                        * self.evaluation_values_diff[i]
+                        / float(normalization_vector[i])
+                    )
 
             # Update
             for i in range(len(ref)):
@@ -103,9 +107,8 @@ class BlockArchitecture(Block):
         goal_attainment=True,
         verbose=False,
     ):
-        
         goal_index = get_global("OptimizationGoal")[self.optimization_goal]
-    
+
         return super().mutate(
             mutation_goal_index=goal_index,
             mutation_method=mutation_method,
@@ -161,7 +164,6 @@ class BlockArchitecture(Block):
         metrics=["accuracy"],
         q_aware=False,
     ):
-
         try:
             model = self.get_keras_model(
                 loss=loss,
@@ -204,14 +206,14 @@ class BlockArchitecture(Block):
 
             print(traceback.format_exc())
             if logger:
-                logger.log(
-                    "Error running/saving model:{}, {}".format(model_name, e))
+                logger.log("Error running/saving model:{}, {}".format(model_name, e))
 
         from tensorflow.keras.backend import count_params
 
         params = int(np.sum([count_params(p) for p in model.trainable_weights])) + int(
-            np.sum([count_params(p) for p in model.non_trainable_weights]))
-        
+            np.sum([count_params(p) for p in model.non_trainable_weights])
+        )
+
         if params == 0:
             params = np.inf
 
@@ -313,12 +315,11 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         logger=None,
         verbose=False,
     ):
-
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
         evaluation_values = []
 
         if model == None:
-            evaluation_values = [0]* get_global("goals_number")
+            evaluation_values = [0] * get_global("goals_number")
             return evaluation_values
 
         model = self.train_model(
@@ -363,8 +364,11 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
             print("Error evaluating model: {}".format(e))
 
         if verbose:
-            print("Param Count: {}, AUC Acc: {}".format(
-                evaluation_values[0], evaluation_values[1]))
+            print(
+                "Param Count: {}, AUC Acc: {}".format(
+                    evaluation_values[0], evaluation_values[1]
+                )
+            )
         return evaluation_values
 
 
@@ -401,12 +405,11 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         logger=None,
         verbose=False,
     ):
-
         model = self.prepare_model(loss=loss, metrics=metrics, q_aware=q_aware)
         evaluation_values = []
 
         if model == None:
-            evaluation_values = [0]* get_global("goals_number")
+            evaluation_values = [math.inf] * get_global("goals_number")
             return evaluation_values
 
         if verbose:
@@ -431,6 +434,12 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         )
         evaluation_values.append(params)
 
+        from TensorNAS.MLonMCU_eval import mlonmcu_evaluate_model
+
+        mlonmcu_evaluations = mlonmcu_evaluate_model(
+            test_name=test_name, model_name=model_name, logger=log
+        )
+
         try:
             if test_generator is not None:
                 if use_clear_memory:
@@ -438,30 +447,33 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 else:
                     callbacks = []
 
-                evaluations = (
-                    model.evaluate(
-                        x=test_generator,
-                        batch_size=test_batch_size,
-                        verbose=verbose,
-                        steps=test_len // test_batch_size,
-                        callbacks=callbacks,
-                    )
+                evaluations = model.evaluate(
+                    x=test_generator,
+                    batch_size=test_batch_size,
+                    verbose=verbose,
+                    steps=test_len // test_batch_size,
+                    callbacks=callbacks,
                 )
                 # for better readability of the accuracy (in percent)
-                evaluations[1] = evaluations[1]*100
-                for i in range(1,len(evaluations)):
+                evaluations[1] = evaluations[1] * 100
+                for i in range(1, len(evaluations)):
                     evaluation_values.append(evaluations[i])
             else:
                 raise Exception("Missing training data")
-                evaluation_values = [0]* get_global("goals_number")
+                evaluation_values = [math.inf] * get_global("goals_number")
+                return evaluation_values
 
         except Exception as e:
             print("Error evaluating model: {}".format(e))
-            evaluation_values = [0]* get_global("goals_number")
+            evaluation_values = [math.inf] * get_global("goals_number")
+            return evaluation_values
 
-        gc.collect()        
+        gc.collect()
+
+        for item in mlonmcu_evaluations:
+            evaluation_values.append(item)
 
         if verbose:
-            print((get_global("mutation_log_string")).format(
-                *evaluation_values))
+            print((get_global("mutation_log_string")).format(*evaluation_values))
+
         return evaluation_values

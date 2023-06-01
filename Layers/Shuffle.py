@@ -23,7 +23,6 @@ def shuffle_channels(input_tensor, num_groups):
 
 
 class Args(EnumWithNone):
-
     NUM_GROUPS = auto()
 
 

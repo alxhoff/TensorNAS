@@ -100,14 +100,12 @@ class DEAPTest:
 
     @staticmethod
     def _compare_individual(ind1, ind2):
-
         if ind1.fitness.values == ind2.fitness.values:
             return True
 
         return False
 
     def run(self, algorithm, args):
-
         if not self.evaluate:
             raise Exception("Evaluate function not set")
 

@@ -3,11 +3,9 @@ from TensorNAS.Core.Block import Block
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
-
         BATCH_NORMALIZATION_AND_ACTIVATION = auto()
         CONV2D = auto()
 
@@ -32,7 +30,6 @@ class Block(Block):
         ]
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-
         from TensorNAS.Blocks.SubBlocks.DSCNN.DSCNNNormActivationBlock import (
             Block as NABlock,
         )

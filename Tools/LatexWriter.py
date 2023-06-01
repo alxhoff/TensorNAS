@@ -102,7 +102,6 @@ class LatexWriter:
             return LatexLayer(name, string)
 
     def create_arch(self, model):
-
         fm = self._get_flattened_model(model)
         latex_arch = [self.mod.to_head(".."), self.mod.to_cor(), self.mod.to_begin()]
 

@@ -11,7 +11,6 @@ class Block(Block):
     MIN_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
-
         CONV2D = auto()
         DEPTHWISE_CONV2D = auto()
         POINTWISE_CONV2D = auto()

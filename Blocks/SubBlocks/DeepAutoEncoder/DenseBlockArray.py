@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(Block):
     class SubBlocks(Enum):
-
         DENSE_BLOCK = auto()
 
     def generate_constrained_middle_sub_blocks(self, input_shape):

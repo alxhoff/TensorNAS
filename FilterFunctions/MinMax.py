@@ -1,5 +1,4 @@
 def MinMaxArray(fitnesses, vectors, weights):
-
     ret = []
 
     goal_vectors, normalization_vectors = vectors
@@ -10,7 +9,6 @@ def MinMaxArray(fitnesses, vectors, weights):
 
 
 def MinMax(fitnesses, normalization_vector, goal_vector, weights):
-
     import numpy as np
 
     fitnesses = np.array(fitnesses)
@@ -22,5 +20,5 @@ def MinMax(fitnesses, normalization_vector, goal_vector, weights):
     ret = ret * weights
     ret = np.divide(ret, normalization_vector)
     ret = np.amax(ret)
-    
+
     return ret
