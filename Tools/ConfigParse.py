@@ -263,32 +263,11 @@ def _GetFilters(config):
     return config["filter"]
 
 
-def _GetVariableGoal(config):
-    return _GetGoals(config).getboolean("VariableGoal")
-
-
-def _GetNormalizationParamVectorStart(config):
-    return int(_GetGoals(config)["NormalizationParamVectorStart"])
-
-
-def _GetNormalizationParamVectorEnd(config):
-    return int(_GetGoals(config)["NormalizationParamVectorEnd"])
-
-
-def _GetNormalizationAccVectorStart(config):
-    return float(_GetGoals(config)["NormalizationAccVectorStart"])
-
-
-def _GetNormalizationAccVectorEnd(config):
-    return float(_GetGoals(config)["NormalizationAccVectorEnd"])
-
-
-def _GetNormalizationVectorSteps(config):
-    return int(_GetGoals(config)["NormalizationVectorSteps"])
-
-
 def _GetGoalsNames(config):
-    return _GetStr(_GetGoals(config), "GoalsNames").split(", ")
+    goals = _GetStr(_GetGoals(config), "GoalsNames").split(",")
+    for i in range(len(goals)):
+        goals[i] = goals[i].strip()
+    return goals
 
 
 def _GetOptimizationGoals(config):
@@ -342,12 +321,6 @@ def _GetGoalVector(config):
     return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
 
 
-def _GetGoalVector(config):
-    import ast
-
-    return [n for n in ast.literal_eval(_GetGoals(config)["GoalVector"])]
-
-
 def _GetNormalizationVector(config):
     import ast
 
@@ -390,88 +363,6 @@ def GetWeights(config):
         return [
             n.strip() if isinstance(n, str) else n for n in ast.literal_eval(config_arg)
         ]
-
-
-"""
-def _GenVector(start, stop, steps):
-
-    if steps > 1:
-
-        if isinstance(start, float) or isinstance(stop, float):
-            step = (stop - start) / (steps - 1)
-        else:
-            step = int((stop - start) / (steps - 1))
-
-        if start == stop:
-            return [start for i in range(steps)]
-        else:
-            if isinstance(start, float) or isinstance(stop, float):
-                import numpy as np
-
-                return [
-                    i for i in np.arange(start, stop + step, 1 if step == 0 else step)
-                ]
-            else:
-                return [i for i in range(start, stop + step, 1 if step == 0 else step)]
-
-    else:
-
-        return [
-            (start + stop) / 2,
-        ]
-
-
-def _GenVariableVectors(p1_start, p1_stop, p2_start, p2_stop, steps):
-
-    v1 = _GenVector(p1_start, p1_stop, steps)
-    v2 = _GenVector(p2_start, p2_stop, steps)
-
-    return list(zip(v1, v2))
-
-
-def _GenVectorsVariableGoal(
-    g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps, n1, n2
-):
-
-    goal_vectors = _GenVariableVectors(
-        g_param_start, g_param_stop, g_acc_start, g_acc_stop, steps
-    )
-
-    normalization_vectors = [(n1, n2) for _ in range(len(goal_vectors))]
-
-    return goal_vectors, normalization_vectors
-
-
-def _GenVariableVectors_nD(g_start, g_stop, steps):
-
-    vectors = [1 for _ in range(len(g_start))]
-
-    for i in range(len(g_start)):
-        vectors[i] = (_GenVector(g_start[i], g_stop[i], steps))
-
-    return list(zip(*vectors))
-
-
-def _GenVectorsVariableGoal_nD(g_start, g_stop, steps, n_vector):
-
-    goal_vectors = _GenVariableVectors_nD(g_start, g_stop, steps)
-    normalization_vectors = [n_vector for _ in range(len(goal_vectors))]
-
-    return goal_vectors, normalization_vectors
-
-
-def _GenVectorsVariableNormilization(
-    n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps, g1, g2
-):
-
-    normalization_vectors = _GenVariableVectors(
-        n_param_start, n_param_stop, n_acc_start, n_acc_stop, steps
-    )
-
-    goal_vectors = [(g1, g2) for _ in range(len(normalization_vectors))]
-
-    return goal_vectors, normalization_vectors
-"""
 
 
 def GetFilterFunctionArgs(config):
@@ -607,3 +498,125 @@ def GetHorizontalFlip(config):
 
 def GetImageDataGeneratorValidationSplit(config):
     return _GetFloat(_GetImageDataGeneartor(config), "ValidationSplit")
+
+
+def _GetMlonmcu(config):
+    return config["mlonmcu"]
+
+
+def GetMlonmcuMetrics(config):
+    metrics = _GetStr(_GetMlonmcu(config), "metrics").split(",")
+    for i in range(len(metrics)):
+        metrics[i] = metrics[i].strip()
+    return metrics
+
+
+def GetMlonmcuPlatform(config):
+    platforms = _GetStr(_GetMlonmcu(config), "platform").split(",")
+    for i in range(len(platforms)):
+        platforms[i] = platforms[i].strip()
+    return platforms
+
+
+def GetMlonmcuBackend(config):
+    backends = _GetStr(_GetMlonmcu(config), "backend").split(",")
+    for i in range(len(backends)):
+        backends[i] = backends[i].strip()
+    return backends
+
+
+def GetMlonmcuTarget(config):
+    targets = _GetStr(_GetMlonmcu(config), "target").split(",")
+    for i in range(len(targets)):
+        targets[i] = targets[i].strip()
+    return targets
+
+
+def GetMlonmcuFrontend(config):
+    frontends = _GetStr(_GetMlonmcu(config), "frontend").split(",")
+    for i in range(len(frontends)):
+        frontends[i] = frontends[i].strip()
+    return frontends
+
+
+def GetMlonmcuPostprocess(config):
+    pprocess = _GetStr(_GetMlonmcu(config), "postprocess")
+    if pprocess is not None:
+        pprocess = pprocess.split(",")
+        for i in range(len(pprocess)):
+            pprocess[i] = pprocess[i].strip()
+    return pprocess
+
+
+def GetMlonmcuFeature(config):
+    features = _GetStr(_GetMlonmcu(config), "feature")
+    if features is not None:
+        features = features.split(",")
+        for i in range(len(features)):
+            features[i] = features[i].strip()
+    return features
+
+
+def GetMlonmcuConfigs(config):
+    configs = _GetStr(_GetMlonmcu(config), "configs")
+    if configs is not None:
+        configs = configs.split(",")
+        for i in range(len(configs)):
+            configs[i] = configs[i].strip()
+    return configs
+
+
+def GetMlonmcuParallel(config):
+    parallel = _GetInt(_GetMlonmcu(config), "parllel")
+    if parallel == 8:
+        return parallel
+    else:
+        return None
+
+
+def GetMlonmcuProgress(config):
+    return _GetBool(_GetMlonmcu(config), "progress")
+
+
+def GetMlonmcuVerbose(config):
+    return _GetBool(_GetMlonmcu(config), "verbose")
+
+
+def GetMlonmcuArgs(config):
+    mlonmcu_args = {
+        "metrics": None,
+        "platform": None,
+        "backend": None,
+        "target": None,
+        "frontend": None,
+        "postprocess": None,
+        "feature": None,
+        "configs": None,
+        "parllel": False,
+    }
+    mlonmcu_args["metrics"] = GetMlonmcuMetrics(config)
+    mlonmcu_args["platform"] = GetMlonmcuPlatform(config)
+    mlonmcu_args["backend"] = GetMlonmcuBackend(config)
+    mlonmcu_args["target"] = GetMlonmcuTarget(config)
+    mlonmcu_args["frontend"] = GetMlonmcuFrontend(config)
+    mlonmcu_args["postprocess"] = GetMlonmcuPostprocess(config)
+    mlonmcu_args["feature"] = GetMlonmcuFeature(config)
+    mlonmcu_args["configs"] = GetMlonmcuConfigs(config)
+    mlonmcu_args["parllel"] = GetMlonmcuParallel(config)
+    mlonmcu_args["progress"] = GetMlonmcuProgress(config)
+    mlonmcu_args["verbose"] = GetMlonmcuVerbose(config)
+    return mlonmcu_args
+
+
+"""
+/__TO DO__/
+
+- postprocess, feature, configs : check input form validity
+- check supported platforms, backends and targets by mlonmcu
+    mlonmcu_supported_platforms =[]
+    mlonmcu_supported_backends =[]
+    mlonmcu_supported_targets =[]
+    ans = p.run(['mlonmcu', 'flow', '--list-targets'], capture_output=True)
+    ans = ans.stdout.decode()
+    --> check it only one time in configparse
+"""

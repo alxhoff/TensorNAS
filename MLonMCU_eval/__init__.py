@@ -1,27 +1,18 @@
 def mlonmcu_evaluate_model(
-    # self,
-    model=None,
     test_name=None,
     model_name=None,
     logger=None,
-    metrics=[
-        "Cycles",
-        "_MIPS_",
-        "Total ROM",
-        "Total RAM",
-        "ROM read-only",
-        "ROM code",
-        "ROM misc",
-        "RAM data",
-        "RAM zero-init data",
-        "_Run Stage Time [s]_",
-    ],
-    platform="mlif",
-    backend="tvmaotplus",
-    target="etiss_pulpino",
-    frontend="tflite",
+    metrics=["Cycles", "Total ROM", "Total RAM"],
+    platform=["mlif"],
+    backend=["tvmaotplus"],
+    target=["etiss_pulpino"],
+    frontend=["tflite"],
+    postprcess=None,
+    feature=None,
+    configs=None,
+    parllel=None,
+    progress=False,
     verbose=False,
-    # use_clear_memory=False,
 ):
     if logger:
         logger.log("MLonMCU evaluating model, name:{}".format(model_name))
@@ -34,7 +25,17 @@ def mlonmcu_evaluate_model(
         print("INVALID MODEL PATH: the following path not found: ", path)
 
     run_mlonmcu_flow(
-        path=path, platform=platform, backend=backend, target=target, frontend=frontend
+        path=path,
+        platform=platform,
+        backend=backend,
+        target=target,
+        frontend=frontend,
+        postprcess=postprcess,
+        feature=feature,
+        configs=configs,
+        parllel=parllel,
+        progress=progress,
+        verbose=verbose,
     )
 
     import csv
@@ -59,35 +60,7 @@ def mlonmcu_evaluate_model(
         else:
             raise Exception("required metric not supported by MLonMCU: ", val)
 
-    print("___DEBUG________________________________________________________________")
-    # print("model path: ", path)
-    # print(run_metrics_lines[0])
-    # print(run_metrics_lines[1])
-    # print(mlonmcu_metrics)
-    # print("ret: ",ret)
-    print("________________________________________________________________________")
-
     return ret
-
-
-"""
-/__TO DO__/
-- CREATRE A FUNCTION THAT QUANTIZE A MODEL BEFORE EVALUATING IT
-- ADJUST THE FUNCTION TO RECEIVE MULTI BACKEND, TARGETS ...
-- CONTROL INPUT ARGS VALIDITY
-- PACK THE "MLONMCU FLOW RUN" IN SEPARATE FUNCTION
-- MORE ORGANIZATON FOR THE MLONMCU EXPORT: MAKE SPECIFIC DIR FOR EACH TARGET WHICH CONTAINS DIRS FOR EACH BACKEND ...
-- LOOK FOR MLONMCU OTHER FEATURES YOU CAN ADD TO THIS FUNCTION
-- check supported platforms, backends and targets by mlonmcu
-    mlonmcu_supported_platforms =[]
-    mlonmcu_supported_backends =[]
-    mlonmcu_supported_targets =[]
-    ans = p.run(['mlonmcu', 'flow', '--list-targets'], capture_output=True)
-    ans = ans.stdout.decode()
-    --> check it only one time in configparse
--/ RETURN THE MTERICS VLAUES ASKED FOR
--/ WHEN THE "mlonmcu_out" DIR IS ALREADY THERE THE MLONMCU ASKS TO OVERWRITE IT --> MAKE IT AUTOMATED
-"""
 
 
 def run_mlonmcu_flow(
@@ -101,6 +74,7 @@ def run_mlonmcu_flow(
     configs=None,  # KEY=VALUE
     parllel=False,  # Use multiple threads to process runs in parallel (8 if specified, else 1)
     progress=False,  # Display progress bar
+    verbose=False,
 ):
     run_flow_args = []
 
@@ -110,27 +84,51 @@ def run_mlonmcu_flow(
     import subprocess as p
 
     if platform:
-        run_flow_args.append("--platform")
-        run_flow_args.append(platform)
+        for i in range(len(platform)):
+            run_flow_args.append("--platform")
+            run_flow_args.append(platform[i])
 
     if backend:
-        run_flow_args.append("--backend")
-        run_flow_args.append(backend)
+        for i in range(len(backend)):
+            run_flow_args.append("--backend")
+            run_flow_args.append(backend[i])
 
     if target:
-        run_flow_args.append("--target")
-        run_flow_args.append(target)
+        for i in range(len(target)):
+            run_flow_args.append("--target")
+            run_flow_args.append(target[i])
 
     if frontend:
-        run_flow_args.append("--frontend")
-        run_flow_args.append(frontend)
+        for i in range(len(frontend)):
+            run_flow_args.append("--frontend")
+            run_flow_args.append(frontend[i])
+
+    if postprcess:
+        for i in range(len(postprcess)):
+            run_flow_args.append("--postprocess")
+            run_flow_args.append(postprcess[i])
+
+    if feature:
+        for i in range(len(feature)):
+            run_flow_args.append("--feature")
+            run_flow_args.append(feature[i])
+
+    if configs:
+        for i in range(len(configs)):
+            run_flow_args.append("--config")
+            run_flow_args.append(configs[i])
+
+    if parllel == True:
+        run_flow_args.append("--parallel")
+        run_flow_args.append(str(parllel))
+
+    if progress == True:
+        run_flow_args.append("--progress")
+
+    if verbose == True:
+        run_flow_args.append("--verbose")
 
     # run the mlonmcu flow to evaluate the model
     p.run(["mlonmcu", "flow", "run", path + "/saved_model.tflite", *run_flow_args])
     # export the mlonmcu output data to new directory "mlonmcu_out" in saved_model.tflite root
     p.run(["mlonmcu", "export", path + "/mlonmcu_out/", "--run", "--force"])
-
-    print("___DEBUG________________________________________________________________")
-    # print("run_flow_args:")
-    # print(run_flow_args)
-    print("________________________________________________________________________")
