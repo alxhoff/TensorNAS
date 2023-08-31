@@ -1,5 +1,4 @@
 def ExportBlockArchitectureToJSON(ba, path):
-
     import json
 
     with open("{}/ba.json".format(path), "w+") as f:

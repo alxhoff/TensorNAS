@@ -58,7 +58,6 @@ def _get_max_depth(ba):
         return 0
 
     if ba.input_blocks or ba.middle_blocks or ba.output_blocks:
-
         for sb in ba.input_blocks + ba.middle_blocks + ba.output_blocks:
             return _get_max_depth(sb) + 1
 

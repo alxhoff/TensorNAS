@@ -23,11 +23,9 @@ from TensorNAS.Layers.Pool.AveragePooling2D import Layer as AveragePool
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 3
 
     class SubBlocks(Enum):
-
         DROPOUT = auto()
         AVERAGE_POOL = auto()
         INCEPTION_A = auto()
@@ -37,7 +35,6 @@ class Block(ClassificationBlockArchitecture):
         REDUCTION_B = auto()
 
     def generate_sub_block(self, input_shape, layer_type):
-
         if layer_type == self.SubBlocks.INCEPTION_A:
             return [InceptionA(input_shape=input_shape, parent_block=self)]
         elif layer_type == self.SubBlocks.INCEPTION_B:
@@ -54,7 +51,6 @@ class Block(ClassificationBlockArchitecture):
             return [AveragePool(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
-
         layers = [InceptionA(input_shape=input_shape, parent_block=self)]
         layers.append(
             ReductionA(input_shape=layers[-1].get_output_shape(), parent_block=self)

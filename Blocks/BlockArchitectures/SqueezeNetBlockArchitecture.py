@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 3
 
     class SubBlocks(Enum):
-
         FIRE_BLOCK = auto()
 
     def generate_constrained_output_sub_blocks(self, input_shape):

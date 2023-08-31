@@ -4,7 +4,6 @@ from enum import auto
 
 
 class Args(EnumWithNone):
-
     AXIS = auto()
     LAYERS = auto()
 

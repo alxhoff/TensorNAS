@@ -17,7 +17,6 @@ def layer_mutation(func):
 class MutateFilters:
     @layer_mutation
     def _mutate_filters_up(self, operator=MutationOperators.STEP_UP):
-
         prev_filters = self.args[self.get_args_enum().FILTERS]
         self.args[self.get_args_enum().FILTERS] = mutate_int(
             self.args[self.get_args_enum().FILTERS],
@@ -46,7 +45,6 @@ class MutateFilters:
 class MutateKernelSize:
     @layer_mutation
     def _mutate_kernel_size_up(self, operator=MutationOperators.SYNC_STEP_UP):
-
         prev_kernel_size = self.args[self.get_args_enum().KERNEL_SIZE]
         self.args[self.get_args_enum().KERNEL_SIZE] = mutate_tuple(
             self.args[self.get_args_enum().KERNEL_SIZE],
@@ -75,7 +73,6 @@ class MutateKernelSize:
 class MutateStrides:
     @layer_mutation
     def _mutate_strides_up(self, operator=MutationOperators.SYNC_STEP_UP):
-
         prev_strides = self.args[self.get_args_enum().STRIDES]
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
             self.args[self.get_args_enum().STRIDES],
@@ -89,7 +86,6 @@ class MutateStrides:
 
     @layer_mutation
     def _mutate_strides_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
-
         prev_strides = self.args[self.get_args_enum().STRIDES]
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
             self.args[self.get_args_enum().STRIDES],
@@ -131,7 +127,6 @@ class MutatePadding:
 class MutateDilationRate:
     @layer_mutation
     def _mutate_dilation_rate_up(self, operator=MutationOperators.SYNC_STEP_UP):
-
         prev_dilation_rate = self.args[self.get_args_enum().DILATION_RATE]
         self.args[self.get_args_enum().DILATION_RATE] = mutate_tuple(
             self.args[self.get_args_enum().DILATION_RATE],
@@ -145,7 +140,6 @@ class MutateDilationRate:
 
     @layer_mutation
     def _mutate_dilation_rate_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
-
         prev_dilation_rate = self.args[self.get_args_enum().DILATION_RATE]
         self.args[self.get_args_enum().DILATION_RATE] = mutate_tuple(
             self.args[self.get_args_enum().DILATION_RATE],
@@ -176,7 +170,6 @@ class MutateActivation:
 class MutatePoolSize:
     @layer_mutation
     def _mutate_pool_size_up(self, operator=MutationOperators.SYNC_STEP_UP):
-
         prev_pool_size = self.args[self.get_args_enum().POOL_SIZE]
         self.args[self.get_args_enum().POOL_SIZE] = mutate_tuple(
             self.args[self.get_args_enum().POOL_SIZE],
@@ -190,7 +183,6 @@ class MutatePoolSize:
 
     @layer_mutation
     def _mutate_pool_size_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
-
         prev_pool_size = self.args[self.get_args_enum().POOL_SIZE]
         self.args[self.get_args_enum().POOL_SIZE] = mutate_tuple(
             self.args[self.get_args_enum().POOL_SIZE],

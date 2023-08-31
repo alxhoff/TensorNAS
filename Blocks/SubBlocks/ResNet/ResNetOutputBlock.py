@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(Block):
     class SubBlocks(Enum):
-
         AVERAGE_POOL_2D = auto()
         FLATTEN = auto()
         OUTPUT_DENSE = auto()
@@ -55,7 +54,6 @@ class Block(Block):
         return layers
 
     def generate_sub_block(self, input_shape, layer_type):
-
         if layer_type == self.SubBlocks.FLATTEN:
             from TensorNAS.Layers.Flatten import Layer as Flatten
 

@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(AreaUnderCurveBlockArchitecture):
     class SubBlocks(Enum):
-
         AUTO_ENCODER_BLOCK = auto()
 
     def generate_sub_block(self, input_shape, subblock_type):
@@ -15,7 +14,6 @@ class Block(AreaUnderCurveBlockArchitecture):
         return [DAEBlock(input_shape=input_shape, parent_block=self)]
 
     def generate_constrained_middle_sub_blocks(self, input_shape, args=None):
-
         from TensorNAS.Blocks.SubBlocks.DeepAutoEncoder.DenseBlockArray import (
             Block as DEArrayBlock,
         )

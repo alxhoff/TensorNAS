@@ -32,7 +32,6 @@ def get_block_from_JSON(json_dict, parent_block=None):
 
 
 def _import_subblocks_from_json(blk, json_dict):
-
     for i, b in enumerate(json_dict["input_blocks"]):
         blk.input_blocks.append(get_block_from_JSON(b, blk))
 
@@ -47,7 +46,6 @@ def _import_subblocks_from_json(blk, json_dict):
 
 class MutationTable:
     def __init__(self, cls_obj):
-
         # Class name for debugging purposes
         self.class_name = str(cls_obj.__class__)  # .__bases__
         self.mutations = {}
@@ -58,7 +56,6 @@ class MutationTable:
                 self.mutations[func] = [0, 0]
 
     def get_mutation_table_ref(self, mutation):
-
         if not mutation in self.mutations:
             self.mutations[mutation] = [0, 0]
 
@@ -295,7 +292,8 @@ class BaseBlock(ABC):
         If one wishes to implement `mutate_self` then it should return True to stop the subsequent
         re-invoking of mutate.
 
-        The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability."""
+        The probability of mutating the block itself instead of it's sub-block is passed in via mutation_probability.
+        """
 
         if mutation_method == "EQUALLY":
             block = self._get_random_sub_block_inc_self()
@@ -366,7 +364,6 @@ class BaseBlock(ABC):
         return mutation_function, mutation_note, table_ref_list
 
     def _get_all_mutation_functions_of_children(self):
-
         ret = []
 
         for func in self.mutation_funcs:
@@ -716,7 +713,6 @@ class BaseBlock(ABC):
         return len(self.input_blocks + self.middle_blocks + self.output_blocks)
 
     def _args_to_JSON(self):
-
         if self.args:
             args = dict(self.args)
 
@@ -730,7 +726,6 @@ class BaseBlock(ABC):
         return []
 
     def get_JSON_dict(self):
-
         json_dict = {
             "class_name": self.__module__.split(".")[-1],
             "input_shape": self.input_shape,
@@ -757,7 +752,6 @@ class BaseBlock(ABC):
         return json_dict
 
     def subclass_get_JSON(self, json_dict):
-
         ignored_args = [
             "parent_block",
             "opt",
@@ -779,7 +773,6 @@ class BaseBlock(ABC):
         return json_dict
 
     def toJSON(self):
-
         json_dict = self.get_JSON_dict()
 
         json_dict = self.subclass_get_JSON(json_dict)

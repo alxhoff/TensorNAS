@@ -1,5 +1,4 @@
 def GetOptimizer(optimizer_name=None):
-
     if optimizer_name is None:
         return None
 

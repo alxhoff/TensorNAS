@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
     MIN_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         CONV2D = auto()
         BATCH_NORMALIZATION = auto()
         ACTIVATION = auto()
@@ -53,7 +51,6 @@ class Block(Block):
         return layers
 
     def generate_sub_block(self, input_shape, layer_type, args=None):
-
         if layer_type == self.SubBlocks.CONV2D:
             from TensorNAS.Layers.Conv2D.Conv2D import Layer as Conv2D
             from TensorNAS.Layers.Conv2D import Args as conv_args

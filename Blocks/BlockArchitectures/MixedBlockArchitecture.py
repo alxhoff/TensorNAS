@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 6
     MIN_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
-
         EFFNET_BLOCK = auto()
         EXPAND_BLOCK = auto()
         FEATURE_EXTRACTION_BLOCK = auto()
@@ -34,7 +32,6 @@ class Block(ClassificationBlockArchitecture):
         ]
 
     def generate_sub_block(self, input_shape, subblock_type, args=None):
-
         from TensorNAS.Blocks.SubBlocks.EffNetBlock import Block as EffNetBlock
         from TensorNAS.Blocks.SubBlocks.ExpandBlock import Block as ExpandBlock
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (

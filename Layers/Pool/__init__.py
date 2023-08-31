@@ -16,7 +16,6 @@ def same_pad_output_shape(input, pool, stride):
 
 
 class Args(EnumWithNone):
-
     POOL_SIZE = auto()
     STRIDES = auto()
     PADDING = auto()

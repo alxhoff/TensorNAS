@@ -8,14 +8,12 @@ DEFAULT_EPSILON = 1e-07
 
 class Optimizer:
     def __init__(self):
-
         self.learning_rate = DEFAULT_LEARNING_RATE
         self.beta_1 = DEFAULT_BETA_1
         self.beta_2 = DEFAULT_BETA_2
         self.epsilon = DEFAULT_EPSILON
 
     def get_optimizer(self):
-
         import tensorflow as tf
 
         opt = tf.keras.optimizers.Adam(

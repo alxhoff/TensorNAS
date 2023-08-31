@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
-
         SHUFFLENET_BLOCK = auto()
         CLASSIFICATION_BLOCK = auto()
 

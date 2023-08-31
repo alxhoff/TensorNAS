@@ -12,7 +12,6 @@ class Args(EnumWithNone):
 
 
 class Layer(Layer):
-
     MAX_UNITS = 1028
 
     def _gen_args(self, input_shape, args):

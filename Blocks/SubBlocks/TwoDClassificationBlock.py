@@ -18,7 +18,6 @@ class Block(Block):
     MIN_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         FLATTEN = auto()
         HIDDENDENSE = auto()
         DROPOUT = auto()
@@ -29,7 +28,6 @@ class Block(Block):
         super().__init__(input_shape, parent_block)
 
     def generate_constrained_output_sub_blocks(self, input_shape):
-
         from TensorNAS.Layers.Flatten import Layer as Flatten
         from TensorNAS.Layers.Dense.OutputDense import Layer as OutputDense
         from TensorNAS.Layers.Dense import Args as dense_args
