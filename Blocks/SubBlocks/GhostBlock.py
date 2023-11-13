@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
-
         GHOST_BLOCK = auto()
 
     """pass out_shape as input to Ghost Block and also ratio number for no. of channels to be processed by pointwise conv and remaining by depthwise conv.

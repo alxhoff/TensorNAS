@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
-
         SAME_CONV2D = auto()
 
     def generate_sub_block(self, input_shape, layer_type):

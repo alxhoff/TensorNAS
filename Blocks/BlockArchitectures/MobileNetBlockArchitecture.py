@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 3
 
     class SubBlocks(Enum):
-
         MOBILE_INPUT_BLOCK = auto()
         MOBILE_MID_BLOCK = auto()
         MOBILE_OUTPUT_BLOCK = auto()
@@ -125,7 +123,6 @@ class Block(ClassificationBlockArchitecture):
         return layers
 
     def generate_sub_block(self, input_shape, layer_type):
-
         if layer_type == self.SubBlocks.MOBILE_INPUT_BLOCK:
             return [self.generate_constrained_input_sub_blocks(input_shape=input_shape)]
         elif layer_type == self.SubBlocks.MOBILE_MID_BLOCK:

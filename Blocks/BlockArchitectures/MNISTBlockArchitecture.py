@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 4
     MIN_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
-
         FEATURE_EXTRACTION_BLOCK = auto()
         CLASSIFICATION_BLOCK = auto()
 

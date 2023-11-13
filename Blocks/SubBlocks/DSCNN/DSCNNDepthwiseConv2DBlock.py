@@ -3,11 +3,9 @@ from TensorNAS.Core.Block import Block
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         DEPTHWISE_CONV2D = auto()
         BATCH_NORMALIZATION_AND_ACTIVATION = auto()
 

@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
-
         GLOBAL_AVERAGE_POOLING2D = auto()
         HIDDENDENSE = auto()
 

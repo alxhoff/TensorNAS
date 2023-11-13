@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MIN_SUB_BLOCKS = 3
     MAX_SUB_BLOCKS = 3
 
     class SubBlocks(Enum):
-
         RESNET_MIDDLE_BLOCK = auto()
 
     def generate_constrained_middle_sub_blocks(self, input_shape):
@@ -33,14 +31,13 @@ class Block(Block):
                 MidBlock(
                     input_shape=blocks[-1].get_output_shape(),
                     parent_block=self,
-                    args={ResNetMidBlockArgs.FILTERS: 2 ** i * 16},
+                    args={ResNetMidBlockArgs.FILTERS: 2**i * 16},
                 )
             )
 
         return blocks
 
     def generate_sub_block(self, input_shape, subblock_type):
-
         if subblock_type == self.SubBlocks.RESNET_MIDDLE_BLOCK:
             from TensorNAS.Blocks.SubBlocks.ResNet.ResNetMiddleBlock import (
                 Block as MidBlock,

@@ -10,7 +10,6 @@ class Block(Block):
     MAX_SUB_BLOCKS = 2
 
     class SubBlocks(Enum):
-
         NONE = auto()
 
     def generate_sub_block(self, input_shape, layer_type):

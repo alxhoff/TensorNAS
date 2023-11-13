@@ -3,7 +3,6 @@ import math
 
 class IndividualRecord:
     def __init__(self):
-
         self.gen_count = 0
         self.gens = []
 
@@ -11,11 +10,8 @@ class IndividualRecord:
         self.gens.append([])
         for ind in gen:
             self.gens[self.gen_count].append(
-                (
-                    ind.block_architecture.param_count,
-                    ind.block_architecture.accuracy,
-                    ind.fitness.values,
-                )
+                tuple(ind.block_architecture.evaluation_values)
+                + tuple(ind.fitness.values)
             )
         self.gen_count += 1
 
@@ -50,7 +46,6 @@ class IndividualRecord:
         fig.savefig("Output/{}/Figures/{}".format(test_name, title))
 
     def goals(self, gen_interval, test_name):
-
         import matplotlib.pyplot as plt
         import math
 
@@ -112,15 +107,12 @@ class IndividualRecord:
         pareto_inds = [best_models[0]]
 
         for ind_to_compare in best_models[1:]:
-
             is_dominated = False
 
             for existing_ind in pareto_inds:
-
                 if a_dominates_b(existing_ind, ind_to_compare) or (
                     set(ind_to_compare) == set(existing_ind)
                 ):
-
                     is_dominated = True
                     break
 
@@ -150,13 +142,12 @@ class IndividualRecord:
             facecolor=(0.7, 0.7, 0.7),
             zorder=-1,
         )
-        for ff in filter_funcs[0]:
-            m = -filter_funcs[1][0][1] / filter_funcs[1][0][0]
-            c = ff[1] - (m * ff[0])
-            y_point = [0, c]
-            x_point = [-c / m, 0]
-            ax.plot(ff[0], ff[1], "go")
-            ax.plot(x_point, y_point)
+        m = -filter_funcs[1][1] / filter_funcs[1][0]
+        c = filter_funcs[0][1] - (m * filter_funcs[0][0])
+        y_point = [0, c]
+        x_point = [-c / m, 0]
+        ax.plot(filter_funcs[0][0], filter_funcs[0][1], "go")
+        ax.plot(x_point, y_point)
 
         ax = fig.add_subplot(1, 3, 2)
         ax.set_xscale("log")
@@ -186,7 +177,6 @@ class IndividualRecord:
 
 
 def a_dominates_b(a, b):
-
     n_better = 0
 
     # First index is parameter count, thus we want a[0] < b[0]
@@ -206,9 +196,9 @@ def a_dominates_b(a, b):
 def plot_hof_pareto(hof, test_name):
     import matplotlib
 
-    x = [i.block_architecture.param_count for i in hof.items]
-    y = [i.block_architecture.accuracy for i in hof.items]
-
+    x = [i.block_architecture.evaluation_values[0] for i in hof.items]
+    y = [i.block_architecture.evaluation_values[1] for i in hof.items]
+    z = [i.block_architecture.evaluation_values[2] for i in hof.items]
     import matplotlib.backends.backend_agg as agg
 
     fig = matplotlib.figure.Figure(figsize=(15, 15))

@@ -13,7 +13,6 @@ class Block(Block):
     MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         DEPTHWISECONV2D = auto()
         POINTWISECONV2D = auto()
         GROUPEDCONV2D = auto()

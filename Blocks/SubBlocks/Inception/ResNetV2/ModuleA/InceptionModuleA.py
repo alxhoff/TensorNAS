@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(ParallelMidBlock):
     class SubBlocks(Enum):
-
         POINTWISE_CONV2D = auto()
         MODULE_A_BRANCH_1 = auto()
         MODULE_A_BRANCH_2 = auto()
@@ -23,7 +22,6 @@ class Block(ParallelMidBlock):
         ]
 
     def generate_constrained_middle_sub_blocks(self, input_shape):
-
         from TensorNAS.Layers.Conv2D import Args as conv_args
 
         from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
@@ -46,7 +44,6 @@ class Block(ParallelMidBlock):
         return layers
 
     def generate_constrained_input_sub_blocks(self, input_shape):
-
         from TensorNAS.Layers.Activation import Layer as Activation
         from TensorNAS.Layers.Activation import Args as activation_args
         from TensorNAS.Core.Layer import ArgActivations
@@ -60,7 +57,6 @@ class Block(ParallelMidBlock):
         ]
 
     def generate_sub_block(self, input_shape, layer_type):
-
         if layer_type == self.SubBlocks.POINTWISE_CONV2D:
             from TensorNAS.Layers.Conv2D.PointwiseConv2D import Layer as PointwiseConv2D
 

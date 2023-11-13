@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         DSCNN_CONV_BLOCK = auto()
         DSCNN_DEPTHWISE_CONV_BLOCK = auto()
 

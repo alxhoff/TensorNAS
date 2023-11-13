@@ -117,18 +117,22 @@ def save_model(model, test_name, model_name, logger):
         Path(path).mkdir(parents=True, exist_ok=True)
     model.save(path)
 
-    import tensorflow as tf
+    from Demos import get_global
+    quantization_gen = get_global("quantization_gen")
 
+    import tensorflow as tf
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
+    converter.representative_dataset = quantization_gen
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.int8
+    converter.inference_output_type = tf.int8    
     tflite_model = converter.convert()
     open(
         "Output/{}/Models/{}/saved_model.tflite".format(test_name, model_name), "wb"
     ).write(tflite_model)
 
-
 def copy_output_model(test_name, gen, index_from, index_to):
-
     from_subdir = "Models/{}/{}".format(gen - 1, index_from)
     to_subdir = "Models/{}/{}".format(gen, index_to)
 
@@ -136,7 +140,6 @@ def copy_output_model(test_name, gen, index_from, index_to):
 
 
 def copy_pareto_model(test_name, gen, index_from, index_to):
-
     from_subdir = "Models/{}/{}".format(gen, index_from)
     to_subdir = "Models/pareto/{}".format(index_to)
 
@@ -144,7 +147,6 @@ def copy_pareto_model(test_name, gen, index_from, index_to):
 
 
 def copy_model(test_name, from_subdir, to_subdir):
-
     from_path = "Output/{}/{}".format(test_name, from_subdir)
     to_path = "Output/{}/{}".format(test_name, to_subdir)
 

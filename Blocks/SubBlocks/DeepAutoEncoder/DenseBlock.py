@@ -4,7 +4,6 @@ from enum import Enum, auto
 
 class Block(Block):
     class SubBlocks(Enum):
-
         DENSE = auto()
         BATCH_NORMALIZATION = auto()
         ACTIVATION = auto()

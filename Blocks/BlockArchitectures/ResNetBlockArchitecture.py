@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(ClassificationBlockArchitecture):
-
     MAX_SUB_BLOCKS = 1
     MIN_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
-
         RESNET_MID_BLOCK_ARRAY = auto()
 
     def generate_constrained_input_sub_blocks(self, input_shape):

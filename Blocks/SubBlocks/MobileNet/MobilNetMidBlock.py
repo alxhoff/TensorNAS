@@ -3,12 +3,10 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
     MIN_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         SEPARABLE_CONV_S1 = auto()
         SEPARABLE_CONV_S2 = auto()
 

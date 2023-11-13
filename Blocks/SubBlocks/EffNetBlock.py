@@ -3,11 +3,9 @@ from enum import Enum, auto
 
 
 class Block(Block):
-
     MAX_SUB_BLOCKS = 0
 
     class SubBlocks(Enum):
-
         NONE = auto()
 
     def generate_constrained_input_sub_blocks(self, input_shape):

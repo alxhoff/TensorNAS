@@ -5,7 +5,6 @@ from enum import auto
 
 
 class Args(EnumWithNone):
-
     ACTIVATION = auto()
 
 

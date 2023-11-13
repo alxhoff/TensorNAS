@@ -62,7 +62,6 @@ class Layer(BaseBlock):
         """
 
     def __init__(self, input_shape, parent_block, args=None):
-
         super().__init__(input_shape=input_shape, parent_block=parent_block, args=args)
 
         self.args = self._gen_args(input_shape, args)
@@ -223,8 +222,7 @@ def gen_regularizer(value=None):
     if value:
         if value[0] != ArgRegularizers.NONE:
             import tensorflow as tf
-
-            value = eval("tf.keras.regularizers.{}".format(value[0]))(
+            value = eval("tf.keras.regularizers.{}".format(value[0]._value_))(
                 *(value[1] if isinstance(value[1], list) else [value[1]])
             )
 

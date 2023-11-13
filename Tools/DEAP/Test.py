@@ -9,12 +9,11 @@ from TensorNAS.Core.Individual import TensorNASIndividual
 def setup_DEAP(
     creator,
     toolbox,
-    objective_weights,
     multithreaded=False,
     distributed=False,
     thread_count=0,
 ):
-    creator.create("FitnessMulti", base.Fitness, weights=objective_weights)
+    creator.create("FitnessMulti", base.Fitness, weights=[-1])
     creator.create("Individual", TensorNASIndividual, fitness=creator.FitnessMulti)
 
     if distributed:
@@ -101,14 +100,12 @@ class DEAPTest:
 
     @staticmethod
     def _compare_individual(ind1, ind2):
-
         if ind1.fitness.values == ind2.fitness.values:
             return True
 
         return False
 
     def run(self, algorithm, args):
-
         if not self.evaluate:
             raise Exception("Evaluate function not set")
 

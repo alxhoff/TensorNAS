@@ -42,7 +42,6 @@ class Layer(
     MutateDilationRate,
     MutateStrides,
 ):
-
     MAX_FILTER_COUNT = 128
     MAX_KERNEL_DIMENSION = 7
     MAX_STRIDE = 7
