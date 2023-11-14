@@ -255,7 +255,7 @@ def eaSimple(
                 fitnesses.append(ret)
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
-            for item in reversed(fit):
+            for item in fit:
                 ind.block_architecture.evaluation_values.append(item)  # fit[] is iterated in reverse
 
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen

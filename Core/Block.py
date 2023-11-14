@@ -243,8 +243,8 @@ class BaseBlock(ABC):
                 except Exception as e:
                     print(e)
             else:
-            
                 func_name = random.choice(self.mutation_funcs)
+
             mutate_eval = "self." + func_name
             if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
@@ -325,7 +325,7 @@ class BaseBlock(ABC):
                     )
                 # return format of all mutate functions, except most bottom level mutations, should be
                 # function name, list of mutation table references, mutation note from bottom most level
-                ret = tuple(["_mutate_subblock"] + list(ret[1:]))
+                # ret = tuple(["_mutate_subblock"] + list(ret[1:]))
             else:
                 ret = self.mutate_self(
                     mutation_goal_index=mutation_goal_index,
