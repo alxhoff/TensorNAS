@@ -31,6 +31,8 @@ class Logger:
             test_name, f_subdir, test_name + subdir
         )
 
+        print("Opening log: {}".format(filename))
+
         m = Manager()
         self.queue = m.Queue()
 

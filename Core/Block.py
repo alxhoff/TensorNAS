@@ -221,6 +221,9 @@ class BaseBlock(ABC):
         verbose=False,
         **kwargs
     ):
+        if verbose == True:
+            print("[MUTATE] _invoke_random_mutation_function")
+
         if self.mutation_funcs:
             if mutate_with_reinforcement_learning:
                 if goal_attainment:
@@ -239,6 +242,8 @@ class BaseBlock(ABC):
                         for func in self.mutation_funcs
                     ]
                 try:
+                    if verbose == True:
+                        print("[MUTATE] weights: {}".format(weights))
                     func_name = random.choices(self.mutation_funcs, weights=weights)[0]
                 except Exception as e:
                     print(e)
@@ -263,6 +268,9 @@ class BaseBlock(ABC):
         simply invokes mutation of a random mutation function and if that is not possible then
          random mutation of a sub block by invoking mutate_subblock
         """
+        if verbose == True:
+            print("[MUTATE] mutate_self: {}".format(len(self.mutation_funcs)))
+
         if len(self.mutation_funcs) > 0:
             return self._invoke_random_mutation_function(
                 mutate_with_reinforcement_learning=mutate_with_reinforcement_learning,
@@ -270,6 +278,8 @@ class BaseBlock(ABC):
                 goal_attainment=goal_attainment,
                 verbose=verbose,
             )
+        else:
+            print("wait here")
 
     def mutate(
         self,
@@ -305,7 +315,7 @@ class BaseBlock(ABC):
             )
         elif mutation_method == "PROBABILITY":
             prob = random.random()
-            if (prob < mutation_probability) and (len(self.middle_blocks) > 0):
+            if (prob > mutation_probability) and (len(self.middle_blocks) > 0):
                 # Mutate subblock
                 if len(self.middle_blocks):
                     choice_index = random.choice(range(len(self.middle_blocks)))
@@ -670,7 +680,8 @@ class BaseBlock(ABC):
             from TensorNAS.Core.Layer import Layer
 
             if isinstance(block, Layer):
-                return blocks
+                if len(block.mutation_funcs) > 0:
+                    blocks.append(block)
             else:
                 blocks += block._get_all_sub_blocks_inc_self()
 

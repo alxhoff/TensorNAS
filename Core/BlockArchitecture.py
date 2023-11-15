@@ -109,6 +109,9 @@ class BlockArchitecture(Block):
     ):
         goal_index = get_global("OptimizationGoal")[self.optimization_goal]
 
+        if verbose == True:
+            print("[MUTATE] mutate, goal_index:{}".format(goal_index))
+
         return super().mutate(
             mutation_goal_index=goal_index,
             mutation_method=mutation_method,

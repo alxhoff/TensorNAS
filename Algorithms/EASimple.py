@@ -20,7 +20,7 @@ def TestEASimple(
     generation_save=1,
     comment=None,
     multithreaded=True,
-    log=None,
+    log=False,
     start_gen=0,
 ):
     if log:
