@@ -76,6 +76,9 @@ def run_mlonmcu_flow(
     progress=False,  # Display progress bar
     verbose=False,
 ):
+    import os
+    import subprocess
+
     run_flow_args = []
 
     if not path:
@@ -128,7 +131,17 @@ def run_mlonmcu_flow(
     if verbose == True:
         run_flow_args.append("--verbose")
 
-    # run the mlonmcu flow to evaluate the model
-    p.run(["mlonmcu", "flow", "run", path + "/saved_model.tflite", *run_flow_args])
-    # export the mlonmcu output data to new directory "mlonmcu_out" in saved_model.tflite root
-    p.run(["mlonmcu", "export", path + "/mlonmcu_out/", "--run", "--force"])
+    path_prefix = "Demos/DEAP/"
+    run_flow_args = " ".join(run_flow_args)
+    project_dir = "{}/../../".format(os.getcwd())
+    export_dir = "/mount/{}{}mlonmcu_out/".format(path_prefix,path)
+    local_dir = "{}{}mlonmcu_out".format(path_prefix,path)
+    os.makedirs(local_dir)
+
+    flow_command = "mlonmcu flow run /mount/{}{}saved_model.tflite {}".format(path_prefix, path, run_flow_args)
+    export_command = "mlonmcu export {} --run --force".format(export_dir)
+    chmod_command = "chmod -R 777 {}".format(export_dir)
+
+    docker_command = "docker run --entrypoint /bin/bash -v {}:/mount tumeda/mlonmcu-bench:latest -c '{} && {} && {}'".format(project_dir, flow_command, export_command, chmod_command)
+
+    subprocess.call(docker_command, shell=True)
