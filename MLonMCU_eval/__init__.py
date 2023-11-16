@@ -134,14 +134,18 @@ def run_mlonmcu_flow(
     path_prefix = "Demos/DEAP/"
     run_flow_args = " ".join(run_flow_args)
     project_dir = "{}/../../".format(os.getcwd())
-    export_dir = "/mount/{}{}mlonmcu_out/".format(path_prefix,path)
-    local_dir = "{}{}mlonmcu_out".format(path_prefix,path)
+    export_dir = "/mount/{}{}mlonmcu_out/".format(path_prefix, path)
+    local_dir = "{}{}mlonmcu_out".format(path_prefix, path)
     os.makedirs(local_dir)
 
-    flow_command = "mlonmcu flow run /mount/{}{}saved_model.tflite {}".format(path_prefix, path, run_flow_args)
+    flow_command = "mlonmcu flow run /mount/{}{}saved_model.tflite {}".format(
+        path_prefix, path, run_flow_args
+    )
     export_command = "mlonmcu export {} --run --force".format(export_dir)
     chmod_command = "chmod -R 777 {}".format(export_dir)
 
-    docker_command = "docker run --entrypoint /bin/bash -v {}:/mount tumeda/mlonmcu-bench:latest -c '{} && {} && {}'".format(project_dir, flow_command, export_command, chmod_command)
+    docker_command = "docker run --entrypoint /bin/bash -v {}:/mount tumeda/mlonmcu-bench:latest -c '{} && {} && {}'".format(
+        project_dir, flow_command, export_command, chmod_command
+    )
 
     subprocess.call(docker_command, shell=True)

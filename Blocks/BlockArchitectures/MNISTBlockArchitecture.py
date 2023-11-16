@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 class Block(ClassificationBlockArchitecture):
     MAX_SUB_BLOCKS = 4
-    MIN_SUB_BLOCKS = 2
+    MIN_SUB_BLOCKS = 1
 
     class SubBlocks(Enum):
         FEATURE_EXTRACTION_BLOCK = auto()
@@ -27,8 +27,22 @@ class Block(ClassificationBlockArchitecture):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (
             Block as FeatureExtractionBlock,
         )
+        from TensorNAS.Blocks.SubBlocks.FlattenDenseBlock import (
+            Block as FlattenDenseBlock,
+        )
 
-        return [FeatureExtractionBlock(input_shape=input_shape, parent_block=self)]
+        blocks = []
+
+        blocks.append(
+            FeatureExtractionBlock(input_shape=input_shape, parent_block=self)
+        )
+        blocks.append(
+            FlattenDenseBlock(
+                input_shape=blocks[-1].get_output_shape(), parent_block=self
+            )
+        )
+
+        return blocks
 
     def generate_sub_block(self, input_shape, subblock_type):
         from TensorNAS.Blocks.SubBlocks.FeatureExtractionBlock import (

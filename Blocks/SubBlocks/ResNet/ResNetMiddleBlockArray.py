@@ -31,7 +31,7 @@ class Block(Block):
                 MidBlock(
                     input_shape=blocks[-1].get_output_shape(),
                     parent_block=self,
-                    args={ResNetMidBlockArgs.FILTERS: 2**i * 16},
+                    args={ResNetMidBlockArgs.FILTERS: 2 ** i * 16},
                 )
             )
 

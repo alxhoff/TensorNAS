@@ -503,8 +503,10 @@ def GetImageDataGeneratorValidationSplit(config):
 def _GetMlonmcu(config):
     return config["mlonmcu"]
 
+
 def GetUseMlonmcu(config):
     return _GetBool(_GetMlonmcu(config), "UseMLonMCU")
+
 
 def GetMlonmcuMetrics(config):
     metrics = _GetStr(_GetMlonmcu(config), "metrics").split(",")

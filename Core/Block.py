@@ -345,9 +345,9 @@ class BaseBlock(ABC):
                 )
         elif mutation_method == "ALL":
             # ---------for debugging purose----------
-            all_mut_func_deb= self._get_all_mutation_functions_of_children()
-            all_mut_func_deb_1=[item() for item in all_mut_func_deb]
-            mut_func_count=len(all_mut_func_deb_1)
+            all_mut_func_deb = self._get_all_mutation_functions_of_children()
+            all_mut_func_deb_1 = [item() for item in all_mut_func_deb]
+            mut_func_count = len(all_mut_func_deb_1)
             random_choice = random.choice(range(mut_func_count))
             # ---------------------------------------
             ret = self._get_all_mutation_functions_of_children()[random_choice]()

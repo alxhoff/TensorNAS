@@ -219,12 +219,16 @@ def gen_padding():
 def gen_regularizer(value=None):
     from TensorNAS.Core.Layer import ArgRegularizers
 
-    if value:
+    if value and isinstance(value, tuple):
         if value[0] != ArgRegularizers.NONE:
             import tensorflow as tf
-            value = eval("tf.keras.regularizers.{}".format(value[0]._value_))(
+
+            regularizer_string = "tf.keras.regularizers.{}".format(value[0]._value_)
+            value = eval(regularizer_string)(
                 *(value[1] if isinstance(value[1], list) else [value[1]])
             )
+
+            return value
 
     return None
 

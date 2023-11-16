@@ -257,7 +257,14 @@ class BlockArchitecture(Block):
             callbacks += [get_early_stopper()]
 
         try:
-            if not [x for x in (train_generator,train_len,) if x is None]:
+            if not [
+                x
+                for x in (
+                    train_generator,
+                    train_len,
+                )
+                if x is None
+            ]:
                 import tensorflow as tf
 
                 if batch_size > validation_len:
@@ -333,7 +340,11 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         )
 
         params = self.save_model(
-            model=model, representative_dataset=train_generator, test_name=test_name, model_name=model_name, logger=logger
+            model=model,
+            representative_dataset=train_generator,
+            test_name=test_name,
+            model_name=model_name,
+            logger=logger,
         )
         evaluation_values.append(params)
 

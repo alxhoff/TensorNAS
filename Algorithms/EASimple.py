@@ -256,7 +256,9 @@ def eaSimple(
 
         for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
             for item in fit:
-                ind.block_architecture.evaluation_values.append(item)  # fit[] is iterated in reverse
+                ind.block_architecture.evaluation_values.append(
+                    item
+                )  # fit[] is iterated in reverse
 
             # Assign individuals an index so they can be copied in output folder structure if taken to next gen
             ind.index = count
@@ -370,7 +372,7 @@ def eaSimple(
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
 
-            #set_global("self_mutation_probability",get_global("self_mutation_probability")+ (gen - 1) * get_global("variable_mutation_generational_change"),)
+            # set_global("self_mutation_probability",get_global("self_mutation_probability")+ (gen - 1) * get_global("variable_mutation_generational_change"),)
 
             if logger:
                 logger.log("Gen #{}, population: {}".format(gen, len(population)))
