@@ -127,14 +127,6 @@ class BlockArchitecture(Block):
             return self.opt.mutate(verbose)
         return "_mutate_optimizer_hyperparameters", "Null mutation"
 
-    # @layer_mutation
-    # def _mutate_batch_size(self, verbose=False):
-    #     from TensorNAS.Core.Mutate import mutate_int_square
-    #
-    #     prev_batch = self.batch_size
-    #     self.batch_size = mutate_int_square(self.batch_size, 1, self.MAX_BATCH_SIZE)
-    #     return "Mutated batch size: {} -> {}".format(prev_batch, self.batch_size)
-
     def get_keras_model(self, loss, metrics):
         import tensorflow as tf
 

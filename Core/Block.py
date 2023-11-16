@@ -221,10 +221,11 @@ class BaseBlock(ABC):
         verbose=False,
         **kwargs
     ):
-        if verbose == True:
-            print("[MUTATE] _invoke_random_mutation_function")
 
         if self.mutation_funcs:
+            if verbose == True:
+                print("[MUTATE] _invoke_random_mutation_function")
+
             if mutate_with_reinforcement_learning:
                 if goal_attainment:
                     weights = [
@@ -254,6 +255,11 @@ class BaseBlock(ABC):
             if verbose == True:
                 print("[MUTATE] invoking `{}`".format(mutate_eval))
             return eval(mutate_eval)()
+
+        else:
+            if verbose == True:
+                print("[MUTATE] _invoke_random_mutation_function: no funcs")
+
         return "Null", None
 
     def mutate_self(
@@ -548,7 +554,10 @@ class BaseBlock(ABC):
         """
         tmp = input_tensor
         for sb in self.input_blocks + self.middle_blocks + self.output_blocks:
-            tmp = sb.get_keras_layers(tmp)
+            try:
+                tmp = sb.get_keras_layers(tmp)
+            except Exception as e:
+                print(e)
 
         return tmp
 
