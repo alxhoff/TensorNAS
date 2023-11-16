@@ -127,14 +127,6 @@ class BlockArchitecture(Block):
             return self.opt.mutate(verbose)
         return "_mutate_optimizer_hyperparameters", "Null mutation"
 
-    # @layer_mutation
-    # def _mutate_batch_size(self, verbose=False):
-    #     from TensorNAS.Core.Mutate import mutate_int_square
-    #
-    #     prev_batch = self.batch_size
-    #     self.batch_size = mutate_int_square(self.batch_size, 1, self.MAX_BATCH_SIZE)
-    #     return "Mutated batch size: {} -> {}".format(prev_batch, self.batch_size)
-
     def get_keras_model(self, loss, metrics):
         import tensorflow as tf
 
@@ -194,7 +186,7 @@ class BlockArchitecture(Block):
 
         return model
 
-    def save_model(self, model, test_name, model_name, logger):
+    def save_model(self, model, test_name, model_name, representative_dataset, logger):
         import numpy as np
 
         try:
@@ -202,7 +194,13 @@ class BlockArchitecture(Block):
                 from TensorNAS.Tools import save_model
                 from TensorNAS.Tools import save_block_architecture
 
-                save_model(model, test_name, model_name, logger)
+                save_model(
+                    model=model,
+                    test_name=test_name,
+                    model_name=model_name,
+                    representative_dataset=representative_dataset,
+                    logger=logger,
+                )
                 save_block_architecture(self, test_name, model_name, logger)
         except Exception as e:
             import traceback
@@ -306,6 +304,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
         test_len=None,
         validation_generator=None,
         validation_len=None,
+        representative_dataset=None,
         epochs=1,
         batch_size=1,
         test_batch_size=1,
@@ -341,7 +340,7 @@ class AreaUnderCurveBlockArchitecture(BlockArchitecture):
 
         params = self.save_model(
             model=model,
-            representative_dataset=train_generator,
+            representative_dataset=representative_dataset,
             test_name=test_name,
             model_name=model_name,
             logger=logger,
@@ -400,6 +399,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         test_len=None,
         validation_generator=None,
         validation_len=None,
+        representative_dataset=None,
         epochs=1,
         batch_size=1,
         test_batch_size=1,
@@ -437,7 +437,11 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         )
 
         params = self.save_model(
-            model=model, test_name=test_name, model_name=model_name, logger=logger
+            model=model,
+            test_name=test_name,
+            model_name=model_name,
+            representative_dataset=representative_dataset,
+            logger=logger,
         )
         evaluation_values.append(params)
 

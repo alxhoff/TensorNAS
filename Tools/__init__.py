@@ -105,9 +105,10 @@ def save_block_architecture(ba, test_name, model_name, logger):
     ExportBlockArchitectureToJSON(ba, path)
 
 
-def save_model(model, test_name, model_name, logger):
+def save_model(model, test_name, model_name, representative_dataset, logger):
     from pathlib import Path
     import os
+    import tensorflow as tf
 
     if logger:
         logger.log("Saving new model, name:{}".format(model_name))
@@ -117,22 +118,19 @@ def save_model(model, test_name, model_name, logger):
         Path(path).mkdir(parents=True, exist_ok=True)
     model.save(path)
 
-    from Demos import get_global
-
-    quantization_gen = get_global("quantization_gen")
-
-    import tensorflow as tf
-
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.representative_dataset = quantization_gen
+    converter.representative_dataset = representative_dataset
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.int8
     converter.inference_output_type = tf.int8
-    tflite_model = converter.convert()
-    open(
-        "Output/{}/Models/{}/saved_model.tflite".format(test_name, model_name), "wb"
-    ).write(tflite_model)
+    try:
+        tflite_model = converter.convert()
+        open(
+            "Output/{}/Models/{}/saved_model.tflite".format(test_name, model_name), "wb"
+        ).write(tflite_model)
+    except Exception:
+        pass
 
 
 def copy_output_model(test_name, gen, index_from, index_to):
