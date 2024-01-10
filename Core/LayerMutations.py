@@ -74,12 +74,14 @@ class MutateStrides:
     @layer_mutation
     def _mutate_strides_up(self, operator=MutationOperators.SYNC_STEP_UP):
         prev_strides = self.args[self.get_args_enum().STRIDES]
+
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
             self.args[self.get_args_enum().STRIDES],
             1,
             self.MAX_STRIDE,
             operator=operator,
         )
+
         return "Mutating strides {} -> {}".format(
             prev_strides, self.args[self.get_args_enum().STRIDES]
         )
@@ -87,12 +89,14 @@ class MutateStrides:
     @layer_mutation
     def _mutate_strides_down(self, operator=MutationOperators.SYNC_STEP_DOWN):
         prev_strides = self.args[self.get_args_enum().STRIDES]
+
         self.args[self.get_args_enum().STRIDES] = mutate_tuple(
             self.args[self.get_args_enum().STRIDES],
             1,
             self.MAX_STRIDE,
             operator=operator,
         )
+
         return "Mutating strides {} -> {}".format(
             prev_strides, self.args[self.get_args_enum().STRIDES]
         )

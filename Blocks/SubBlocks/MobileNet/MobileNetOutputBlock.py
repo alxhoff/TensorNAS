@@ -18,7 +18,7 @@ class Block(Block):
 
         from TensorNAS.Layers.Pool import Args as pool_args
 
-        args = {pool_args.STRIDES: None, pool_args.POOL_SIZE: input_shape[0:2]}
+        args = {pool_args.STRIDES: (1, 1), pool_args.POOL_SIZE: input_shape[0:2]}
 
         layers = []
         layers.append(

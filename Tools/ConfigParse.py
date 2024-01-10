@@ -164,6 +164,10 @@ def GetLog(config):
     return _GetGeneral(config).getboolean("Log")
 
 
+def GetTraceMemoryUse(config):
+    return _GetGeneral(config).getboolean("TraceMemoryUse")
+
+
 def _GetEvolution(config):
     return config["evolution"]
 

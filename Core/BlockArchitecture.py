@@ -17,6 +17,11 @@ class ClearMemory(Callback):
         gc.collect()
         k.clear_session()
 
+    # def on_train_end(self, logs=None):
+    #     from numba import cuda
+    #     device = cuda.get_current_device()
+    #     device.reset()
+
 
 class Mutation:
     def __init__(
@@ -130,6 +135,8 @@ class BlockArchitecture(Block):
     def get_keras_model(self, loss, metrics):
         import tensorflow as tf
 
+        tf.keras.backend.clear_session()
+
         inp = tf.keras.Input(shape=self.input_shape)
         try:
             out = self.get_keras_layers(inp)
@@ -147,6 +154,7 @@ class BlockArchitecture(Block):
                     loss="{}".format(loss),
                     metrics=metrics,
                 )
+                del out
                 return model
             except Exception as e:
                 raise e
@@ -292,6 +300,7 @@ class BlockArchitecture(Block):
             return model
 
         gc.collect()
+
         return model
 
 
@@ -419,8 +428,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             evaluation_values = [math.inf] * get_global("goals_number")
             return evaluation_values
 
-        if verbose:
-            model.summary()
+        # if verbose:
+        #     model.summary()
 
         model = self.train_model(
             model=model,
@@ -494,6 +503,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             evaluation_values = [math.inf] * get_global("goals_number")
             return evaluation_values
 
+        del model
         gc.collect()
 
         if mlonmcu_args["use_mlonmcu"]:

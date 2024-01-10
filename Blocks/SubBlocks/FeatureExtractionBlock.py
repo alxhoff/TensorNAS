@@ -43,7 +43,7 @@ class Block(Block):
         }
         pool_args = {
             pool_args.POOL_SIZE: (2, 2),
-            pool_args.STRIDES: None,
+            pool_args.STRIDES: (1, 1),
             pool_args.PADDING: ArgPadding.VALID,
         }
 

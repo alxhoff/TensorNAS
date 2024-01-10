@@ -21,6 +21,7 @@ def TestEASimple(
     comment=None,
     multithreaded=True,
     log=False,
+    trace_memory_usage=False,
     start_gen=0,
 ):
     if log:
@@ -62,6 +63,7 @@ def TestEASimple(
         logger=logger,
         generation_save_interval=generation_save,
         multithreaded=multithreaded,
+        trace_memory_usage=trace_memory_usage,
         start_gen=start_gen,
     )
 
@@ -132,6 +134,7 @@ def eaSimple(
     logger=None,
     generation_save_interval=1,
     multithreaded=False,
+    trace_memory_usage=False,
     start_gen=0,
 ):
     """This algorithm reproduce the simplest evolutionary algorithm as
@@ -188,6 +191,11 @@ def eaSimple(
     from Demos import set_global, get_global
     from tqdm import tqdm
     import csv
+
+    if trace_memory_usage:
+        from TensorNAS.Tools.MemoryTracking import start
+
+        start()
 
     pop_size = len(population)
     retrain = get_global("retrain_every_generation")
@@ -366,8 +374,19 @@ def eaSimple(
             )
             cur_gen_start_time = cur_time
 
+        if trace_memory_usage:
+            import tracemalloc
+            from TensorNAS.Tools.MemoryTracking import display_top
+
+            snapshot = tracemalloc.take_snapshot()
+            display_top(snapshot)
+
         # Begin the generational process
         for gen in range(start_gen + 1, ngen + 1):
+            import tensorflow as tf
+
+            tf.keras.backend.clear_session()
+
             raw_evaluated_values_row = get_global("raw_evaluated_values_row")
             filtered_fitness_row = ["Fitness"]
             writer.writerow(["Gen #{}".format(gen)])
@@ -448,9 +467,7 @@ def eaSimple(
                     if save_individuals and generation_save_interval == 1:
                         fitnesses.append(toolbox.evaluate(ind, test_name, gen, logger))
                     else:
-                        fitnesses.append(
-                            toolbox.evaluate(ind, None, None, None, logger)
-                        )
+                        fitnesses.append(toolbox.evaluate(ind, None, None, logger))
 
             for count, (ind, fit) in enumerate(zip(invalid_ind, fitnesses)):
                 if filter_function:
@@ -576,6 +593,13 @@ def eaSimple(
                     "Gen #{} finished in: {}".format(gen, cur_gen_start_time - cur_time)
                 )
                 cur_gen_start_time = cur_time
+
+            if trace_memory_usage:
+                import tracemalloc
+                from TensorNAS.Tools.MemoryTracking import display_top
+
+                snapshot = tracemalloc.take_snapshot()
+                display_top(snapshot)
 
         if logger:
             timing_log.log("Total time: {}".format(time.time() - start_time))
