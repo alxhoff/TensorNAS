@@ -428,8 +428,8 @@ class ClassificationBlockArchitecture(BlockArchitecture):
             evaluation_values = [math.inf] * get_global("goals_number")
             return evaluation_values
 
-        # if verbose:
-        #     model.summary()
+        if verbose:
+            model.summary()
 
         model = self.train_model(
             model=model,

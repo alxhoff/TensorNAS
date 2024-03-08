@@ -94,12 +94,15 @@ def TestEASimple(
         copy_pareto_model(test_name, gen_count, pind.index, i)
         if logger:
             logger.log("####\nPareto Ind #{}".format(i))
+            logger.log("Layers:")
             logger.log(
                 pareto_log_string.format(
                     *reversed(pind.block_architecture.evaluation_values),
                 )
             )
             logger.log(str(pind))
+            logger.log("Architecture:")
+            logger.log(pind.block_architecture.get_ascii_tree())
             logger.log("Mutations:")
             for mutation in pind.block_architecture.mutations:
                 logger.log(

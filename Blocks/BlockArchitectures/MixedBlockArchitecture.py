@@ -39,7 +39,9 @@ class Block(ClassificationBlockArchitecture):
         )
         from TensorNAS.Blocks.SubBlocks.FireBlock import Block as FireBlock
         from TensorNAS.Blocks.SubBlocks.GhostBlock import Block as GhostBlock
-        from TensorNAS.Blocks.SubBlocks.MobilNetMidBlock import Block as MobileNetBlock
+        from TensorNAS.Blocks.SubBlocks.MobileNet.MobilNetMidBlock import (
+            Block as MobileNetBlock,
+        )
         from TensorNAS.Blocks.SubBlocks.ResidualBlock import Block as ResidualBlock
         from TensorNAS.Blocks.SubBlocks.ShuffleNetBlock import Block as ShuffleNetBlock
 
