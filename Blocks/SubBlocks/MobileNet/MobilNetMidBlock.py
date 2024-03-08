@@ -27,11 +27,12 @@ class Block(Block):
         filters = 8
         strides = (1, 1)
 
-        if conv_args.FILTERS in args:
-            filters = args.get(conv_args.FILTERS, 8)
+        if args:
+            if conv_args.FILTERS in args:
+                filters = args.get(conv_args.FILTERS, 8)
 
-        if conv_args.STRIDES in args:
-            strides = args.get(conv_args.STRIDES, (1, 1))
+            if conv_args.STRIDES in args:
+                strides = args.get(conv_args.STRIDES, (1, 1))
 
         dw_args = {
             conv_args.STRIDES: strides,
