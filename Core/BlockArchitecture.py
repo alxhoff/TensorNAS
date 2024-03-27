@@ -431,19 +431,35 @@ class ClassificationBlockArchitecture(BlockArchitecture):
         if verbose:
             model.summary()
 
-        model = self.train_model(
-            model=model,
-            train_generator=train_generator,
-            train_len=train_len,
-            validation_generator=validation_generator,
-            validation_len=validation_len,
-            epochs=epochs,
-            batch_size=batch_size,
-            test_name=test_name,
-            model_name=model_name,
-            logger=logger,
-            verbose=verbose,
-        )
+        try:
+            model = self.train_model(
+                model=model,
+                train_generator=train_generator,
+                train_len=train_len,
+                validation_generator=validation_generator,
+                validation_len=validation_len,
+                epochs=epochs,
+                batch_size=batch_size,
+                test_name=test_name,
+                model_name=model_name,
+                logger=logger,
+                verbose=verbose,
+            )
+        except Exception as e:
+            print("Trying half the batch size")
+            model = self.train_model(
+                model=model,
+                train_generator=train_generator,
+                train_len=train_len,
+                validation_generator=validation_generator,
+                validation_len=validation_len,
+                epochs=epochs,
+                batch_size=batch_size/2,
+                test_name=test_name,
+                model_name=model_name,
+                logger=logger,
+                verbose=verbose,
+            )
 
         params = self.save_model(
             model=model,
