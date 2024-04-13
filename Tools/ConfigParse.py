@@ -75,6 +75,9 @@ def _GetInt(parent, item, default=0):
     if item not in parent:
         return default
 
+    if parent[item] == "None":
+        return None
+
     return int(parent[item])
 
 

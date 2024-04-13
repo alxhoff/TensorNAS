@@ -273,21 +273,36 @@ class BlockArchitecture(Block):
             ]:
                 import tensorflow as tf
 
-                if batch_size > validation_len:
+                if batch_size == None:
                     vbatch_size = validation_len
+
+                    model.fit(
+                        x=train_generator,
+                        batch_size=batch_size,
+                        epochs=epochs,
+                        callbacks=callbacks,
+                        validation_data=validation_generator,
+                        validation_batch_size=vbatch_size,
+                        validation_steps=validation_len // vbatch_size,
+                        verbose=verbose,
+                    )
                 else:
-                    vbatch_size = batch_size
-                model.fit(
-                    x=train_generator,
-                    batch_size=batch_size,
-                    epochs=epochs,
-                    steps_per_epoch=train_len // batch_size,
-                    callbacks=callbacks,
-                    validation_data=validation_generator,
-                    validation_batch_size=vbatch_size,
-                    validation_steps=validation_len // vbatch_size,
-                    verbose=verbose,
-                )
+                    if batch_size > validation_len:
+                        vbatch_size = validation_len
+                    else:
+                        vbatch_size = batch_size
+
+                    model.fit(
+                        x=train_generator,
+                        batch_size=batch_size,
+                        epochs=epochs,
+                        steps_per_epoch=train_len // batch_size,
+                        callbacks=callbacks,
+                        validation_data=validation_generator,
+                        validation_batch_size=vbatch_size,
+                        validation_steps=validation_len // vbatch_size,
+                        verbose=verbose,
+                    )
 
             else:
                 raise Exception("Missing training data")
@@ -454,7 +469,7 @@ class ClassificationBlockArchitecture(BlockArchitecture):
                 validation_generator=validation_generator,
                 validation_len=validation_len,
                 epochs=epochs,
-                batch_size=batch_size/2,
+                batch_size=batch_size / 2,
                 test_name=test_name,
                 model_name=model_name,
                 logger=logger,
